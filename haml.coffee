@@ -3,23 +3,23 @@
 
 grammar =
   root: [
-    o "lines"
+    o "lines",                                       -> yy.nodePath[0];
   ]
 
   lines: [
-    o "lines line",                                  -> $lines.concat $line
-    o "line",                                        -> [$line]
+    o "lines line"
+    o "line"
   ]
 
   indentation: [
-    o "indentation INDENT",                          -> yy.indent = $1 + 1
-    o "INDENT",                                      -> yy.indent = 1
+    o "indentation INDENT",                          -> $1 + 1
+    o "INDENT",                                      -> 1
   ]
 
   line: [
     o "DOCTYPE end",                                 -> "doctype"
-    o "indentation lineMain end",                    -> $lineMain.indentation = $indentation; $lineMain
-    o "lineMain end",                                -> yy.indent = 0; $lineMain
+    o "indentation lineMain end",                    -> yy.append($lineMain, $indentation)
+    o "lineMain end",                                -> yy.append($lineMain)
     o "end"
   ]
 
@@ -28,7 +28,7 @@ grammar =
     o "tag rest",                                    -> yy.extend $tag, $rest
     o "tag",                                         -> $tag
     o "rest",                                        -> $rest
-    o "FILTER_LINE"
+    o "FILTER_LINE",                                 -> $1
   ]
 
   end: [
@@ -42,6 +42,9 @@ grammar =
     o "PERCENT name",                                -> tag: $2
     o "tagComponents"
   ]
+
+  # TODO: Push these components into lexer: .<class>, #<id>, %<tag>
+  # so that it's easier to distinguish text nodes.
 
   tagComponents: [
     o "idComponent classComponents attributes",      -> id: $1, classes: $2, attributes: $3
@@ -150,8 +153,47 @@ extend = (target, sources...) ->
 
   return target
 
+oldParse = parser.parse
+parser.parse = (input) ->
+  parser.yy.nodePath = [{}]
+
+  return oldParse.call(parser, input)
+
 extend parser.yy,
-  indent: 0
   extend: extend
+  nodePath: [{}]
+  append: (node, indentation=0) ->
+    if @lexer.topState() is "filter" and !node.filter
+      # TODO: Allow for back to back filters
+
+      if indentation <= (@nodePath.length - 2)
+        @lexer.popState()
+        # @lexer.unput(node)
+
+        return
+      else
+        filterNode = @nodePath[@nodePath.length - 1]
+
+        # TODO: Correct content indentation
+        @appendFilterContent(filterNode, node)
+
+        return
+
+    parent = @nodePath[indentation]
+    @appendChild parent, node
+
+    index = indentation + 1
+    @nodePath[index] = node
+    @nodePath.length = index + 1
+
+    return node
+
+  appendChild: (parent, child) ->
+    parent.children ||= []
+    parent.children.push child
+
+  appendFilterContent: (filter, content) ->
+    filter.content ||= ""
+    filter.content += "#{content}\n"
 
 exports.parser = parser

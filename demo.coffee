@@ -17,4 +17,7 @@ fs.readdirSync(sampleDir).forEach (file) ->
 exports.samples = samples
 exports.parser = parser
 
+
+console.log parser.parse(samples["simple.haml"])
+console.log parser.parse(samples["complex.haml"])
 console.log parser.parse(samples["complex2.haml"])

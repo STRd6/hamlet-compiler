@@ -7,3 +7,6 @@ task "build", "Build the parser", ->
 
 task "test", "Run the tests", ->
   sh "mocha -u tdd --compilers coffee:coffee-script --reporter spec"
+
+task "setup", "Set up the project", ->
+  sh "npm install jison"
