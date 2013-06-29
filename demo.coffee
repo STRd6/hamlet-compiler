@@ -2,6 +2,8 @@ fs = require('fs')
 {parser} = require('./haml')
 {lexer} = require('./build/lexer')
 
+lexer.options.backtrack_lexer = true
+
 parser.lexer = lexer
 
 sampleDir = "test/samples/haml"
@@ -17,7 +19,8 @@ fs.readdirSync(sampleDir).forEach (file) ->
 exports.samples = samples
 exports.parser = parser
 
-
-console.log parser.parse(samples["simple.haml"])
-console.log parser.parse(samples["complex.haml"])
-console.log parser.parse(samples["complex2.haml"])
+Object.keys(samples).forEach (sample) ->
+  result = parser.parse(samples[sample])
+  file = "results/#{sample}"
+  fs.writeFile(file, JSON.stringify(result, null, 2))
+  console.log "Writing to file: #{file}"

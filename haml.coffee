@@ -3,7 +3,7 @@
 
 grammar =
   root: [
-    o "lines",                                       -> yy.nodePath[0];
+    o "lines",                                       -> yy.nodePath[0].children
   ]
 
   lines: [
@@ -37,26 +37,23 @@ grammar =
   ]
 
   tag: [
-    o "PERCENT name tagComponents",                  -> $3.tag = $2; $3
-    o "PERCENT name attributes",                     -> tag: $2, attributes: $3
-    o "PERCENT name",                                -> tag: $2
+    o "name tagComponents",                  -> $tagComponents.tag = $name; $tagComponents
+    o "name attributes",                     -> tag: $name, attributes: $attributes
+    o "name",                                -> tag: $name
     o "tagComponents"
   ]
 
-  # TODO: Push these components into lexer: .<class>, #<id>, %<tag>
-  # so that it's easier to distinguish text nodes.
-
   tagComponents: [
-    o "idComponent classComponents attributes",      -> id: $1, classes: $2, attributes: $3
-    o "idComponent attributes",                      -> id: $2, attributes: $2
-    o "classComponents attributes",                  -> classes: $1, attributes: $2
-    o "idComponent classComponents",                 -> id: $1, classes: $2
-    o "idComponent",                                 -> id: $2
-    o "classComponents",                             -> classes: $1
+    o "idComponent classComponents attributes",      -> id: $idComponent, classes: $classComponents, attributes: $attributes
+    o "idComponent attributes",                      -> id: $idComponent, attributes: $attributes
+    o "classComponents attributes",                  -> classes: $classComponents, attributes: $attributes
+    o "idComponent classComponents",                 -> id: $idComponent, classes: $classComponents
+    o "idComponent",                                 -> id: $idComponent
+    o "classComponents",                             -> classes: $classComponents
   ]
 
   idComponent: [
-    o "OCTOTHORPE name",                             -> $2
+    o "ID",                                          -> $1.substring(1)
   ]
 
   classComponents: [
@@ -65,7 +62,7 @@ grammar =
   ]
 
   classComponent: [
-    o "PERIOD name",                                 -> $2
+    o "CLASS",                                       -> $1.substring(1)
   ]
 
   attributes: [
@@ -106,7 +103,7 @@ grammar =
   ]
 
   name: [
-    o "ALPHABETICAL"
+    o "TAG",                                         -> $1.substring(1)
   ]
 
   rest: [
@@ -125,6 +122,7 @@ grammar =
 
   text: [
     o "beginText TEXT",                              -> $2
+    o "TEXT"
   ]
 
   beginBufferedCode: [
@@ -155,29 +153,25 @@ extend = (target, sources...) ->
 
 oldParse = parser.parse
 parser.parse = (input) ->
-  parser.yy.nodePath = [{}]
+  # Initialize shared state for gross hacks
+  extend parser.yy,
+    indent: 0
+    nodePath: [{children: []}]
 
   return oldParse.call(parser, input)
 
 extend parser.yy,
   extend: extend
-  nodePath: [{}]
   append: (node, indentation=0) ->
     if @lexer.topState() is "filter" and !node.filter
       # TODO: Allow for back to back filters
 
-      if indentation <= (@nodePath.length - 2)
-        @lexer.popState()
-        # @lexer.unput(node)
+      filterNode = @nodePath[@nodePath.length - 1]
 
-        return
-      else
-        filterNode = @nodePath[@nodePath.length - 1]
+      # TODO: Correct content indentation
+      @appendFilterContent(filterNode, node)
 
-        # TODO: Correct content indentation
-        @appendFilterContent(filterNode, node)
-
-        return
+      return
 
     parent = @nodePath[indentation]
     @appendChild parent, node

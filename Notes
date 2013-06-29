@@ -1,0 +1,9 @@
+Notes
+=====
+
+How do I set lexer options in jison-lex?
+
+Set it manually by after requiring the lexer:
+
+    lexer.options.backtrack_lexer = true
+
