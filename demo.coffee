@@ -19,6 +19,12 @@ exports.parser = parser
 
 Object.keys(samples).forEach (sample) ->
   result = parser.parse(samples[sample])
-  file = "results/#{sample}"
+  name = sample.split(".")[0]
+
+  file = "results/#{name}.json"
   fs.writeFile(file, JSON.stringify(result, null, 2))
+  console.log "Writing to file: #{file}"
+
+  file = "results/#{name}.html"
+  fs.writeFile(file, parser.render(result))
   console.log "Writing to file: #{file}"

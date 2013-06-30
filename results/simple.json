@@ -17,6 +17,7 @@
         "classes": [
           "content"
         ],
+        "tag": "div",
         "children": [
           {
             "bufferedCode": "post.content"

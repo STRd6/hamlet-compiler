@@ -44,7 +44,7 @@ grammar =
     o "name tagComponents",                          -> $tagComponents.tag = $name; $tagComponents
     o "name attributes",                             -> tag: $name, attributes: $attributes
     o "name",                                        -> tag: $name
-    o "tagComponents"
+    o "tagComponents",                               -> yy.extend $tagComponents, tag: "div"
   ]
 
   tagComponents: [
@@ -156,14 +156,42 @@ extend = (target, sources...) ->
   return target
 
 oldParse = parser.parse
-parser.parse = (input) ->
-  # Initialize shared state for gross hacks
-  extend parser.yy,
-    indent: 0
-    nodePath: [{children: []}]
-    filterIndent: undefined
+extend parser,
+  render: (parseTree) ->
+    renderNode = (node, indent="") ->
+      console.log "RENDER", node
 
-  return oldParse.call(parser, input)
+      if node.filter
+      else if tag = node.tag
+        # TODO: Attributes
+        opener = "<#{tag}>"
+        closer = "</#{tag}>"
+
+        # TODO: Buffered Code
+        # TODO: Unbuffered Code
+        # TODO: Text
+        contents = (node.children || []).map (node) ->
+          renderNode node, "#{indent}  "
+        .join("\n")
+
+        return """
+          #{indent}#{opener}
+          #{contents}
+          #{indent}#{closer}
+        """
+
+    parseTree.map (node) ->
+      renderNode(node)
+    .join("\n")
+
+  parse: (input) ->
+    # Initialize shared state for gross hacks
+    extend parser.yy,
+      indent: 0
+      nodePath: [{children: []}]
+      filterIndent: undefined
+
+    return oldParse.call(parser, input)
 
 extend parser.yy,
   extend: extend

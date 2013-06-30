@@ -75,6 +75,7 @@
             "classes": [
               "facebook"
             ],
+            "tag": "div",
             "children": [
               {
                 "tag": "header",
@@ -96,32 +97,38 @@
                 "classes": [
                   "content"
                 ],
+                "tag": "div",
                 "children": [
                   {
                     "classes": [
                       "container"
                     ],
+                    "tag": "div",
                     "children": [
                       {
                         "classes": [
                           "individual"
                         ],
+                        "tag": "div",
                         "children": [
                           {
                             "classes": [
                               "user-container",
                               "clearfix"
                             ],
+                            "tag": "div",
                             "children": [
                               {
                                 "classes": [
                                   "left"
                                 ],
+                                "tag": "div",
                                 "children": [
                                   {
                                     "classes": [
                                       "user-image"
                                     ],
+                                    "tag": "div",
                                     "children": [
                                       {
                                         "tag": "img",
@@ -133,6 +140,7 @@
                                     "classes": [
                                       "user-info"
                                     ],
+                                    "tag": "div",
                                     "children": [
                                       {
                                         "classes": [
@@ -171,6 +179,7 @@
                                 "classes": [
                                   "right"
                                 ],
+                                "tag": "div",
                                 "children": [
                                   {
                                     "classes": [
@@ -210,6 +219,7 @@
                             "classes": [
                               "photo-container"
                             ],
+                            "tag": "div",
                             "children": [
                               {
                                 "tag": "img",
@@ -223,6 +233,7 @@
                         "classes": [
                           "download-button"
                         ],
+                        "tag": "div",
                         "children": [
                           {
                             "classes": [
