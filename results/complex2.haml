@@ -1,0 +1,247 @@
+[
+  {
+    "tag": "html",
+    "children": [
+      {
+        "tag": "head",
+        "children": [
+          {
+            "tag": "title",
+            "text": "Ravel | #{@name}'s photo tagged #{@tag}"
+          },
+          {
+            "unbufferedCode": "@props.each do |key, value|",
+            "children": [
+              {
+                "tag": "meta",
+                "attributes": [
+                  [
+                    "property",
+                    "key"
+                  ],
+                  " "
+                ]
+              }
+            ]
+          },
+          {
+            "tag": "link",
+            "attributes": ":href => \"/images/favicon.ico\", :rel => \"icon\", :type => \"image/x-icon\""
+          },
+          {
+            "tag": "link",
+            "attributes": [
+              [
+                "rel",
+                "\"stylesheet\""
+              ],
+              " "
+            ]
+          },
+          {
+            "tag": "link",
+            "attributes": [
+              [
+                "rel",
+                "\"stylesheet\""
+              ],
+              " "
+            ]
+          },
+          {
+            "tag": "link",
+            "attributes": [
+              [
+                "rel",
+                "\"stylesheet\""
+              ],
+              " "
+            ]
+          },
+          {
+            "tag": "script",
+            "attributes": ":src => \"//use.typekit.net/ghp4eka.js\""
+          },
+          {
+            "filter": "javascript",
+            "content": "try{Typekit.load();}catch(e){}\n"
+          }
+        ]
+      },
+      {
+        "tag": "body",
+        "children": [
+          {
+            "classes": [
+              "facebook"
+            ],
+            "children": [
+              {
+                "tag": "header",
+                "children": [
+                  {
+                    "classes": [
+                      "hide-text"
+                    ],
+                    "tag": "h1",
+                    "children": [
+                      {
+                        "text": "Ravel"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "classes": [
+                  "content"
+                ],
+                "children": [
+                  {
+                    "classes": [
+                      "container"
+                    ],
+                    "children": [
+                      {
+                        "classes": [
+                          "individual"
+                        ],
+                        "children": [
+                          {
+                            "classes": [
+                              "user-container",
+                              "clearfix"
+                            ],
+                            "children": [
+                              {
+                                "classes": [
+                                  "left"
+                                ],
+                                "children": [
+                                  {
+                                    "classes": [
+                                      "user-image"
+                                    ],
+                                    "children": [
+                                      {
+                                        "tag": "img",
+                                        "attributes": ":src => @profile_picture_url"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "classes": [
+                                      "user-info"
+                                    ],
+                                    "children": [
+                                      {
+                                        "classes": [
+                                          "name"
+                                        ],
+                                        "tag": "span",
+                                        "bufferedCode": "@name"
+                                      },
+                                      {
+                                        "classes": [
+                                          "info"
+                                        ],
+                                        "tag": "span",
+                                        "bufferedCode": "@gender_and_age"
+                                      },
+                                      {
+                                        "classes": [
+                                          "location",
+                                          "info"
+                                        ],
+                                        "tag": "span",
+                                        "bufferedCode": "@location"
+                                      },
+                                      {
+                                        "classes": [
+                                          "tag"
+                                        ],
+                                        "tag": "span",
+                                        "bufferedCode": "@tag"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "classes": [
+                                  "right"
+                                ],
+                                "children": [
+                                  {
+                                    "classes": [
+                                      "pins"
+                                    ],
+                                    "tag": "span",
+                                    "children": [
+                                      {
+                                        "tag": "img",
+                                        "attributes": ":src => \"/images/pins@2x.png\""
+                                      },
+                                      {
+                                        "bufferedCode": "@pins"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "classes": [
+                                      "likes"
+                                    ],
+                                    "tag": "span",
+                                    "children": [
+                                      {
+                                        "tag": "img",
+                                        "attributes": ":src => \"/images/likes@2x.png\""
+                                      },
+                                      {
+                                        "bufferedCode": "@likes"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "classes": [
+                              "photo-container"
+                            ],
+                            "children": [
+                              {
+                                "tag": "img",
+                                "attributes": ":src => @photo_url"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "classes": [
+                          "download-button"
+                        ],
+                        "children": [
+                          {
+                            "classes": [
+                              "button",
+                              "appstore"
+                            ],
+                            "attributes": ":href => \"http://itunes.apple.com/us/app/ravel!/id610859881?ls=1&mt=8\"",
+                            "tag": "a"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

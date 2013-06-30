@@ -12,23 +12,27 @@ grammar =
   ]
 
   indentation: [
-    o "indentation INDENT",                          -> $1 + 1
+    o "",                                            -> 0
+    o "indentationLevel"
+  ]
+
+  indentationLevel: [
+    o "indentationLevel INDENT",                     -> $1 + 1
     o "INDENT",                                      -> 1
   ]
 
   line: [
     o "DOCTYPE end",                                 -> "doctype"
     o "indentation lineMain end",                    -> yy.append($lineMain, $indentation)
-    o "lineMain end",                                -> yy.append($lineMain)
     o "end"
   ]
 
   lineMain: [
-    o "FILTER",                                      -> yy.lexer.begin('filter'); filter: $1
+    o "FILTER",                                      -> filter: $1.substring(1)
     o "tag rest",                                    -> yy.extend $tag, $rest
     o "tag",                                         -> $tag
     o "rest",                                        -> $rest
-    o "FILTER_LINE",                                 -> $1
+    o "FILTER_LINE",                                 -> filterLine: $1
   ]
 
   end: [
@@ -37,9 +41,9 @@ grammar =
   ]
 
   tag: [
-    o "name tagComponents",                  -> $tagComponents.tag = $name; $tagComponents
-    o "name attributes",                     -> tag: $name, attributes: $attributes
-    o "name",                                -> tag: $name
+    o "name tagComponents",                          -> $tagComponents.tag = $name; $tagComponents
+    o "name attributes",                             -> tag: $name, attributes: $attributes
+    o "name",                                        -> tag: $name
     o "tagComponents"
   ]
 
@@ -157,19 +161,16 @@ parser.parse = (input) ->
   extend parser.yy,
     indent: 0
     nodePath: [{children: []}]
+    filterIndent: undefined
 
   return oldParse.call(parser, input)
 
 extend parser.yy,
   extend: extend
   append: (node, indentation=0) ->
-    if @lexer.topState() is "filter" and !node.filter
-      # TODO: Allow for back to back filters
-
-      filterNode = @nodePath[@nodePath.length - 1]
-
-      # TODO: Correct content indentation
-      @appendFilterContent(filterNode, node)
+    if node.filterLine
+      lastNode = @nodePath[@nodePath.length - 1]
+      @appendFilterContent(lastNode, node.filterLine)
 
       return
 
@@ -183,6 +184,12 @@ extend parser.yy,
     return node
 
   appendChild: (parent, child) ->
+    unless child.filter
+      @filterIndent = undefined
+      # Resetting back to initial state so we can handle
+      # back to back filters
+      @lexer.popState()
+
     parent.children ||= []
     parent.children.push child
 

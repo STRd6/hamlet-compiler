@@ -2,8 +2,6 @@ fs = require('fs')
 {parser} = require('./haml')
 {lexer} = require('./build/lexer')
 
-lexer.options.backtrack_lexer = true
-
 parser.lexer = lexer
 
 sampleDir = "test/samples/haml"

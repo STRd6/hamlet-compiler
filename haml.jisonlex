@@ -41,23 +41,14 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
 <value>\"(\\.|[^\\"])*\"     this.popState(); return 'STRING';
 <value>[^ \t\)]*             this.popState(); return 'ATTRIBUTE_VALUE';
 
-<filter>"  "          yy.indent += 1; return 'INDENT';
-<filter>\n            yy.indent = 0;  return 'NEWLINE';
+<filter>\n            yy.indent = 0; this.popState(); return 'NEWLINE';
 <filter><<EOF>>       return 'EOF';
-<filter>[^\n]*
-  {
-    if(yy.indent > yy.filterIndent) {
-      return 'FILTER_LINE';
-    } else {
-      this.reject();
-      this.popState();
-    }
-  }
+<filter>[^\n]*        return 'FILTER_LINE';
 
 \n                    yy.indent = 0; return 'NEWLINE';
 <<EOF>>               return 'EOF';
 "!!!"                 return 'DOCTYPE';
-"  "                  yy.indent += 1; return 'INDENT';
+"  "                  yy.indent += 1; if(yy.indent > yy.filterIndent){this.begin('filter'); }; return 'INDENT';
 "-"                   return 'HYPHEN';
 "("                   return 'LEFT_PARENTHESIS';
 ")"                   return 'RIGHT_PARENTHESIS';
