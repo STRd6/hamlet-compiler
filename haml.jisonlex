@@ -6,6 +6,7 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
 %x code
 %x text
 %x brace_attributes
+%x brace_value
 %x parentheses_attributes
 %x value
 %x filter
@@ -24,13 +25,16 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
                       }
 <text>.*              return 'TEXT';
 
-<brace_attributes>"}"           {
-                                  this.popState();
-                                  return 'RIGHT_BRACE';
-                                }
-<brace_attributes>[^\}]*        return 'TEXT';
+<brace_attributes>"}"             this.popState(); return 'RIGHT_BRACE';
+<brace_attributes>\:{id}          yytext = yytext.substring(1); return 'ATTRIBUTE';
+<brace_attributes>[ \t]*"=>"[ \t] this.begin('brace_value'); return 'EQUAL';
+<brace_attributes>","[ \t]*       return 'SEPARATOR';
+<brace_attributes>[^\}]*          return 'TEXT';
 
-<parentheses_attributes>[ \t]+    return 'WHITESPACE';
+<brace_value>\"(\\.|[^\\"])*\"     this.popState(); return 'STRING';
+<brace_value>[^ \t\}]*             this.popState(); return 'ATTRIBUTE_VALUE';
+
+<parentheses_attributes>[ \t]+    return 'SEPARATOR';
 <parentheses_attributes>")"       {
                                     this.popState();
                                     return 'RIGHT_PARENTHESIS';

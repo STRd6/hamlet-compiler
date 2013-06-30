@@ -71,16 +71,11 @@ grammar =
 
   attributes: [
     o "attributesParenthesesStart attributePairs RIGHT_PARENTHESIS", -> $2
-    o "attributesBraceStart attributeBraceContent RIGHT_BRACE", -> $2
+    o "attributesBraceStart attributePairs RIGHT_BRACE", -> $2
   ]
 
   attributesBraceStart: [
     o "LEFT_BRACE",                                  -> yy.lexer.begin("brace_attributes")
-  ]
-
-  attributeBraceContent: [
-    # TODO Real content
-    o "TEXT"
   ]
 
   attributesParenthesesStart: [
@@ -88,12 +83,12 @@ grammar =
   ]
 
   attributePairs: [
-    o "attributePairs WHITESPACE attributePair",     -> $1.concat $2
-    o "attributePair",                               -> [$1]
+    o "attributePairs SEPARATOR attributePair",      -> $attributePairs.concat $attributePair
+    o "attributePair",                               -> [$attributePair]
   ]
 
   attributePair: [
-    o "ATTRIBUTE EQUAL attributeExpression",              -> [$1, $3]
+    o "ATTRIBUTE EQUAL attributeExpression",              -> name: $1, value: $3
   ]
 
   attributeExpression: [
@@ -157,33 +152,6 @@ extend = (target, sources...) ->
 
 oldParse = parser.parse
 extend parser,
-  render: (parseTree) ->
-    renderNode = (node, indent="") ->
-      console.log "RENDER", node
-
-      if node.filter
-      else if tag = node.tag
-        # TODO: Attributes
-        opener = "<#{tag}>"
-        closer = "</#{tag}>"
-
-        # TODO: Buffered Code
-        # TODO: Unbuffered Code
-        # TODO: Text
-        contents = (node.children || []).map (node) ->
-          renderNode node, "#{indent}  "
-        .join("\n")
-
-        return """
-          #{indent}#{opener}
-          #{contents}
-          #{indent}#{closer}
-        """
-
-    parseTree.map (node) ->
-      renderNode(node)
-    .join("\n")
-
   parse: (input) ->
     # Initialize shared state for gross hacks
     extend parser.yy,

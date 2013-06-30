@@ -15,6 +15,10 @@
     "children": [
       {
         "text": "col"
+      },
+      {
+        "filter": "plain",
+        "content": "sweets\n"
       }
     ]
   },

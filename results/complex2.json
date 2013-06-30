@@ -15,52 +15,82 @@
               {
                 "tag": "meta",
                 "attributes": [
-                  [
-                    "property",
-                    "key"
-                  ],
-                  " "
+                  {
+                    "name": "property",
+                    "value": "key"
+                  },
+                  {
+                    "name": "content",
+                    "value": "value"
+                  }
                 ]
               }
             ]
           },
           {
             "tag": "link",
-            "attributes": ":href => \"/images/favicon.ico\", :rel => \"icon\", :type => \"image/x-icon\""
-          },
-          {
-            "tag": "link",
             "attributes": [
-              [
-                "rel",
-                "\"stylesheet\""
-              ],
-              " "
+              {
+                "name": "href",
+                "value": "\"/images/favicon.ico\""
+              },
+              {
+                "name": "rel",
+                "value": "\"icon\""
+              },
+              {
+                "name": "type",
+                "value": "\"image/x-icon\""
+              }
             ]
           },
           {
             "tag": "link",
             "attributes": [
-              [
-                "rel",
-                "\"stylesheet\""
-              ],
-              " "
+              {
+                "name": "rel",
+                "value": "\"stylesheet\""
+              },
+              {
+                "name": "href",
+                "value": "\"/stylesheets/normalize.css\""
+              }
             ]
           },
           {
             "tag": "link",
             "attributes": [
-              [
-                "rel",
-                "\"stylesheet\""
-              ],
-              " "
+              {
+                "name": "rel",
+                "value": "\"stylesheet\""
+              },
+              {
+                "name": "href",
+                "value": "\"/stylesheets/bootstrap.min.css\""
+              }
+            ]
+          },
+          {
+            "tag": "link",
+            "attributes": [
+              {
+                "name": "rel",
+                "value": "\"stylesheet\""
+              },
+              {
+                "name": "href",
+                "value": "\"/stylesheets/main.css\""
+              }
             ]
           },
           {
             "tag": "script",
-            "attributes": ":src => \"//use.typekit.net/ghp4eka.js\""
+            "attributes": [
+              {
+                "name": "src",
+                "value": "\"//use.typekit.net/ghp4eka.js\""
+              }
+            ]
           },
           {
             "filter": "javascript",
@@ -132,7 +162,12 @@
                                     "children": [
                                       {
                                         "tag": "img",
-                                        "attributes": ":src => @profile_picture_url"
+                                        "attributes": [
+                                          {
+                                            "name": "src",
+                                            "value": "@profile_picture_url"
+                                          }
+                                        ]
                                       }
                                     ]
                                   },
@@ -189,7 +224,12 @@
                                     "children": [
                                       {
                                         "tag": "img",
-                                        "attributes": ":src => \"/images/pins@2x.png\""
+                                        "attributes": [
+                                          {
+                                            "name": "src",
+                                            "value": "\"/images/pins@2x.png\""
+                                          }
+                                        ]
                                       },
                                       {
                                         "bufferedCode": "@pins"
@@ -204,7 +244,12 @@
                                     "children": [
                                       {
                                         "tag": "img",
-                                        "attributes": ":src => \"/images/likes@2x.png\""
+                                        "attributes": [
+                                          {
+                                            "name": "src",
+                                            "value": "\"/images/likes@2x.png\""
+                                          }
+                                        ]
                                       },
                                       {
                                         "bufferedCode": "@likes"
@@ -223,7 +268,12 @@
                             "children": [
                               {
                                 "tag": "img",
-                                "attributes": ":src => @photo_url"
+                                "attributes": [
+                                  {
+                                    "name": "src",
+                                    "value": "@photo_url"
+                                  }
+                                ]
                               }
                             ]
                           }
@@ -240,7 +290,12 @@
                               "button",
                               "appstore"
                             ],
-                            "attributes": ":href => \"http://itunes.apple.com/us/app/ravel!/id610859881?ls=1&mt=8\"",
+                            "attributes": [
+                              {
+                                "name": "href",
+                                "value": "\"http://itunes.apple.com/us/app/ravel!/id610859881?ls=1&mt=8\""
+                              }
+                            ],
                             "tag": "a"
                           }
                         ]
