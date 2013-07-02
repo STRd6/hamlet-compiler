@@ -28,7 +28,7 @@ grammar =
   ]
 
   lineMain: [
-    o "FILTER",                                      -> filter: $1.substring(1)
+    o "FILTER",                                      -> filter: $1
     o "tag rest",                                    -> yy.extend $tag, $rest
     o "tag",                                         -> $tag
     o "rest",                                        -> $rest
@@ -57,29 +57,17 @@ grammar =
   ]
 
   idComponent: [
-    o "ID",                                          -> $1.substring(1)
+    o "ID"
   ]
 
   classComponents: [
-    o "classComponents classComponent",              -> $1.concat $2
-    o "classComponent",                              -> [$1]
-  ]
-
-  classComponent: [
-    o "CLASS",                                       -> $1.substring(1)
+    o "classComponents CLASS",                       -> $1.concat $2
+    o "CLASS",                                       -> [$1]
   ]
 
   attributes: [
-    o "attributesParenthesesStart attributePairs RIGHT_PARENTHESIS", -> $2
-    o "attributesBraceStart attributePairs RIGHT_BRACE", -> $2
-  ]
-
-  attributesBraceStart: [
-    o "LEFT_BRACE",                                  -> yy.lexer.begin("brace_attributes")
-  ]
-
-  attributesParenthesesStart: [
-    o "LEFT_PARENTHESIS",                            -> yy.lexer.begin("parentheses_attributes")
+    o "LEFT_PARENTHESIS attributePairs RIGHT_PARENTHESIS", -> $2
+    o "LEFT_BRACE attributePairs RIGHT_BRACE", -> $2
   ]
 
   attributePairs: [
@@ -102,7 +90,7 @@ grammar =
   ]
 
   name: [
-    o "TAG",                                         -> $1.substring(1)
+    o "TAG"
   ]
 
   rest: [
