@@ -1,5 +1,5 @@
 TODO
 ----
 
-Handle indent/dedent parent child node relations
-Handle dedent to pop out of filters
+[ ] Render buffered and unbuffered code.
+[ ] Raise error for content/buffered code with child content

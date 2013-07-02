@@ -89,14 +89,18 @@ exports.render = (parseTree) ->
           contents = "#{indent}  #{text}"
         else
           contents = (node.children || []).map (node) ->
-            renderNode node, "#{indent}  "
+            renderNode node
           .join("\n")
 
-        return """
-          #{indent}#{opener}
-          #{contents}
-          #{indent}#{closer}
-        """
+        if contents
+          return """
+            #{opener}
+            #{indentText(contents)}
+            #{closer}
+          """
+        else
+          "#{opener}#{closer}"
+
     else if text = node.text
       return "#{indent}#{text}"
 
