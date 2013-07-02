@@ -1,11 +1,11 @@
 [
   {
-    "filter": "test",
-    "content": "radical\n"
+    "filter": "javascript",
+    "content": "alert('yolo');\n"
   },
   {
-    "filter": "badical",
-    "content": "noice\n"
+    "filter": "coffeescript",
+    "content": "alert \"yolo\"\n"
   },
   {
     "classes": [

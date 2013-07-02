@@ -10,14 +10,38 @@ selfClosing =
   meta: true
   param: true
 
+indentText = (text, indent="  ") ->
+  indent + text.replace(/\n/g, "\n#{indent}")
+
+filters =
+  plain: (content) ->
+    content
+
+  javascript: (content) ->
+    indentedContent = indentText(content)
+    """
+      <script>
+      #{indentedContent}
+      </script>
+    """
+  coffeescript: (content) ->
+    # TODO: Compile
+    indentedContent = indentText(content)
+    """
+      <script type="text/coffeescript">
+      #{indentedContent}
+      </script>
+    """
+
 exports.render = (parseTree) ->
   renderNode = (node, indent="") ->
-    if node.filter
-      # TODO: Non-plain filters
-      # plain
-      contents = node.content.split("\n").join("#{indent}\n")
+    if filter = node.filter
+      if processor = filters[filter]
+        contents = indentText(processor(node.content), indent)
+      else
+        throw "Unknown filter: #{filter}"
 
-      return "#{indent}#{contents}"
+      return "#{contents}"
     else if tag = node.tag
       classes = node.classes or []
 
@@ -29,8 +53,11 @@ exports.render = (parseTree) ->
 
             false
           else
-            # TODO: Dynamic attributes
-            "#{name}=#{value}"
+            true
+        .map ({name, value}) ->
+          # TODO: Dynamic attributes
+          "#{name}=#{value}"
+
       else
         attributes = []
 
@@ -58,15 +85,20 @@ exports.render = (parseTree) ->
         # TODO: Buffered Code
         # TODO: Unbuffered Code
         # TODO: Text
-        contents = (node.children || []).map (node) ->
-          renderNode node, "#{indent}  "
-        .join("\n")
+        if text = node.text
+          contents = "#{indent}  #{text}"
+        else
+          contents = (node.children || []).map (node) ->
+            renderNode node, "#{indent}  "
+          .join("\n")
 
         return """
           #{indent}#{opener}
           #{contents}
           #{indent}#{closer}
         """
+    else if text = node.text
+      return "#{indent}#{text}"
 
   parseTree.map (node) ->
     renderNode(node)

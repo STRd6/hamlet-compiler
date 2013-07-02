@@ -7,3 +7,7 @@ Set it manually by after requiring the lexer:
 
     lexer.options.backtrack_lexer = true
 
+
+How do I modify the value of a match from the lexer?
+
+You can change the value of `yytext` in the lexer action which will change what value that token gets.

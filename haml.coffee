@@ -88,7 +88,7 @@ grammar =
   ]
 
   attributePair: [
-    o "ATTRIBUTE EQUAL attributeExpression",              -> name: $1, value: $3
+    o "ATTRIBUTE EQUAL attributeExpression",         -> name: $1, value: $3
   ]
 
   attributeExpression: [
