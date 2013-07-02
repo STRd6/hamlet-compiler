@@ -149,7 +149,9 @@ exports.renderHaml = (parseTree) ->
 
       nodeHaml = pieces.join('')
 
-      # TODO: Attributes
+      if attributes = node.attributes
+        attributeText = attributes.map(({name, value}) -> "#{name}=#{value}").join(' ')
+        nodeHaml += "(#{attributeText})"
     else
       # TODO!
       nodeHaml = ""
