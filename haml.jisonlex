@@ -13,17 +13,11 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
 
 %%
 
-<code>\n              {
-                        this.popState();
-                        return 'NEWLINE';
-                      }
-<code>.*              return 'CODE';
+<code>\n                          this.popState(); return 'NEWLINE';
+<code>.*                          return 'CODE';
 
-<text>\n              {
-                        this.popState();
-                        return 'NEWLINE';
-                      }
-<text>.*              return 'TEXT';
+<text>\n                          this.popState(); return 'NEWLINE';
+<text>.*                          return 'TEXT';
 
 <brace_attributes>"}"             this.popState(); return 'RIGHT_BRACE';
 <brace_attributes>\:{id}          yytext = yytext.substring(1); return 'ATTRIBUTE';
@@ -31,19 +25,16 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
 <brace_attributes>","[ \t]*       return 'SEPARATOR';
 <brace_attributes>[^\}]*          return 'TEXT';
 
-<brace_value>\"(\\.|[^\\"])*\"     this.popState(); return 'STRING';
-<brace_value>[^ \t\}]*             this.popState(); return 'ATTRIBUTE_VALUE';
+<brace_value>\"(\\.|[^\\"])*\"    this.popState(); return 'STRING';
+<brace_value>[^ \t\}]*            this.popState(); return 'ATTRIBUTE_VALUE';
 
 <parentheses_attributes>[ \t]+    return 'SEPARATOR';
-<parentheses_attributes>")"       {
-                                    this.popState();
-                                    return 'RIGHT_PARENTHESIS';
-                                  }
+<parentheses_attributes>")"       this.popState(); return 'RIGHT_PARENTHESIS';
 <parentheses_attributes>{id}      return 'ATTRIBUTE';
 <parentheses_attributes>"="       this.begin('value'); return 'EQUAL';
 
-<value>\"(\\.|[^\\"])*\"     this.popState(); return 'STRING';
-<value>[^ \t\)]*             this.popState(); return 'ATTRIBUTE_VALUE';
+<value>\"(\\.|[^\\"])*\"          this.popState(); return 'STRING';
+<value>[^ \t\)]*                  this.popState(); return 'ATTRIBUTE_VALUE';
 
 <filter>\n            yy.indent = 0; this.popState(); return 'NEWLINE';
 <filter><<EOF>>       return 'EOF';
