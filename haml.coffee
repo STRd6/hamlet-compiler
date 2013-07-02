@@ -28,10 +28,10 @@ grammar =
   ]
 
   lineMain: [
-    o "FILTER",                                      -> filter: $1
     o "tag rest",                                    -> yy.extend $tag, $rest
     o "tag",                                         -> $tag
     o "rest",                                        -> $rest
+    o "FILTER",                                      -> filter: $1
     o "FILTER_LINE",                                 -> filterLine: $1
   ]
 
@@ -84,40 +84,19 @@ grammar =
     o "ATTRIBUTE_VALUE"
   ]
 
-  optionalWhitespace: [
-    o ""
-    o "WHITESPACE"
-  ]
-
   name: [
     o "TAG"
   ]
 
   rest: [
-    o "bufferedCode",                                -> { bufferedCode: $1 }
-    o "unbufferedCode",                              -> { unbufferedCode: $1 }
-    o "text",                                        -> { text: $1 }
-  ]
-
-  bufferedCode: [
-    o "beginBufferedCode CODE",                      -> $2
-  ]
-
-  unbufferedCode: [
-    o "beginUnbufferedCode CODE",                    -> $2
+    o "EQUAL CODE",                                  -> { bufferedCode: $CODE }
+    o "HYPHEN CODE",                                 -> { unbufferedCode: $CODE }
+    o "text",                                        -> { text: $text }
   ]
 
   text: [
     o "beginText TEXT",                              -> $2
     o "TEXT"
-  ]
-
-  beginBufferedCode: [
-    o "EQUAL optionalWhitespace",                    -> yy.lexer.begin('code')
-  ]
-
-  beginUnbufferedCode: [
-    o "HYPHEN optionalWhitespace",                   -> yy.lexer.begin('code')
   ]
 
   beginText: [

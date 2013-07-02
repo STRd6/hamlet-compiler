@@ -14,7 +14,7 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
 %%
 
 <code>\n                          this.popState(); return 'NEWLINE';
-<code>.*                          return 'CODE';
+<code>.*                          yytext = yytext.trim(); return 'CODE';
 
 <text>\n                          this.popState(); return 'NEWLINE';
 <text>.*                          return 'TEXT';
@@ -44,13 +44,13 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
 <<EOF>>               return 'EOF';
 "!!!"                 return 'DOCTYPE';
 "  "                  yy.indent += 1; if(yy.indent > yy.filterIndent){this.begin('filter'); }; return 'INDENT';
-"-"                   return 'HYPHEN';
 "("                   this.begin("parentheses_attributes"); return 'LEFT_PARENTHESIS';
 "{"                   this.begin("brace_attributes"); return 'LEFT_BRACE';
 \:{id}                yy.filterIndent = yy.indent; yytext = yytext.substring(1); return 'FILTER';
 \#{Name}              yytext = yytext.substring(1); return 'ID';
 \.{Name}              yytext = yytext.substring(1); return 'CLASS';
 \%{Name}              yytext = yytext.substring(1); return 'TAG';
-"="                   return 'EQUAL';
+"="                   this.begin("code"); return 'EQUAL';
+"-"                   this.begin("code"); return 'HYPHEN';
 [ \t]+                return 'WHITESPACE';
 .*                    return 'TEXT';
