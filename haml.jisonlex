@@ -46,6 +46,7 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
 "  "                  yy.indent += 1; if(yy.indent > yy.filterIndent){this.begin('filter'); }; return 'INDENT';
 "("                   this.begin("parentheses_attributes"); return 'LEFT_PARENTHESIS';
 "{"                   this.begin("brace_attributes"); return 'LEFT_BRACE';
+"/".*                 yytext = yytext.substring(1); return 'COMMENT';
 \:{id}                yy.filterIndent = yy.indent; yytext = yytext.substring(1); return 'FILTER';
 \#{Name}              yytext = yytext.substring(1); return 'ID';
 \.{Name}              yytext = yytext.substring(1); return 'CLASS';

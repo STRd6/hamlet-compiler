@@ -31,6 +31,7 @@ grammar =
     o "tag rest",                                    -> yy.extend $tag, $rest
     o "tag",                                         -> $tag
     o "rest",                                        -> $rest
+    o "COMMENT",                                     -> $comment: $1
     o "FILTER",                                      -> filter: $1
     o "FILTER_LINE",                                 -> filterLine: $1
   ]
