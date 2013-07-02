@@ -4,7 +4,10 @@
     "classes": [
       "container"
     ],
-    "tag": "section",
+    "tag": "section"
+  },
+  {
+    "comment": "  - post = title: \"cool\", subtitle: \"yolo\", content: \"radical\"",
     "children": [
       {
         "tag": "h1",

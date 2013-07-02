@@ -41,12 +41,18 @@ exports.render = (parseTree) ->
   # TODO: Real context
   context = {}
 
+  contextEval = (code) ->
+    eval(code)
+
+  dynamicCode = (source) ->
+    code = Coffee.compile(source, bare: true)
+
+    contextEval.call context, code
+
   renderDynamicValue = (source) ->
     code = Coffee.compile(source, bare: true)
 
-    (->
-      JSON.stringify(eval(code))
-    ).call(context)
+    JSON.stringify(contextEval.call(context, code))
 
   renderNode = (node, indent="") ->
     if filter = node.filter
@@ -95,10 +101,14 @@ exports.render = (parseTree) ->
         # TODO: Warn if tag has contents
         return "#{indent}<#{tag} #{attributes}/>"
       else
-        # TODO: Buffered Code
-        # TODO: Unbuffered Code
-        if text = node.text
-          contents = "#{indent}  #{text}"
+        if source = node.unbufferedCode
+          dynamicCode(source)
+
+          # TODO: Render children within context
+        else if source = node.bufferedCode
+          contents = dynamicCode(source)
+        else if text = node.text
+          contents = text
         else
           contents = (node.children || []).map (node) ->
             renderNode node
@@ -121,3 +131,45 @@ exports.render = (parseTree) ->
   .join("\n")
 
 exports.renderHaml = (parseTree) ->
+  renderNode = (node) ->
+    if filter = node.filter
+      nodeHaml = """
+        :#{filter}
+        #{indentText(node.content)}
+      """
+    else if tag = node.tag
+      pieces = []
+
+      if tag != "div"
+        pieces.push "%#{tag}"
+
+      pieces.push "##{node.id}" if node.id
+
+      pieces = pieces.concat(node.classes.map (className) -> ".#{className}") if node.classes
+
+      nodeHaml = pieces.join('')
+
+      # TODO: Attributes
+    else
+      # TODO!
+      nodeHaml = ""
+
+    nodeHaml += "- #{node.unbufferedCode}" if node.unbufferedCode
+    nodeHaml += "= #{node.bufferedCode}" if node.bufferedCode
+    nodeHaml += " #{node.text}" if node.text
+
+    if node.children
+      childrenHaml = node.children.map (node) ->
+        renderNode node
+      .join("\n")
+
+      return """
+        #{nodeHaml}
+        #{indentText(childrenHaml)}
+      """
+    else
+      "#{nodeHaml}"
+
+  parseTree.map (node) ->
+    renderNode(node)
+  .join("\n")

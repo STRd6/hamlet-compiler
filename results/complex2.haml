@@ -1,0 +1,41 @@
+%html
+  %head
+    %title Ravel | #{@name}'s photo tagged #{@tag}
+    - @props.each do |key, value|
+      %meta
+    %link
+    %link
+    %link
+    %link
+    %script
+    :javascript
+      try{Typekit.load();}catch(e){}
+      
+  %body
+    .facebook
+      %header
+        %h1.hide-text
+           Ravel
+      .content
+        .container
+          .individual
+            .user-container.clearfix
+              .left
+                .user-image
+                  %img
+                .user-info
+                  %span.name= @name
+                  %span.info= @gender_and_age
+                  %span.location.info= @location
+                  %span.tag= @tag
+              .right
+                %span.pins
+                  %img
+                  = @pins
+                %span.likes
+                  %img
+                  = @likes
+            .photo-container
+              %img
+          .download-button
+            %a.button.appstore
