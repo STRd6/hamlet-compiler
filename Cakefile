@@ -10,3 +10,4 @@ task "test", "Run the tests", ->
 
 task "setup", "Set up the project", ->
   sh "npm install jison"
+  sh "npm install coffee-script"

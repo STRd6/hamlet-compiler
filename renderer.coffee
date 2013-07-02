@@ -1,3 +1,5 @@
+Coffee = require "coffee-script"
+
 selfClosing =
   area: true
   base: true
@@ -15,6 +17,7 @@ indentText = (text, indent="  ") ->
 
 filters =
   plain: (content) ->
+    # TODO: Allow for interpolation
     content
 
   javascript: (content) ->
@@ -25,15 +28,26 @@ filters =
       </script>
     """
   coffeescript: (content) ->
-    # TODO: Compile
-    indentedContent = indentText(content)
+    # TODO: Should we compile to JS at parse time?
+    code = Coffee.compile(content)
+    indentedCode = indentText(code)
     """
-      <script type="text/coffeescript">
-      #{indentedContent}
+      <script>
+      #{indentedCode}
       </script>
     """
 
 exports.render = (parseTree) ->
+  # TODO: Real context
+  context = {}
+
+  renderDynamicValue = (source) ->
+    code = Coffee.compile(source, bare: true)
+
+    (->
+      JSON.stringify(eval(code))
+    ).call(context)
+
   renderNode = (node, indent="") ->
     if filter = node.filter
       if processor = filters[filter]
@@ -49,14 +63,13 @@ exports.render = (parseTree) ->
       if attributes = node.attributes
         attributes = node.attributes.filter ({name, value}) ->
           if name is "class"
-            classes.push(value)
+            classes.push(renderDynamicValue(value))
 
             false
           else
             true
         .map ({name, value}) ->
-          # TODO: Dynamic attributes
-          "#{name}=#{value}"
+          "#{name}=#{renderDynamicValue(value)}"
 
       else
         attributes = []
@@ -84,7 +97,6 @@ exports.render = (parseTree) ->
       else
         # TODO: Buffered Code
         # TODO: Unbuffered Code
-        # TODO: Text
         if text = node.text
           contents = "#{indent}  #{text}"
         else
