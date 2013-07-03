@@ -32,10 +32,6 @@ runFile = (name) ->
   fs.writeFile(file, renderJST(result))
   console.log "Writing to file: #{file}"
 
-  file = "results/#{name}.haml"
-  fs.writeFile(file, renderHaml(result))
-  console.log "Writing to file: #{file}"
-
 if testFile
   runFile(testFile)
 else

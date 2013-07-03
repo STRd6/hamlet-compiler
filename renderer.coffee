@@ -15,28 +15,6 @@ selfClosing =
 indentText = (text, indent="  ") ->
   indent + text.replace(/\n/g, "\n#{indent}")
 
-filters =
-  plain: (content) ->
-    # TODO: Allow for interpolation
-    content
-
-  javascript: (content) ->
-    indentedContent = indentText(content)
-    """
-      <script>
-      #{indentedContent}
-      </script>
-    """
-  coffeescript: (content) ->
-    # TODO: Should we compile to JS at parse time?
-    code = Coffee.compile(content)
-    indentedCode = indentText(code)
-    """
-      <script>
-      #{indentedCode}
-      </script>
-    """
-
 # JST Renderer Util
 util =
   selfClosing: selfClosing
@@ -48,18 +26,59 @@ util =
       runtime.buffer content
 
     coffeescript: (content) ->
-      content
+      [content]
 
     javascript: (content, runtime) ->
-      # TODO: Is this what we want?
-      runtime.buffer """
-        <script>
+      ["""
+        `
         #{runtime.indent(content)}
-        </script>
+        `
+      """]
+
+  fragment: (contents=[]) ->
+    lines = [
+      "__push document.createDocumentFragment()"
+      contents...
+      "__pop()"
+    ]
+
+  element: (tag, attributes, contents=[]) ->
+    attributeLines = attributes.map ({name, value}) ->
+      name = JSON.stringify(name)
+
+      """
+        __observeAttribute __element, #{name}, #{value}
+        __element.setAttribute #{name}, #{value}
       """
 
+    lines = [
+      "__element = document.createElement(#{JSON.stringify(tag)})"
+      "__push(__element)"
+      attributeLines...
+      contents...
+      "__pop()"
+    ]
+
   buffer: (value) ->
-    "__buffer.push #{JSON.stringify(value)}"
+    value = JSON.stringify(value)
+
+    [
+      "__element = document.createTextNode(#{value})"
+      "__observeText(__element, #{value})"
+      "__push __element"
+      "__pop()"
+    ]
+
+  stringJoin: (values) ->
+    {dynamic} = this
+
+    values = values.map (value) ->
+      if value.indexOf("\"") is 0
+        JSON.parse(value)
+      else
+        dynamic(value)
+
+    JSON.stringify(values.join(" "))
 
   dynamic: (value) ->
     "\#{#{value}}"
@@ -68,52 +87,34 @@ util =
     {dynamic} = this
     {id, classes, attributes} = node
 
-    classes ||= []
+    classes = (classes || []).map JSON.stringify
+    attributeId = undefined
 
     if attributes
-      # TODO: Consolidate string wrapping/unwrapping
       attributes = attributes.filter ({name, value}) ->
         if name is "class"
-          if value.indexOf("\"") is 0
-            # Unwrap strings
-            classes.push JSON.parse(value)
-          else
-            classes.push dynamic(value)
+          classes.push value
 
           false
         else if name is "id"
-          node.id = value
+          attributeId = value
 
           false
         else
           true
-      .map ({name, value}) ->
-        if value.indexOf("\"") is 0
-          "#{name}=#{value}"
-        else
-          "#{name}=#{JSON.stringify(dynamic(value))}"
 
     else
       attributes = []
 
     if classes.length
-      classes = JSON.stringify classes.join(" ")
-      classAttribute = "class=#{classes}"
-      attributes.unshift(classAttribute)
+      attributes.unshift name: "class", value: @stringJoin(classes)
 
-    if id = node.id
-      if id.indexOf("\"") is 0
-        idValue = JSON.parse(value)
-      else
-        idValue = JSON.stringify dynamic(id)
+    if attributeId
+      attributes.unshift name: "id", value: attributeId
+    else if id
+      attributes.unshift name: "id", value: JSON.stringify(id)
 
-      idAttribute = "id=#{idValue}"
-      attributes.unshift(idAttribute)
-
-    if attributes.length
-      " #{attributes.join(" ")}"
-    else
-      ""
+    return attributes
 
   render: (node) ->
     {tag, filter, text} = node
@@ -128,7 +129,7 @@ util =
       @contents(node)
 
   filter: (node) ->
-    @filters[node.filter](node.content, this)
+    [].concat.apply([], @filters[node.filter](node.content, this))
 
   contents: (node) ->
     {children, bufferedCode, unbufferedCode, text} = node
@@ -136,24 +137,25 @@ util =
     if unbufferedCode
       if children
         childContent = @renderNodes(children)
-        contents =
-          """
-            #{unbufferedCode}
-            #{@indent(childContent)}
-          """
+        contents = [
+          unbufferedCode
+          @indent(childContent.join("\n"))
+        ]
       else
-        contents = unbufferedCode
+        contents = [unbufferedCode]
     else if bufferedCode
       contents = @buffer(@dynamic(bufferedCode))
     else if text
       contents = @buffer text
     else if children
       contents = @renderNodes(children)
+    else if node.tag
+      # Don't care, already rendered it in @tag
     else
       console.warn "No content for node:", node
 
   renderNodes: (nodes) ->
-    nodes.map(@render, this).join("\n")
+    @fragment([].concat.apply([], nodes.map(@render, this)))
 
   tag: (node) ->
     {tag} = node
@@ -161,88 +163,32 @@ util =
     attributes = @attributes(node)
     contents = @contents(node)
 
-    if @selfClosing[tag]
-      @buffer "<#{tag}#{attributes} />"
-    else
-      [
-        @buffer "<#{tag}#{attributes}>"
-        contents
-        @buffer "<#{tag} />"
-      ].join("\n")
-
-exports.render = (parseTree) ->
-  # TODO: Real context
-  context = {}
-
-  contextEval = (code) ->
-    eval(code)
-
-  dynamicCode = (source) ->
-    code = Coffee.compile(source, bare: true)
-
-    contextEval.call context, code
-
-  renderDynamicValue = (source) ->
-    code = Coffee.compile(source, bare: true)
-
-    JSON.stringify(contextEval.call(context, code))
-
-  renderNode = (node, indent="") ->
-    if filter = node.filter
-      if processor = filters[filter]
-        contents = indentText(processor(node.content), indent)
-      else
-        throw "Unknown filter: #{filter}"
-
-      return "#{contents}"
-    else if tag = node.tag
-      attributes = util.attributes(node)
-
-      if attributes
-        opener = "<#{tag}#{attributes}>"
-      else
-        opener = "<#{tag}>"
-
-      closer = "</#{tag}>"
-
-      if selfClosing[tag]
-        # TODO: Warn if tag has contents
-        return "<#{tag}#{attributes}/>"
-      else
-        if source = node.unbufferedCode
-          dynamicCode(source)
-
-          # TODO: Render children within context
-        else if source = node.bufferedCode
-          contents = dynamicCode(source)
-        else if text = node.text
-          contents = text
-        else
-          contents = (node.children || []).map (node) ->
-            renderNode node
-          .join("\n")
-
-        if contents
-          return """
-            #{opener}
-            #{indentText(contents)}
-            #{closer}
-          """
-        else
-          "#{opener}#{closer}"
-
-    else if text = node.text
-      return text
-
-  parseTree.map (node) ->
-    renderNode(node)
-  .join("\n")
+    @element tag, attributes, contents
 
 exports.renderJST = (parseTree, name="test") ->
+  items = util.renderNodes(parseTree)
+
   source = """
-    __buffer = []
-    #{util.renderNodes(parseTree)}
-    __buffer.join("")
+    __stack = []
+
+    __append = (child) ->
+      __stack[__stack.length-1]?.appendChild(child) || child
+
+    __push = (child) ->
+      __stack.push(child)
+
+    __pop = ->
+      __append(__stack.pop())
+
+    __observeAttribute = (element, name, value) ->
+      value.observe? (newValue) ->
+        element.setAttribute name, newValue
+
+    __observeText = (node, value) ->
+      value.observe? (newValue) ->
+        node.nodeValue newValue
+
+    #{items.join("\n")}
   """
 
   programSource = """
@@ -254,57 +200,9 @@ exports.renderJST = (parseTree, name="test") ->
   """
 
   try
-    Coffee.compile programSource
+    program = Coffee.compile programSource
+
+    return program
   catch error
     console.log "COMPILE ERROR:\n  SOURCE:\n", programSource
     console.log error
-
-exports.renderHaml = (parseTree) ->
-  renderNode = (node) ->
-    if filter = node.filter
-      nodeHaml = """
-        :#{filter}
-        #{indentText(node.content)}
-      """
-    else if tag = node.tag
-      pieces = []
-
-      if tag != "div"
-        pieces.push "%#{tag}"
-
-      pieces.push "##{node.id}" if node.id
-
-      pieces = pieces.concat(node.classes.map (className) -> ".#{className}") if node.classes
-
-      nodeHaml = pieces.join('')
-
-      if attributes = node.attributes
-        attributeText = attributes.map(({name, value}) -> "#{name}=#{value}").join(' ')
-        nodeHaml += "(#{attributeText})"
-    else
-      # TODO!
-      nodeHaml = ""
-
-    nodeHaml += "- #{node.unbufferedCode}" if node.unbufferedCode
-    nodeHaml += "= #{node.bufferedCode}" if node.bufferedCode
-
-    if node.tag and node.text
-      nodeHaml += " #{node.text}"
-    else if node.text
-      nodeHaml += node.text
-
-    if node.children
-      childrenHaml = node.children.map (node) ->
-        renderNode node
-      .join("\n")
-
-      return """
-        #{nodeHaml}
-        #{indentText(childrenHaml)}
-      """
-    else
-      "#{nodeHaml}"
-
-  parseTree.map (node) ->
-    renderNode(node)
-  .join("\n")

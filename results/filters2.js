@@ -7,18 +7,61 @@
 
   this.HAMLjr.templates["test"] = function(data) {
     return (function() {
-      var __buffer;
-      __buffer = [];
-      __buffer.push("<script>\n  alert('yolo');\n  \n</script>");
+      var __append, __element, __observeAttribute, __observeText, __pop, __push, __stack;
+      __stack = [];
+      __append = function(child) {
+        var _ref;
+        return ((_ref = __stack[__stack.length - 1]) != null ? _ref.appendChild(child) : void 0) || child;
+      };
+      __push = function(child) {
+        return __stack.push(child);
+      };
+      __pop = function() {
+        return __append(__stack.pop());
+      };
+      __observeAttribute = function(element, name, value) {
+        return typeof value.observe === "function" ? value.observe(function(newValue) {
+          return element.setAttribute(name, newValue);
+        }) : void 0;
+      };
+      __observeText = function(node, value) {
+        return typeof value.observe === "function" ? value.observe(function(newValue) {
+          return node.nodeValue(newValue);
+        }) : void 0;
+      };
+      __push(document.createDocumentFragment());
+      
+      alert('yolo');
+      
+    ;
       alert("yolo");
-      __buffer.push("<div class=\"duder\">");
-      __buffer.push("col");
-      __buffer.push("sweets\n");
-      __buffer.push("<div />");
-      __buffer.push("<div class=\"duder2\">");
-      __buffer.push("cool");
-      __buffer.push("<div />");
-      return __buffer.join("");
+      __element = document.createElement("div");
+      __push(__element);
+      __observeAttribute(__element, "class", "duder");
+      __element.setAttribute("class", "duder");
+      __push(document.createDocumentFragment());
+      __element = document.createTextNode("col");
+      __observeText(__element, "col");
+      __push(__element);
+      __pop();
+      __element = document.createTextNode("sweets\n");
+      __observeText(__element, "sweets\n");
+      __push(__element);
+      __pop();
+      __pop();
+      __pop();
+      __element = document.createElement("div");
+      __push(__element);
+      __observeAttribute(__element, "class", "duder2");
+      __element.setAttribute("class", "duder2");
+      __push(document.createDocumentFragment());
+      __element = document.createTextNode("cool");
+      __observeText(__element, "cool");
+      __push(__element);
+      __pop();
+      __pop();
+      __pop();
+      return __pop();
     }).call(data);
   };
 
