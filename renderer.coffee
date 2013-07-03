@@ -287,7 +287,11 @@ exports.renderHaml = (parseTree) ->
 
     nodeHaml += "- #{node.unbufferedCode}" if node.unbufferedCode
     nodeHaml += "= #{node.bufferedCode}" if node.bufferedCode
-    nodeHaml += " #{node.text}" if node.text
+
+    if node.tag and node.text
+      nodeHaml += " #{node.text}"
+    else if node.text
+      nodeHaml += node.text
 
     if node.children
       childrenHaml = node.children.map (node) ->
