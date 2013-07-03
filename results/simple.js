@@ -1,21 +1,27 @@
-__buffer.push("<section id=main class=\"container\">");
+(function() {
+  var _base;
 
-__buffer.push("<section />");
+  this.HAMLjr || (this.HAMLjr = {});
 
-__buffer.push("<h1>");
+  (_base = this.HAMLjr).templates || (_base.templates = {});
 
-__buffer.push("" + post.title);
+  this.HAMLjr.templates["test"] = function(data) {
+    return (function() {
+      var __buffer;
+      __buffer = [];
+      __buffer.push("<section id=\"" + main + "\" class=\"container\">");
+      __buffer.push("<section />");
+      __buffer.push("<h1>");
+      __buffer.push("" + post.title);
+      __buffer.push("<h1 />");
+      __buffer.push("<h2>");
+      __buffer.push("" + post.subtitle);
+      __buffer.push("<h2 />");
+      __buffer.push("<div class=\"content\">");
+      __buffer.push("" + post.content);
+      __buffer.push("<div />");
+      return __buffer.join("");
+    }).call(data);
+  };
 
-__buffer.push("<h1 />");
-
-__buffer.push("<h2>");
-
-__buffer.push("" + post.subtitle);
-
-__buffer.push("<h2 />");
-
-__buffer.push("<div class=\"content\">");
-
-__buffer.push("" + post.content);
-
-__buffer.push("<div />");
+}).call(this);

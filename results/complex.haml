@@ -1,4 +1,7 @@
 %select
-  - @tickets.each (ticket) ->
+  - radicalMessage = "Yolo"
+  - @tickets.forEach (ticket, i) ->
+    - if i is 0
+      = radicalMessage
     %option
       = ticket.name

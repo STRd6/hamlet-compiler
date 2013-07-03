@@ -7,6 +7,8 @@ parser.lexer = lexer
 
 sampleDir = "test/samples/haml"
 
+testFile = process.argv[2]
+
 samples = {}
 global.parser = parser
 
@@ -18,9 +20,9 @@ fs.readdirSync(sampleDir).forEach (file) ->
 exports.samples = samples
 exports.parser = parser
 
-Object.keys(samples).forEach (sample) ->
-  result = parser.parse(samples[sample])
-  name = sample.split(".")[0]
+runFile = (name) ->
+  sample = samples["#{name}.haml"]
+  result = parser.parse(sample)
 
   file = "results/#{name}.json"
   fs.writeFile(file, JSON.stringify(result, null, 2))
@@ -33,3 +35,12 @@ Object.keys(samples).forEach (sample) ->
   file = "results/#{name}.haml"
   fs.writeFile(file, renderHaml(result))
   console.log "Writing to file: #{file}"
+
+if testFile
+  runFile(testFile)
+else
+  Object.keys(samples).forEach (sample) ->
+    name = sample.split(".")[0]
+
+    runFile(name)
+

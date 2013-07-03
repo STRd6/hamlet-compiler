@@ -61,15 +61,6 @@ util =
   buffer: (value) ->
     "__buffer.push #{JSON.stringify(value)}"
 
-  endsWith: (string, suffix) ->
-    string.indexOf(suffix, string.length - suffix.length) != -1
-
-  # We could either assume an unbuffered code node with children is a block
-  # or do a check.
-  # This is doing the check for CoffeeScript style blocks.
-  isBlock: (code) ->
-    @endsWith code, "->"
-
   dynamic: (value) ->
     "\#{#{value}}"
 
@@ -80,25 +71,43 @@ util =
     classes ||= []
 
     if attributes
+      # TODO: Consolidate string wrapping/unwrapping
       attributes = attributes.filter ({name, value}) ->
         if name is "class"
-          classes.push(dynamic(value))
+          if value.indexOf("\"") is 0
+            # Unwrap strings
+            classes.push JSON.parse(value)
+          else
+            classes.push dynamic(value)
+
+          false
+        else if name is "id"
+          node.id = value
 
           false
         else
           true
       .map ({name, value}) ->
-        "#{name}=#{value}"
+        if value.indexOf("\"") is 0
+          "#{name}=#{value}"
+        else
+          "#{name}=#{JSON.stringify(dynamic(value))}"
 
     else
       attributes = []
 
     if classes.length
-      classAttribute = "class=\"#{classes.join(" ")}\""
+      classes = JSON.stringify classes.join(" ")
+      classAttribute = "class=#{classes}"
       attributes.unshift(classAttribute)
 
     if id = node.id
-      idAttribute = "id=#{id}"
+      if id.indexOf("\"") is 0
+        idValue = JSON.parse(value)
+      else
+        idValue = JSON.stringify dynamic(id)
+
+      idAttribute = "id=#{idValue}"
       attributes.unshift(idAttribute)
 
     if attributes.length
@@ -125,8 +134,8 @@ util =
     {children, bufferedCode, unbufferedCode, text} = node
 
     if unbufferedCode
-      if @isBlock(unbufferedCode)
-        childContent = @renderNodes(children or []) + "\nundefined"
+      if children
+        childContent = @renderNodes(children)
         contents =
           """
             #{unbufferedCode}
@@ -229,13 +238,25 @@ exports.render = (parseTree) ->
     renderNode(node)
   .join("\n")
 
-exports.renderJST = (parseTree) ->
-  source = util.renderNodes(parseTree)
+exports.renderJST = (parseTree, name="test") ->
+  source = """
+    __buffer = []
+    #{util.renderNodes(parseTree)}
+    __buffer.join("")
+  """
+
+  programSource = """
+    @HAMLjr ||= {}
+    @HAMLjr.templates ||= {}
+    @HAMLjr.templates[#{JSON.stringify(name)}] = (data) ->
+      (->
+    #{util.indent(source, "    ")}).call(data)
+  """
 
   try
-    Coffee.compile source, bare: true
+    Coffee.compile programSource
   catch error
-    console.log "COMPILE ERROR:\n  SOURCE:\n", source
+    console.log "COMPILE ERROR:\n  SOURCE:\n", programSource
     console.log error
 
 exports.renderHaml = (parseTree) ->

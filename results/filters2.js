@@ -1,17 +1,25 @@
-__buffer.push("<script>\n  alert('yolo');\n  \n</script>");
+(function() {
+  var _base;
 
-alert("yolo");
+  this.HAMLjr || (this.HAMLjr = {});
 
-__buffer.push("<div class=\"duder\">");
+  (_base = this.HAMLjr).templates || (_base.templates = {});
 
-__buffer.push("col");
+  this.HAMLjr.templates["test"] = function(data) {
+    return (function() {
+      var __buffer;
+      __buffer = [];
+      __buffer.push("<script>\n  alert('yolo');\n  \n</script>");
+      alert("yolo");
+      __buffer.push("<div class=\"duder\">");
+      __buffer.push("col");
+      __buffer.push("sweets\n");
+      __buffer.push("<div />");
+      __buffer.push("<div class=\"duder2\">");
+      __buffer.push("cool");
+      __buffer.push("<div />");
+      return __buffer.join("");
+    }).call(data);
+  };
 
-__buffer.push("sweets\n");
-
-__buffer.push("<div />");
-
-__buffer.push("<div class=\"duder2\">");
-
-__buffer.push("cool");
-
-__buffer.push("<div />");
+}).call(this);

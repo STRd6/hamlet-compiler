@@ -3,8 +3,19 @@
     "tag": "select",
     "children": [
       {
-        "unbufferedCode": "@tickets.each (ticket) ->",
+        "unbufferedCode": "radicalMessage = \"Yolo\""
+      },
+      {
+        "unbufferedCode": "@tickets.forEach (ticket, i) ->",
         "children": [
+          {
+            "unbufferedCode": "if i is 0",
+            "children": [
+              {
+                "bufferedCode": "radicalMessage"
+              }
+            ]
+          },
           {
             "tag": "option",
             "children": [
