@@ -4,11 +4,11 @@
       Ravel | #{@name}'s photo tagged #{@tag}
     </title>
     
-    <link href="/images/favicon.ico" rel="icon" type="image/x-icon"/>
-    <link rel="stylesheet" href="/stylesheets/normalize.css"/>
-    <link rel="stylesheet" href="/stylesheets/bootstrap.min.css"/>
-    <link rel="stylesheet" href="/stylesheets/main.css"/>
-    <script src="//use.typekit.net/ghp4eka.js"></script>
+    <link href=#{"/images/favicon.ico"} rel=#{"icon"} type=#{"image/x-icon"}/>
+    <link rel=#{"stylesheet"} href=#{"/stylesheets/normalize.css"}/>
+    <link rel=#{"stylesheet"} href=#{"/stylesheets/bootstrap.min.css"}/>
+    <link rel=#{"stylesheet"} href=#{"/stylesheets/main.css"}/>
+    <script src=#{"//use.typekit.net/ghp4eka.js"}></script>
     <script>
       try{Typekit.load();}catch(e){}
       
@@ -27,7 +27,7 @@
             <div class="user-container clearfix">
               <div class="left">
                 <div class="user-image">
-                  <img src=undefined/>
+                  <img src=#{@profile_picture_url}/>
                 </div>
                 <div class="user-info">
                   <span class="name"></span>
@@ -38,21 +38,21 @@
               </div>
               <div class="right">
                 <span class="pins">
-                  <img src="/images/pins@2x.png"/>
+                  <img src=#{"/images/pins@2x.png"}/>
                   
                 </span>
                 <span class="likes">
-                  <img src="/images/likes@2x.png"/>
+                  <img src=#{"/images/likes@2x.png"}/>
                   
                 </span>
               </div>
             </div>
             <div class="photo-container">
-              <img src=undefined/>
+              <img src=#{@photo_url}/>
             </div>
           </div>
           <div class="download-button">
-            <a class="button appstore" href="http://itunes.apple.com/us/app/ravel!/id610859881?ls=1&mt=8"></a>
+            <a class="button appstore" href=#{"http://itunes.apple.com/us/app/ravel!/id610859881?ls=1&mt=8"}></a>
           </div>
         </div>
       </div>

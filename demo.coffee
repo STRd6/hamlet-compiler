@@ -1,7 +1,7 @@
 fs = require('fs')
 {parser} = require('./haml')
 {lexer} = require('./build/lexer')
-{render, renderHaml} = require('./renderer')
+{renderJST, renderHaml} = require('./renderer')
 
 parser.lexer = lexer
 
@@ -26,8 +26,8 @@ Object.keys(samples).forEach (sample) ->
   fs.writeFile(file, JSON.stringify(result, null, 2))
   console.log "Writing to file: #{file}"
 
-  file = "results/#{name}.html"
-  fs.writeFile(file, render(result))
+  file = "results/#{name}.js"
+  fs.writeFile(file, renderJST(result))
   console.log "Writing to file: #{file}"
 
   file = "results/#{name}.haml"

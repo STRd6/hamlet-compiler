@@ -10,7 +10,7 @@
             "text": "Ravel | #{@name}'s photo tagged #{@tag}"
           },
           {
-            "unbufferedCode": "@props.each do |key, value|",
+            "unbufferedCode": "@props.each (key, value) ->",
             "children": [
               {
                 "tag": "meta",
