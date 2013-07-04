@@ -25,7 +25,7 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
 <brace_attributes>","[ \t]*       return 'SEPARATOR';
 <brace_attributes>[^\}]*          return 'TEXT';
 
-<brace_value>\"(\\.|[^\\"])*\"    this.popState(); return 'STRING';
+<brace_value>\"(\\.|[^\\"])*\"    this.popState(); return 'ATTRIBUTE_VALUE';
 <brace_value>[^ \t\}]*            this.popState(); return 'ATTRIBUTE_VALUE';
 
 <parentheses_attributes>[ \t]+    return 'SEPARATOR';
@@ -33,7 +33,8 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
 <parentheses_attributes>{id}      return 'ATTRIBUTE';
 <parentheses_attributes>"="       this.begin('value'); return 'EQUAL';
 
-<value>\"(\\.|[^\\"])*\"          this.popState(); return 'STRING';
+<value>\"(\\.|[^\\"])*\"          this.popState(); return 'ATTRIBUTE_VALUE';
+<value>\'(\\.|[^\\'])*\'          this.popState(); return 'ATTRIBUTE_VALUE';
 <value>[^ \t\)]*                  this.popState(); return 'ATTRIBUTE_VALUE';
 
 <filter>\n            yy.indent = 0; this.popState(); return 'NEWLINE';
