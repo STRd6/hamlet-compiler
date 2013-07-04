@@ -25,15 +25,30 @@ util =
     plain: (content, runtime) ->
       runtime.buffer content
 
-    coffeescript: (content) ->
-      [content]
+    coffeescript: (content, runtime) ->
+      if runtime.explicitScripts
+        [
+          runtime.scriptTag(CoffeeScript.compile(content))
+        ]
+      else
+        [content]
 
     javascript: (content, runtime) ->
-      ["""
-        `
-        #{runtime.indent(content)}
-        `
-      """]
+      if runtime.explicitScripts
+        [
+          runtime.scriptTag(content)
+        ]
+      else
+        [
+          "`"
+          runtime.indent(content)
+          "`"
+        ]
+
+  scriptTag: (content) ->
+    @element "script", [], [
+      "__element.innerHTML = #{JSON.stringify("\n" + @indent(content))}"
+    ]
 
   fragment: (contents=[]) ->
     lines = [
@@ -165,7 +180,9 @@ util =
 
     @element tag, attributes, contents
 
-exports.renderJST = (parseTree, name) ->
+exports.renderJST = (parseTree, {explicitScripts, name}) ->
+  util.explicitScripts = explicitScripts
+
   items = util.renderNodes(parseTree)
 
   source = """

@@ -14,7 +14,8 @@ runFile = (name) ->
   data = fs.readFileSync name, "UTF-8"
   ast = parser.parse(data)
 
-  program = renderJST(ast)
+  program = renderJST ast,
+    explicitScripts: true
 
   fn = eval(program)
 
@@ -23,6 +24,8 @@ runFile = (name) ->
   output = Array.prototype.map.call fragment.childNodes, (node) ->
     node.outerHTML
   .join("\n")
+
+  # console.log program
 
   process.stdout.write output
 
