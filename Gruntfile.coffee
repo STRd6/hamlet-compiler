@@ -20,6 +20,8 @@ module.exports = (grunt) ->
         files: coffeeFiles
 
     browserify:
+      options:
+        ignore: "coffee-script"
       'build/web.js': ['build/browser.js']
 
     shell:

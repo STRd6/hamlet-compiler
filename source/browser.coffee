@@ -4,5 +4,6 @@
 
 parser.lexer = lexer
 
-exports.parser = parser
-exports.render = renderJST
+
+window.parser = parser
+window.render = renderJST
