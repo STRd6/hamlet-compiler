@@ -1,6 +1,6 @@
 fs = require('fs')
-{parser} = require('./haml')
-{lexer} = require('./build/lexer')
+{parser} = require('./parser')
+{lexer} = require('../build/lexer')
 {renderJST, renderHaml} = require('./renderer')
 
 parser.lexer = lexer

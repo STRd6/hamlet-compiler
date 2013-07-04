@@ -1,5 +1,5 @@
 TODO
 ----
 
-[ ] Render buffered and unbuffered code.
-[ ] Raise error for content/buffered code with child content
+Raise error for content/buffered code with child content
+Set up live demo page

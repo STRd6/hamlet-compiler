@@ -1,0 +1,12 @@
+{
+  "name": "haml_jr",
+  "version": "0.1.0",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt-contrib-coffee": "~0.7.0",
+    "grunt-browserify": "~1.2.0",
+    "grunt-shell": "~0.3.0"
+  }
+}

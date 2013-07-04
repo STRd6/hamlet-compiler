@@ -1,5 +1,5 @@
-{parser} = require('./haml')
-{lexer} = require('./build/lexer')
+{parser} = require('./parser')
+{lexer} = require('../build/lexer')
 {renderJST} = require('./renderer')
 
 parser.lexer = lexer

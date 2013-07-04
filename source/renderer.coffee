@@ -1,4 +1,4 @@
-Coffee = require "coffee-script"
+CoffeeScript = require "coffee-script"
 
 selfClosing =
   area: true
@@ -200,7 +200,7 @@ exports.renderJST = (parseTree, name="test") ->
   """
 
   try
-    program = Coffee.compile programSource
+    program = CoffeeScript.compile programSource
 
     return program
   catch error
