@@ -169,38 +169,45 @@ exports.renderJST = (parseTree, name="test") ->
   items = util.renderNodes(parseTree)
 
   source = """
-    __stack = []
-
-    __append = (child) ->
-      __stack[__stack.length-1]?.appendChild(child) || child
-
-    __push = (child) ->
-      __stack.push(child)
-
-    __pop = ->
-      __append(__stack.pop())
-
-    __observeAttribute = (element, name, value) ->
-      value.observe? (newValue) ->
-        element.setAttribute name, newValue
-
-    __observeText = (node, value) ->
-      value.observe? (newValue) ->
-        node.nodeValue newValue
-
-    #{items.join("\n")}
-  """
-
-  programSource = """
-    @HAMLjr ||= {}
-    @HAMLjr.templates ||= {}
-    @HAMLjr.templates[#{JSON.stringify(name)}] = (data) ->
+    (data) ->
       (->
-    #{util.indent(source, "    ")}).call(data)
+        __stack = []
+
+        __append = (child) ->
+          __stack[__stack.length-1]?.appendChild(child) || child
+
+        __push = (child) ->
+          __stack.push(child)
+
+        __pop = ->
+          __append(__stack.pop())
+
+        __observeAttribute = (element, name, value) ->
+          value.observe? (newValue) ->
+            element.setAttribute name, newValue
+
+        __observeText = (node, value) ->
+          value.observe? (newValue) ->
+            node.nodeValue newValue
+
+    #{util.indent(items.join("\n"), "    ")}).call(data)
   """
+
+  header = false
+
+  if header
+    options = {}
+    programSource = """
+      @HAMLjr ||= {}
+      @HAMLjr.templates ||= {}
+      @HAMLjr.templates[#{JSON.stringify(name)}] = #{source}
+    """
+  else
+    options = bare: true
+    programSource = source
 
   try
-    program = CoffeeScript.compile programSource
+    program = CoffeeScript.compile programSource, options
 
     return program
   catch error
