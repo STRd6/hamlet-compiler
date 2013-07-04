@@ -5,7 +5,7 @@
 
   (_base = this.HAMLjr).templates || (_base.templates = {});
 
-  this.HAMLjr.templates["test"] = function(data) {
+  this.HAMLjr.templates["complex"] = function(data) {
     return (function() {
       var radicalMessage, __append, __element, __observeAttribute, __observeText, __pop, __push, __stack;
       __stack = [];

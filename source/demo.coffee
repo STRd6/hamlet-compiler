@@ -29,7 +29,7 @@ runFile = (name) ->
   console.log "Writing to file: #{file}"
 
   file = "results/#{name}.js"
-  fs.writeFile(file, renderJST(result))
+  fs.writeFile(file, renderJST(result, name))
   console.log "Writing to file: #{file}"
 
 if testFile

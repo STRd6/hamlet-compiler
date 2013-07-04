@@ -5,7 +5,7 @@
 
   (_base = this.HAMLjr).templates || (_base.templates = {});
 
-  this.HAMLjr.templates["test"] = function(data) {
+  this.HAMLjr.templates["complex2"] = function(data) {
     return (function() {
       var __append, __element, __observeAttribute, __observeText, __pop, __push, __stack;
       __stack = [];

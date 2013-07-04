@@ -165,7 +165,7 @@ util =
 
     @element tag, attributes, contents
 
-exports.renderJST = (parseTree, name="test") ->
+exports.renderJST = (parseTree, name) ->
   items = util.renderNodes(parseTree)
 
   source = """
@@ -193,9 +193,7 @@ exports.renderJST = (parseTree, name="test") ->
     #{util.indent(items.join("\n"), "    ")}).call(data)
   """
 
-  header = false
-
-  if header
+  if name
     options = {}
     programSource = """
       @HAMLjr ||= {}
