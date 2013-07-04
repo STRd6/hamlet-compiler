@@ -25,9 +25,16 @@
         }) : void 0;
       };
       __observeText = function(node, value) {
-        return typeof value.observe === "function" ? value.observe(function(newValue) {
-          return node.nodeValue(newValue);
-        }) : void 0;
+        var unobserve;
+        if (value.observe != null) {
+          value.observe(function(newValue) {
+            return node.nodeValue(newValue);
+          });
+          unobserve = function() {
+            return console.log("Removed");
+          };
+          return node.addEventListener("DOMNodeRemoved", unobserve, true);
+        }
       };
       __push(document.createDocumentFragment());
       __element = document.createElement("html");
@@ -165,8 +172,8 @@
       __push(__element);
       __observeAttribute(__element, "class", "name");
       __element.setAttribute("class", "name");
-      __element = document.createTextNode("" + this.name);
-      __observeText(__element, "" + this.name);
+      __element = document.createTextNode(this.name);
+      __observeText(__element, this.name);
       __push(__element);
       __pop();
       __pop();
@@ -174,8 +181,8 @@
       __push(__element);
       __observeAttribute(__element, "class", "info");
       __element.setAttribute("class", "info");
-      __element = document.createTextNode("" + this.gender_and_age);
-      __observeText(__element, "" + this.gender_and_age);
+      __element = document.createTextNode(this.gender_and_age);
+      __observeText(__element, this.gender_and_age);
       __push(__element);
       __pop();
       __pop();
@@ -183,8 +190,8 @@
       __push(__element);
       __observeAttribute(__element, "class", "location info");
       __element.setAttribute("class", "location info");
-      __element = document.createTextNode("" + this.location);
-      __observeText(__element, "" + this.location);
+      __element = document.createTextNode(this.location);
+      __observeText(__element, this.location);
       __push(__element);
       __pop();
       __pop();
@@ -192,8 +199,8 @@
       __push(__element);
       __observeAttribute(__element, "class", "tag");
       __element.setAttribute("class", "tag");
-      __element = document.createTextNode("" + this.tag);
-      __observeText(__element, "" + this.tag);
+      __element = document.createTextNode(this.tag);
+      __observeText(__element, this.tag);
       __push(__element);
       __pop();
       __pop();
@@ -216,8 +223,8 @@
       __observeAttribute(__element, "src", "/images/pins@2x.png");
       __element.setAttribute("src", "/images/pins@2x.png");
       __pop();
-      __element = document.createTextNode("" + this.pins);
-      __observeText(__element, "" + this.pins);
+      __element = document.createTextNode(this.pins);
+      __observeText(__element, this.pins);
       __push(__element);
       __pop();
       __pop();
@@ -232,8 +239,8 @@
       __observeAttribute(__element, "src", "/images/likes@2x.png");
       __element.setAttribute("src", "/images/likes@2x.png");
       __pop();
-      __element = document.createTextNode("" + this.likes);
-      __observeText(__element, "" + this.likes);
+      __element = document.createTextNode(this.likes);
+      __observeText(__element, this.likes);
       __push(__element);
       __pop();
       __pop();

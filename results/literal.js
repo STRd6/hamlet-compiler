@@ -25,9 +25,16 @@
         }) : void 0;
       };
       __observeText = function(node, value) {
-        return typeof value.observe === "function" ? value.observe(function(newValue) {
-          return node.nodeValue(newValue);
-        }) : void 0;
+        var unobserve;
+        if (value.observe != null) {
+          value.observe(function(newValue) {
+            return node.nodeValue(newValue);
+          });
+          unobserve = function() {
+            return console.log("Removed");
+          };
+          return node.addEventListener("DOMNodeRemoved", unobserve, true);
+        }
       };
       __push(document.createDocumentFragment());
       __element = document.createTextNode("<literal>");

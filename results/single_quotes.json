@@ -1,0 +1,15 @@
+[
+  {
+    "tag": "img",
+    "attributes": [
+      {
+        "name": "src",
+        "value": "'http://duderman.info/#{yolocountyusa}'"
+      },
+      {
+        "name": "data-rad",
+        "value": "'what the duder?'"
+      }
+    ]
+  }
+]

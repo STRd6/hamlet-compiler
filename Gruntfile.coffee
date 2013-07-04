@@ -30,10 +30,12 @@ module.exports = (grunt) ->
           "jison-lex -o build/lexer.js source/haml.jisonlex"
           "echo 'exports.lexer = lexer;' >> build/lexer.js"
         ].join(' && ')
+      demo:
+        command: "coffee source/cli.coffee demo.haml > demo.html"
 
   grunt.loadNpmTasks('grunt-browserify')
   grunt.loadNpmTasks('grunt-contrib-coffee')
   grunt.loadNpmTasks('grunt-shell')
 
   # Default task(s).
-  grunt.registerTask 'default', ['shell:lexer', 'coffee', 'browserify']
+  grunt.registerTask 'default', ['shell:lexer', 'coffee', 'browserify', 'shell:demo']

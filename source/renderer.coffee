@@ -23,7 +23,7 @@ util =
 
   filters:
     plain: (content, runtime) ->
-      runtime.buffer content
+      runtime.buffer JSON.stringify(content)
 
     coffeescript: (content, runtime) ->
       if runtime.explicitScripts
@@ -47,7 +47,7 @@ util =
 
   scriptTag: (content) ->
     @element "script", [], [
-      "__element.innerHTML = #{JSON.stringify("\n" + @indent(content))}"
+      "__element.innerHTML = #{JSON.stringify("\n" + @indent(_.escape(content)))}"
     ]
 
   fragment: (contents=[]) ->
@@ -75,8 +75,6 @@ util =
     ]
 
   buffer: (value) ->
-    value = JSON.stringify(value)
-
     [
       "__element = document.createTextNode(#{value})"
       "__observeText(__element, #{value})"
@@ -138,8 +136,6 @@ util =
       @tag(node)
     else if filter
       @filter(node)
-    else if text
-      @buffer text
     else
       @contents(node)
 
@@ -159,9 +155,9 @@ util =
       else
         contents = [unbufferedCode]
     else if bufferedCode
-      contents = @buffer(@dynamic(bufferedCode))
+      contents = @buffer(bufferedCode)
     else if text
-      contents = @buffer text
+      contents = @buffer JSON.stringify(text)
     else if children
       contents = @renderNodes(children)
     else if node.tag
@@ -180,7 +176,11 @@ util =
 
     @element tag, attributes, contents
 
-exports.renderJST = (parseTree, {explicitScripts, name}) ->
+exports.renderJST = (parseTree, {explicitScripts, name, compiler}={}) ->
+  # HAX: Browserify can't put CoffeeScript into the web...
+  if compiler
+    CoffeeScript = compiler
+
   util.explicitScripts = explicitScripts
 
   items = util.renderNodes(parseTree)
@@ -204,8 +204,14 @@ exports.renderJST = (parseTree, {explicitScripts, name}) ->
             element.setAttribute name, newValue
 
         __observeText = (node, value) ->
-          value.observe? (newValue) ->
-            node.nodeValue newValue
+          if value.observe?
+            value.observe (newValue) ->
+              node.nodeValue newValue
+
+            unobserve = ->
+              console.log "Removed"
+
+            node.addEventListener("DOMNodeRemoved", unobserve, true)
 
     #{util.indent(items.join("\n"), "    ")}).call(data)
   """

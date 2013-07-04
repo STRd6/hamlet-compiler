@@ -25,9 +25,16 @@
         }) : void 0;
       };
       __observeText = function(node, value) {
-        return typeof value.observe === "function" ? value.observe(function(newValue) {
-          return node.nodeValue(newValue);
-        }) : void 0;
+        var unobserve;
+        if (value.observe != null) {
+          value.observe(function(newValue) {
+            return node.nodeValue(newValue);
+          });
+          unobserve = function() {
+            return console.log("Removed");
+          };
+          return node.addEventListener("DOMNodeRemoved", unobserve, true);
+        }
       };
       __push(document.createDocumentFragment());
       __element = document.createElement("select");
@@ -38,8 +45,8 @@
         __push(document.createDocumentFragment());
         if (i === 0) {
           __push(document.createDocumentFragment());
-          __element = document.createTextNode("" + radicalMessage);
-          __observeText(__element, "" + radicalMessage);
+          __element = document.createTextNode(radicalMessage);
+          __observeText(__element, radicalMessage);
           __push(__element);
           __pop();
           __pop();
@@ -47,8 +54,8 @@
         __element = document.createElement("option");
         __push(__element);
         __push(document.createDocumentFragment());
-        __element = document.createTextNode("" + ticket.name);
-        __observeText(__element, "" + ticket.name);
+        __element = document.createTextNode(ticket.name);
+        __observeText(__element, ticket.name);
         __push(__element);
         __pop();
         __pop();
