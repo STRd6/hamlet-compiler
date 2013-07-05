@@ -7,8 +7,8 @@
 
   this.HAMLjr.templates["complex2"] = function(data) {
     return (function() {
-      var observing, __element, __observeAttribute, __observeText, __on, __pop, __push, _ref;
-      _ref = Runtime(), __push = _ref.__push, __pop = _ref.__pop, __observeAttribute = _ref.__observeAttribute, __observeText = _ref.__observeText, __on = _ref.__on, observing = _ref.observing;
+      var observing, __each, __element, __observeAttribute, __observeText, __on, __pop, __push, _ref;
+      _ref = Runtime(this), __push = _ref.__push, __pop = _ref.__pop, __observeAttribute = _ref.__observeAttribute, __observeText = _ref.__observeText, __on = _ref.__on, __each = _ref.__each, observing = _ref.observing;
       __push(document.createDocumentFragment());
       __element = document.createElement("html");
       __push(__element);
@@ -21,7 +21,7 @@
       __push(__element);
       __pop();
       __pop();
-      this.props.each(function(key, value) {
+      this.props.__each(function(key, value) {
         __element = document.createElement("meta");
         __push(__element);
         __observeAttribute(__element, "property", key);

@@ -1,7 +1,7 @@
 
 dataName = "__hamlJR_data"
 
-Runtime = ->
+Runtime = (context) ->
   stack = []
 
   # HAX: A document fragment is not your real dad
@@ -16,7 +16,9 @@ Runtime = ->
     stack[stack.length-1]
 
   append = (child) ->
-    top()?.appendChild(child) || child
+    top()?.appendChild(child)
+
+    return child
 
   push = (child) ->
     stack.push(child)
@@ -50,7 +52,7 @@ Runtime = ->
     __push: push
     __pop: pop
 
-    # TODO:
+    # TODO: Reconsider these observing methods
     __observeAttribute: observeAttribute
     __observeText: observeText
     observing: (observable, fn) ->
@@ -75,12 +77,30 @@ Runtime = ->
       if currentValue?
         update(currentValue)
 
-    __on: (eventName, observable) ->
+    __each: (items, fn) ->
+      # TODO: Work with observable arrays
+      items.each (item) ->
+        element = fn.call(item)
+        element[dataName] = item
+
+    __on: (eventName, fn) ->
       element = lastParent()
 
-      element["on#{eventName}"] = ->
-        selectedOption = @options[@selectedIndex]
-        observable(selectedOption[dataName])
+      if eventName is "change"
+        element["on#{eventName}"] = ->
+          selectedOption = @options[@selectedIndex]
+          fn(selectedOption[dataName])
+
+        # Add bi-directionality if binding to an observable
+        if fn.observe
+          fn.observe (newValue) ->
+            Array::forEach.call(element.options, (option, index) ->
+              element.selectedIndex = index if option[dataName] is newValue
+            )
+
+      else
+        element["on#{eventName}"] = ->
+          fn.call(context, event)
   }
 
 (window ? exports).Runtime = Runtime

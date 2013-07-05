@@ -6,3 +6,6 @@ Set up live demo page
 Handle Array Data
 Handle Nullable Data
 Bind whole sections to observables
+
+Select item helper
+  - composed of simpler parts

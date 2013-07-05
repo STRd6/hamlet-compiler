@@ -9,20 +9,11 @@
         "unbufferedCode": "on \"change\", @chosenTicket"
       },
       {
-        "unbufferedCode": "@tickets.each (ticket) ->",
+        "unbufferedCode": "each @tickets, ->",
         "children": [
           {
             "tag": "option",
-            "children": [
-              {
-                "unbufferedCode": "observing ticket, ->",
-                "children": [
-                  {
-                    "bufferedCode": "@name"
-                  }
-                ]
-              }
-            ]
+            "bufferedCode": "@name"
           }
         ]
       }
@@ -44,20 +35,25 @@
         "unbufferedCode": "observing @chosenTicket, ->",
         "children": [
           {
-            "text": "You have chosen"
-          },
-          {
-            "tag": "b",
-            "bufferedCode": "@name"
-          },
-          {
-            "tag": "span",
+            "unbufferedCode": "if @price",
             "children": [
               {
-                "text": "$"
+                "text": "You have chosen"
               },
               {
-                "bufferedCode": "@price"
+                "tag": "b",
+                "bufferedCode": "@name"
+              },
+              {
+                "tag": "span",
+                "children": [
+                  {
+                    "text": "$"
+                  },
+                  {
+                    "bufferedCode": "@price"
+                  }
+                ]
               }
             ]
           }

@@ -46,21 +46,22 @@ templateHaml = """
   Choose a ticket class:
   %select
     - on "change", @chosenTicket
-    - @tickets.each (ticket) ->
-      %option
-        - observing ticket, ->
-          = @name
+    - each @tickets, ->
+      %option= @name
 
   %button Clear
     - on "click", @resetTicket
 
   %p
     - observing @chosenTicket, ->
-      You have chosen
-      %b= @name
-      %span
-        $
-        = @price
+      - if @price
+        You have chosen
+        %b= @name
+        %span
+          $
+          = @price
+      - else
+        No ticket chosen
 
 """
 
@@ -73,7 +74,6 @@ data =
   ]
   chosenTicket: Observable()
   resetTicket: ->
-    debugger
     @chosenTicket(@tickets[0])
 
 $ ->

@@ -16,6 +16,13 @@ selfClosing =
 indentText = (text, indent="  ") ->
   indent + text.replace(/\n/g, "\n#{indent}")
 
+keywords = [
+  "on"
+  "each"
+]
+
+keywordsRegex = RegExp("\\s*(#{keywords.join('|')})\\s+")
+
 # JST Renderer Util
 util =
   selfClosing: selfClosing
@@ -135,7 +142,7 @@ util =
       @contents(node)
 
   replaceKeywords: (codeString) ->
-    codeString.replace(/^\s*(on)\s+/, "__$1 ")
+    codeString.replace(keywordsRegex, "__$1 ")
 
   filter: (node) ->
     [].concat.apply([], @filters[node.filter](node.content, this))
@@ -200,8 +207,9 @@ exports.renderJST = (parseTree, {explicitScripts, name, compiler}={}) ->
           __observeAttribute
           __observeText
           __on
+          __each
           observing
-        } = Runtime() # TODO Namespace
+        } = Runtime(this) # TODO Namespace
 
         __push document.createDocumentFragment()
     #{util.indent(items.join("\n"), "    ")}
