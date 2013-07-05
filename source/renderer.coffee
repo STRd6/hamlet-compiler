@@ -52,13 +52,6 @@ util =
       "__element.innerHTML = #{JSON.stringify("\n" + @indent(_.escape(content)))}"
     ]
 
-  fragment: (contents=[]) ->
-    lines = [
-      "__push document.createDocumentFragment()"
-      contents...
-      "__pop()"
-    ]
-
   element: (tag, attributes, contents=[]) ->
     attributeLines = attributes.map ({name, value}) ->
       name = JSON.stringify(name)
@@ -141,6 +134,9 @@ util =
     else
       @contents(node)
 
+  replaceKeywords: (codeString) ->
+    codeString.replace(/^\s*(on)\s+/, "__$1 ")
+
   filter: (node) ->
     [].concat.apply([], @filters[node.filter](node.content, this))
 
@@ -148,27 +144,35 @@ util =
     {children, bufferedCode, unbufferedCode, text} = node
 
     if unbufferedCode
-      if children
-        childContent = @renderNodes(children)
-        contents = [
-          unbufferedCode
-          @indent(childContent.join("\n"))
-        ]
-      else
-        contents = [unbufferedCode]
+      indent = true
+      code = @replaceKeywords(unbufferedCode)
+
+      contents = [code]
     else if bufferedCode
       contents = @buffer(bufferedCode)
     else if text
-      contents = @buffer JSON.stringify(text)
-    else if children
-      contents = @renderNodes(children)
+      contents = @buffer(JSON.stringify(text))
     else if node.tag
-      # Don't care, already rendered it in @tag
+      contents = []
+    else if node.comment
+      # TODO: Create comment nodes
+      return []
     else
+      contents = []
       console.warn "No content for node:", node
 
+    if children
+      childContent = @renderNodes(children)
+
+      if indent
+        childContent = @indent(childContent.join("\n"))
+
+      contents = contents.concat(childContent)
+
+    return contents
+
   renderNodes: (nodes) ->
-    @fragment([].concat.apply([], nodes.map(@render, this)))
+    [].concat.apply([], nodes.map(@render, this))
 
   tag: (node) ->
     {tag} = node
@@ -195,9 +199,14 @@ exports.renderJST = (parseTree, {explicitScripts, name, compiler}={}) ->
           __pop
           __observeAttribute
           __observeText
+          __on
+          observing
         } = Runtime() # TODO Namespace
 
-    #{util.indent(items.join("\n"), "    ")}).call(data)
+        __push document.createDocumentFragment()
+    #{util.indent(items.join("\n"), "    ")}
+        __pop()
+      ).call(data)
   """
 
   if name

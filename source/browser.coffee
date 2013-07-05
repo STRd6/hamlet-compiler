@@ -45,12 +45,17 @@ window.Observable = (value) ->
 templateHaml = """
   Choose a ticket class:
   %select
+    - on "change", @chosenTicket
     - @tickets.each (ticket) ->
       %option
-        = ticket.name
+        - observing ticket, ->
+          = @name
+
+  %button Clear
+    - on "click", @resetTicket
 
   %p
-    - @chosenTicket.each ->
+    - observing @chosenTicket, ->
       You have chosen
       %b= @name
       %span
@@ -60,12 +65,16 @@ templateHaml = """
 """
 
 data =
-  tickets: Observable [
+  tickets: [
+    {name: "None", price: null}
     {name: "Economy", price: 199.95}
     {name: "Business", price: 449.22}
     {name: "First Class", price: 1199.99}
   ]
   chosenTicket: Observable()
+  resetTicket: ->
+    debugger
+    @chosenTicket(@tickets[0])
 
 $ ->
   ast = parser.parse(templateHaml)
@@ -78,6 +87,3 @@ $ ->
 
   $('body').append(fragment)
 
-  $('body').on "change", "select", ->
-    console.log value = $(this).val()
-    data.chosenTicket(value)

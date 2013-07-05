@@ -7,8 +7,8 @@
 
   this.HAMLjr.templates["attributes"] = function(data) {
     return (function() {
-      var __element, __observeAttribute, __observeText, __pop, __push, _ref;
-      _ref = Runtime(), __push = _ref.__push, __pop = _ref.__pop, __observeAttribute = _ref.__observeAttribute, __observeText = _ref.__observeText;
+      var observing, __element, __observeAttribute, __observeText, __on, __pop, __push, _ref;
+      _ref = Runtime(), __push = _ref.__push, __pop = _ref.__pop, __observeAttribute = _ref.__observeAttribute, __observeText = _ref.__observeText, __on = _ref.__on, observing = _ref.observing;
       __push(document.createDocumentFragment());
       __element = document.createElement("div");
       __push(__element);

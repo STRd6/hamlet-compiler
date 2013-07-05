@@ -1,0 +1,68 @@
+[
+  {
+    "text": "Choose a ticket class:"
+  },
+  {
+    "tag": "select",
+    "children": [
+      {
+        "unbufferedCode": "on \"change\", @chosenTicket"
+      },
+      {
+        "unbufferedCode": "@tickets.each (ticket) ->",
+        "children": [
+          {
+            "tag": "option",
+            "children": [
+              {
+                "unbufferedCode": "observing ticket, ->",
+                "children": [
+                  {
+                    "bufferedCode": "@name"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "tag": "button",
+    "text": "Clear",
+    "children": [
+      {
+        "unbufferedCode": "on \"click\", @resetTicket"
+      }
+    ]
+  },
+  {
+    "tag": "p",
+    "children": [
+      {
+        "unbufferedCode": "observing @chosenTicket, ->",
+        "children": [
+          {
+            "text": "You have chosen"
+          },
+          {
+            "tag": "b",
+            "bufferedCode": "@name"
+          },
+          {
+            "tag": "span",
+            "children": [
+              {
+                "text": "$"
+              },
+              {
+                "bufferedCode": "@price"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
