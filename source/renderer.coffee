@@ -1,4 +1,5 @@
 CoffeeScript = require "coffee-script"
+{Runtime} = require("./runtime")
 
 selfClosing =
   area: true
@@ -22,6 +23,7 @@ util =
   indent: indentText
 
   filters:
+    # TODO: This is actualy 'compileTime' rather than runtime
     plain: (content, runtime) ->
       runtime.buffer JSON.stringify(content)
 
@@ -188,30 +190,12 @@ exports.renderJST = (parseTree, {explicitScripts, name, compiler}={}) ->
   source = """
     (data) ->
       (->
-        __stack = []
-
-        __append = (child) ->
-          __stack[__stack.length-1]?.appendChild(child) || child
-
-        __push = (child) ->
-          __stack.push(child)
-
-        __pop = ->
-          __append(__stack.pop())
-
-        __observeAttribute = (element, name, value) ->
-          value.observe? (newValue) ->
-            element.setAttribute name, newValue
-
-        __observeText = (node, value) ->
-          if value.observe?
-            value.observe (newValue) ->
-              node.nodeValue newValue
-
-            unobserve = ->
-              console.log "Removed"
-
-            node.addEventListener("DOMNodeRemoved", unobserve, true)
+        {
+          __push
+          __pop
+          __observeAttribute
+          __observeText
+        } = Runtime() # TODO Namespace
 
     #{util.indent(items.join("\n"), "    ")}).call(data)
   """
@@ -232,5 +216,6 @@ exports.renderJST = (parseTree, {explicitScripts, name, compiler}={}) ->
 
     return program
   catch error
-    console.log "COMPILE ERROR:\n  SOURCE:\n", programSource
-    console.log error
+    process.stderr.write "COMPILE ERROR:\n  SOURCE:\n #{programSource}\n"
+
+    throw error

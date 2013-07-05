@@ -6,6 +6,7 @@ module.exports = (grunt) ->
     "grammar_dsl"
     "parser"
     "renderer"
+    "runtime"
   ].forEach (name) ->
     destination = "build/#{name}.js"
     source = "source/#{name}.coffee"
@@ -33,9 +34,14 @@ module.exports = (grunt) ->
       demo:
         command: "coffee source/cli.coffee demo.haml > demo.html"
 
+      test:
+        command: "coffee source/demo.coffee"
+
   grunt.loadNpmTasks('grunt-browserify')
   grunt.loadNpmTasks('grunt-contrib-coffee')
   grunt.loadNpmTasks('grunt-shell')
 
-  # Default task(s).
-  grunt.registerTask 'default', ['shell:lexer', 'coffee', 'browserify', 'shell:demo']
+  grunt.registerTask 'test', ['build', 'shell:test']
+  grunt.registerTask 'build', ['shell:lexer', 'coffee', 'browserify', 'shell:demo']
+
+  grunt.registerTask 'default', ['test']

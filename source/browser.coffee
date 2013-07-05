@@ -2,6 +2,8 @@
 {lexer} = require('../build/lexer')
 {renderJST} = require('./renderer')
 
+require('./runtime')
+
 parser.lexer = lexer
 
 window.parser = parser
@@ -48,12 +50,12 @@ templateHaml = """
         = ticket.name
 
   %p
-    - @chosenTicket.each (ticket) ->
+    - @chosenTicket.each ->
       You have chosen
-      %b= ticket.name
+      %b= @name
       %span
         $
-        = ticket.price
+        = @price
 
 """
 

@@ -4,6 +4,8 @@ fs = require('fs')
 {lexer} = require('../build/lexer')
 {renderJST, renderHaml} = require('./renderer')
 
+global.Runtime = require('./runtime').Runtime
+
 parser.lexer = lexer
 
 file = process.argv[2]
@@ -24,8 +26,6 @@ runFile = (name) ->
   output = Array.prototype.map.call fragment.childNodes, (node) ->
     node.outerHTML
   .join("\n")
-
-  # console.log program
 
   process.stdout.write output
 
