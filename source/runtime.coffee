@@ -26,11 +26,6 @@ Runtime = (context) ->
   pop = ->
     append(stack.pop())
 
-  fragment = (fn) ->
-    push document.createDocumentFragment()
-    fn()
-    pop()
-
   observeAttribute = (element, name, value) ->
     value.observe? (newValue) ->
       element.setAttribute name, newValue
