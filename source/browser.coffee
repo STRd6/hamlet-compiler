@@ -63,20 +63,18 @@ Observable.lift = (object) ->
 
     return dummy
 
-$ ->
-  ast = parser.parse($("#template").val())
+rerender = ->
+  $("#demo").empty()
 
-  console.log ast
+  ast = parser.parse($("#template").val())
 
   template = Function("return" + render(ast, compiler: CoffeeScript))()
 
-  console.log template
-
   data = Function("return " + CoffeeScript.compile($("#data").val(), bare: true))()
 
-  console.log data
+  $('#demo').append(template(data))
 
-  window.fragment = template(data)
+$ ->
+  rerender()
 
-  $('#demo').append(fragment)
-
+  $("#template, #data").on "change", rerender
