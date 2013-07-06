@@ -7,8 +7,8 @@
 
   this.HAMLjr.templates["complex"] = function(data) {
     return (function() {
-      var observing, radicalMessage, __each, __element, __observeAttribute, __observeText, __on, __pop, __push, _ref;
-      _ref = Runtime(this), __push = _ref.__push, __pop = _ref.__pop, __observeAttribute = _ref.__observeAttribute, __observeText = _ref.__observeText, __on = _ref.__on, __each = _ref.__each, observing = _ref.observing;
+      var radicalMessage, __each, __element, __observeAttribute, __observeText, __on, __pop, __push, __with, _ref;
+      _ref = Runtime(this), __push = _ref.__push, __pop = _ref.__pop, __observeAttribute = _ref.__observeAttribute, __observeText = _ref.__observeText, __on = _ref.__on, __each = _ref.__each, __with = _ref.__with;
       __push(document.createDocumentFragment());
       __element = document.createElement("select");
       __push(__element);

@@ -29,10 +29,10 @@
     ]
   },
   {
-    "tag": "p",
+    "unbufferedCode": "with @chosenTicket, ->",
     "children": [
       {
-        "unbufferedCode": "observing @chosenTicket, ->",
+        "tag": "p",
         "children": [
           {
             "unbufferedCode": "if @price",
@@ -54,6 +54,14 @@
                     "bufferedCode": "@price"
                   }
                 ]
+              }
+            ]
+          },
+          {
+            "unbufferedCode": "else",
+            "children": [
+              {
+                "text": "No ticket chosen"
               }
             ]
           }

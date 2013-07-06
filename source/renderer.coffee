@@ -19,6 +19,7 @@ indentText = (text, indent="  ") ->
 keywords = [
   "on"
   "each"
+  "with"
 ]
 
 keywordsRegex = RegExp("\\s*(#{keywords.join('|')})\\s+")
@@ -208,7 +209,7 @@ exports.renderJST = (parseTree, {explicitScripts, name, compiler}={}) ->
           __observeText
           __on
           __each
-          observing
+          __with
         } = Runtime(this) # TODO Namespace
 
         __push document.createDocumentFragment()

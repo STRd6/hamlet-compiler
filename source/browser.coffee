@@ -38,9 +38,30 @@ window.Observable = (value) ->
     each: (args...) ->
       # Don't add null or undefined values to iteration
       if value?
-        [].concat(value).each(args...)
+        [value].each(args...)
 
   return self
+
+# Promote or "lift" an entity into a dummy object that
+# matches the observable interface
+Observable.lift = (object) ->
+  if typeof object.observe is "function"
+    object
+  else
+    value = object
+
+    # Return a dummy observable
+    dummy = (newValue) ->
+      if arguments.length > 0
+        value = newValue
+      else
+        value
+
+    dummy.each = (args...) ->
+      if value?
+        [value].forEach(args...)
+
+    return dummy
 
 templateHaml = """
   Choose a ticket class:
@@ -52,8 +73,8 @@ templateHaml = """
   %button Clear
     - on "click", @resetTicket
 
-  %p
-    - observing @chosenTicket, ->
+  - with @chosenTicket, ->
+    %p
       - if @price
         You have chosen
         %b= @name

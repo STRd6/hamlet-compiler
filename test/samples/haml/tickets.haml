@@ -7,11 +7,13 @@ Choose a ticket class:
 %button Clear
   - on "click", @resetTicket
 
-%p
-  - observing @chosenTicket, ->
+- with @chosenTicket, ->
+  %p
     - if @price
       You have chosen
       %b= @name
       %span
         $
         = @price
+    - else
+      No ticket chosen

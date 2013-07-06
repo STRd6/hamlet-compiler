@@ -55,33 +55,37 @@ Runtime = (context) ->
     # TODO: Reconsider these observing methods
     __observeAttribute: observeAttribute
     __observeText: observeText
-    observing: (observable, fn) ->
-      parent = lastParent()
-      parent[dataName] = observable
-
-      # TODO: Mixing and matching observables and non-observables is gross
-      if typeof observable is "function"
-        currentValue = observable()
-      else
-        currentValue = observable
-
-      update = (currentValue) ->
-        # TODO: Only replace the ones we'll add
-        parent.innerHTML = ""
-        if currentValue
-          parent.appendChild fragment ->
-            fn.call(currentValue)
-
-      observable.observe? update
-
-      if currentValue?
-        update(currentValue)
 
     __each: (items, fn) ->
       # TODO: Work with observable arrays
+      # TODO: Work when rendering many sibling elements
       items.each (item) ->
         element = fn.call(item)
         element[dataName] = item
+
+    __with: (item, fn) ->
+      element = null
+
+      item = Observable.lift(item)
+
+      item.observe (newValue) ->
+        replace element, newValue
+
+      value = item()
+
+      # TODO: Work when rendering many sibling elements
+      replace = (oldElement, value) ->
+        element = fn.call(value)
+        element[dataName] = item
+
+        if oldElement
+          parent = oldElement.parentElement
+          parent.insertBefore(element, oldElement)
+          oldElement.remove()
+        else
+          # Assume we got added?
+
+      replace(element, value)
 
     __on: (eventName, fn) ->
       element = lastParent()
