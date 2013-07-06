@@ -63,48 +63,20 @@ Observable.lift = (object) ->
 
     return dummy
 
-templateHaml = """
-  Choose a ticket class:
-  %select
-    - on "change", @chosenTicket
-    - each @tickets, ->
-      %option= @name
-
-  %button Clear
-    - on "click", @resetTicket
-
-  - with @chosenTicket, ->
-    %p
-      - if @price
-        You have chosen
-        %b= @name
-        %span
-          $
-          = @price
-      - else
-        No ticket chosen
-
-"""
-
-data =
-  tickets: [
-    {name: "None", price: null}
-    {name: "Economy", price: 199.95}
-    {name: "Business", price: 449.22}
-    {name: "First Class", price: 1199.99}
-  ]
-  chosenTicket: Observable()
-  resetTicket: ->
-    @chosenTicket(@tickets[0])
-
 $ ->
-  ast = parser.parse(templateHaml)
+  ast = parser.parse($("#template").val())
+
+  console.log ast
 
   template = Function("return" + render(ast, compiler: CoffeeScript))()
 
   console.log template
 
+  data = Function("return " + CoffeeScript.compile($("#data").val(), bare: true))()
+
+  console.log data
+
   window.fragment = template(data)
 
-  $('body').append(fragment)
+  $('#demo').append(fragment)
 

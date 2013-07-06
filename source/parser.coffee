@@ -24,7 +24,7 @@ grammar =
   line: [
     o "DOCTYPE end",                                 -> "doctype"
     o "indentation lineMain end",                    -> yy.append($lineMain, $indentation)
-    o "end"
+    o "end",                                         -> yy.newline() if $end.newline
   ]
 
   lineMain: [
@@ -37,7 +37,7 @@ grammar =
   ]
 
   end: [
-    o "NEWLINE"
+    o "NEWLINE",                                     -> newline: true
     o "EOF"
   ]
 
@@ -126,6 +126,16 @@ extend parser,
 
 extend parser.yy,
   extend: extend
+
+  newline: ->
+    lastNode = @nodePath[@nodePath.length - 1]
+
+    # TODO: Add newline nodes to tree to maintain
+    # spacing
+
+    if lastNode.filter
+      @appendFilterContent(lastNode, "")
+
   append: (node, indentation=0) ->
     if node.filterLine
       lastNode = @nodePath[@nodePath.length - 1]

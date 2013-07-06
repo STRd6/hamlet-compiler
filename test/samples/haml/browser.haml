@@ -5,19 +5,7 @@
     %script(src="lib/jquery-1.10.2.min.js")
     %script(src="build/web.js")
   %body
-    %textarea#data
-      :stet
-        tickets: [
-          {name: "None", price: null}
-          {name: "Economy", price: 199.95}
-          {name: "Business", price: 449.22}
-          {name: "First Class", price: 1199.99}
-        ]
-        chosenTicket: Observable()
-        resetTicket: ->
-          @chosenTicket(@tickets[0])
-
-    %textarea#template
+    %textarea
       :stet
         Choose a ticket class:
         %select
@@ -37,5 +25,3 @@
                 $#{@price}
             - else
               No ticket chosen
-
-    #demo

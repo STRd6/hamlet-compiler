@@ -94,7 +94,7 @@
           },
           {
             "filter": "javascript",
-            "content": "try{Typekit.load();}catch(e){}\n"
+            "content": "try{Typekit.load();}catch(e){}\n\n"
           }
         ]
       },

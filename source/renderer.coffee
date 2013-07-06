@@ -31,6 +31,10 @@ util =
   indent: indentText
 
   filters:
+    stet: (content, compiler) ->
+      # TODO: Allow """ in content to stand
+      compiler.buffer '"""' + content.replace(/(#)/, "\\$1") + '"""'
+
     # TODO: This is actualy 'compileTime' rather than runtime
     plain: (content, runtime) ->
       runtime.buffer JSON.stringify(content)

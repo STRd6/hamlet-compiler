@@ -52,12 +52,8 @@
           __pop();
           __element = document.createElement("span");
           __push(__element);
-          __element = document.createTextNode("$");
-          __observeText(__element, "$");
-          __push(__element);
-          __pop();
-          __element = document.createTextNode(this.price);
-          __observeText(__element, this.price);
+          __element = document.createTextNode("$" + this.price);
+          __observeText(__element, "$" + this.price);
           __push(__element);
           __pop();
           __pop();

@@ -19,6 +19,8 @@ runFile = (name) ->
   program = renderJST ast,
     explicitScripts: true
 
+  # console.log program
+
   fn = eval(program)
 
   fragment = fn()

@@ -13,6 +13,7 @@
       
       alert('yolo');
       
+      
     ;
       alert("yolo");
       __element = document.createElement("div");
@@ -23,8 +24,8 @@
       __observeText(__element, "col");
       __push(__element);
       __pop();
-      __element = document.createTextNode("sweets\n");
-      __observeText(__element, "sweets\n");
+      __element = document.createTextNode("sweets\n\n");
+      __observeText(__element, "sweets\n\n");
       __push(__element);
       __pop();
       __pop();

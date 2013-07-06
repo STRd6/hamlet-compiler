@@ -1,11 +1,11 @@
 [
   {
     "filter": "javascript",
-    "content": "alert('yolo');\n"
+    "content": "alert('yolo');\n\n"
   },
   {
     "filter": "coffeescript",
-    "content": "alert \"yolo\"\n"
+    "content": "alert \"yolo\"\n\n"
   },
   {
     "classes": [
@@ -18,7 +18,7 @@
       },
       {
         "filter": "plain",
-        "content": "sweets\n"
+        "content": "sweets\n\n"
       }
     ]
   },
