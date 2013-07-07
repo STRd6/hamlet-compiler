@@ -27,20 +27,29 @@ Runtime = (context) ->
     append(stack.pop())
 
   observeAttribute = (element, name, value) ->
+    # TODO: Make sure this works correctly
     value.observe? (newValue) ->
       element.setAttribute name, newValue
 
   observeText = (node, value) ->
-    return unless value
+    # CLI short-circuits here because it doesn't do observables
+    unless Observable?
+      node.nodeValue = value
+      return
 
-    if value.observe?
-      value.observe (newValue) ->
-        node.nodeValue newValue
+    observable = Observable.lift(value)
 
-      unobserve = ->
-        console.log "Removed"
+    update = (newValue) ->
+      node.nodeValue = newValue
 
-      node.addEventListener("DOMNodeRemoved", unobserve, true)
+    observable.observe update
+
+    update observable()
+
+    unobserve = ->
+      console.log "Removed"
+
+    node.addEventListener("DOMNodeRemoved", unobserve, true)
 
   return {
     # Pushing and popping creates the node tree
@@ -86,16 +95,25 @@ Runtime = (context) ->
       element = lastParent()
 
       if eventName is "change"
-        element["on#{eventName}"] = ->
-          selectedOption = @options[@selectedIndex]
-          fn(selectedOption[dataName])
+        switch element.nodeName
+          when "SELECT"
+            element["on#{eventName}"] = ->
+              selectedOption = @options[@selectedIndex]
+              fn(selectedOption[dataName])
 
-        # Add bi-directionality if binding to an observable
-        if fn.observe
-          fn.observe (newValue) ->
-            Array::forEach.call(element.options, (option, index) ->
-              element.selectedIndex = index if option[dataName] is newValue
-            )
+            # Add bi-directionality if binding to an observable
+            if fn.observe
+              fn.observe (newValue) ->
+                Array::forEach.call(element.options, (option, index) ->
+                  element.selectedIndex = index if option[dataName] is newValue
+                )
+          else
+            element["on#{eventName}"] = ->
+              fn(element.value)
+
+            if fn.observe
+              fn.observe (newValue) ->
+                element.value = newValue
 
       else
         element["on#{eventName}"] = ->

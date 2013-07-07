@@ -16,7 +16,7 @@
       __push(__element);
       __element = document.createElement("title");
       __push(__element);
-      __element = document.createTextNode("Ravel | " + this.name + "'s photo tagged " + this.tag);
+      __element = document.createTextNode('');
       __observeText(__element, "Ravel | " + this.name + "'s photo tagged " + this.tag);
       __push(__element);
       __pop();
@@ -83,7 +83,7 @@
       __push(__element);
       __observeAttribute(__element, "class", "hide-text");
       __element.setAttribute("class", "hide-text");
-      __element = document.createTextNode("Ravel");
+      __element = document.createTextNode('');
       __observeText(__element, "Ravel");
       __push(__element);
       __pop();
@@ -127,7 +127,7 @@
       __push(__element);
       __observeAttribute(__element, "class", "name");
       __element.setAttribute("class", "name");
-      __element = document.createTextNode(this.name);
+      __element = document.createTextNode('');
       __observeText(__element, this.name);
       __push(__element);
       __pop();
@@ -136,7 +136,7 @@
       __push(__element);
       __observeAttribute(__element, "class", "info");
       __element.setAttribute("class", "info");
-      __element = document.createTextNode(this.gender_and_age);
+      __element = document.createTextNode('');
       __observeText(__element, this.gender_and_age);
       __push(__element);
       __pop();
@@ -145,7 +145,7 @@
       __push(__element);
       __observeAttribute(__element, "class", "location info");
       __element.setAttribute("class", "location info");
-      __element = document.createTextNode(this.location);
+      __element = document.createTextNode('');
       __observeText(__element, this.location);
       __push(__element);
       __pop();
@@ -154,7 +154,7 @@
       __push(__element);
       __observeAttribute(__element, "class", "tag");
       __element.setAttribute("class", "tag");
-      __element = document.createTextNode(this.tag);
+      __element = document.createTextNode('');
       __observeText(__element, this.tag);
       __push(__element);
       __pop();
@@ -174,7 +174,7 @@
       __observeAttribute(__element, "src", "/images/pins@2x.png");
       __element.setAttribute("src", "/images/pins@2x.png");
       __pop();
-      __element = document.createTextNode(this.pins);
+      __element = document.createTextNode('');
       __observeText(__element, this.pins);
       __push(__element);
       __pop();
@@ -188,7 +188,7 @@
       __observeAttribute(__element, "src", "/images/likes@2x.png");
       __element.setAttribute("src", "/images/likes@2x.png");
       __pop();
-      __element = document.createTextNode(this.likes);
+      __element = document.createTextNode('');
       __observeText(__element, this.likes);
       __push(__element);
       __pop();

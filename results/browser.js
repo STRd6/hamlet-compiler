@@ -39,7 +39,7 @@
       __push(__element);
       __element = document.createElement("textarea");
       __push(__element);
-      __element = document.createTextNode("Choose a ticket class:\n%select\n  - on \"change\", @chosenTicket\n  - each @tickets, ->\n    %option= @name\n\n%button Clear\n  - on \"click\", @resetTicket\n\n- with @chosenTicket, ->\n  %p\n    - if @price\n      You have chosen\n      %b= @name\n      %span\n        $\#{@price}\n    - else\n      No ticket chosen");
+      __element = document.createTextNode('');
       __observeText(__element, "Choose a ticket class:\n%select\n  - on \"change\", @chosenTicket\n  - each @tickets, ->\n    %option= @name\n\n%button Clear\n  - on \"click\", @resetTicket\n\n- with @chosenTicket, ->\n  %p\n    - if @price\n      You have chosen\n      %b= @name\n      %span\n        $\#{@price}\n    - else\n      No ticket chosen");
       __push(__element);
       __pop();

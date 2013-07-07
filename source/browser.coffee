@@ -1,6 +1,6 @@
 {parser} = require('./parser')
 {lexer} = require('../build/lexer')
-{renderJST} = require('./renderer')
+{renderJST, util} = require('./renderer')
 styl = require('styl')
 
 require('./runtime')
@@ -58,6 +58,9 @@ Observable.lift = (object) ->
       else
         value
 
+    # No-op
+    dummy.observe = ->
+
     dummy.each = (args...) ->
       if value?
         [value].forEach(args...)
@@ -69,9 +72,9 @@ rerender = ->
 
   ast = parser.parse($("#template").val())
 
-  template = Function("return" + render(ast, compiler: CoffeeScript))()
+  template = Function("return " + render(ast, compiler: CoffeeScript))()
 
-  data = Function("return " + CoffeeScript.compile($("#data").val(), bare: true))()
+  data = Function("return " + CoffeeScript.compile("do ->\n" + util.indent($("#data").val()), bare: true))()
 
   $('#demo').append(template(data))
 

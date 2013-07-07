@@ -1,6 +1,5 @@
 CoffeeScript = require "coffee-script"
 styl = require 'styl'
-{Runtime} = require("./runtime")
 
 selfClosing =
   area: true
@@ -91,7 +90,7 @@ util =
 
   buffer: (value) ->
     [
-      "__element = document.createTextNode(#{value})"
+      "__element = document.createTextNode('')"
       "__observeText(__element, #{value})"
       "__push __element"
       "__pop()"
@@ -201,6 +200,8 @@ util =
     contents = @contents(node)
 
     @element tag, attributes, contents
+
+exports.util = util
 
 exports.renderJST = (parseTree, {explicitScripts, name, compiler}={}) ->
   # HAX: Browserify can't put CoffeeScript into the web...

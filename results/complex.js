@@ -15,14 +15,14 @@
       radicalMessage = "Yolo";
       this.tickets.forEach(function(ticket, i) {
         if (i === 0) {
-          __element = document.createTextNode(radicalMessage);
+          __element = document.createTextNode('');
           __observeText(__element, radicalMessage);
           __push(__element);
           __pop();
         }
         __element = document.createElement("option");
         __push(__element);
-        __element = document.createTextNode(ticket.name);
+        __element = document.createTextNode('');
         __observeText(__element, ticket.name);
         __push(__element);
         __pop();
