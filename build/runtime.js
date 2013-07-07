@@ -47,9 +47,7 @@
       };
       observable.observe(update);
       update(observable());
-      unobserve = function() {
-        return console.log("Removed");
-      };
+      unobserve = function() {};
       return node.addEventListener("DOMNodeRemoved", unobserve, true);
     };
     return {

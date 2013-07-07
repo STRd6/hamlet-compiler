@@ -1,5 +1,5 @@
 (function() {
-  var lexer, parser, renderJST, rerender, styl, util, _ref,
+  var lexer, load, parser, renderJST, rerender, save, styl, util, _ref,
     __slice = [].slice;
 
   parser = require('./parser').parser;
@@ -77,7 +77,7 @@
 
   rerender = function() {
     var ast, data, style, template;
-    $("#demo").empty();
+    $("#preview").empty();
     ast = parser.parse($("#template").val());
     template = Function("return " + render(ast, {
       compiler: CoffeeScript
@@ -85,16 +85,62 @@
     data = Function("return " + CoffeeScript.compile("do ->\n" + util.indent($("#data").val()), {
       bare: true
     }))();
-    $('#demo').append(template(data));
+    $('#preview').append(template(data));
     style = styl($("#style").val(), {
       whitespace: true
     }).toString();
-    return $('#demo').append("<style>" + style + "</style>");
+    return $('#preview').append("<style>" + style + "</style>");
+  };
+
+  save = function() {
+    var data, postData, style, template;
+    data = $("#data").val();
+    template = $("#template").val();
+    style = $("#style").val();
+    postData = JSON.stringify({
+      "public": true,
+      files: {
+        data: {
+          content: data
+        },
+        template: {
+          content: template
+        },
+        style: {
+          content: style
+        }
+      }
+    });
+    return $.ajax("https://api.github.com/gists", {
+      type: "POST",
+      dataType: 'json',
+      data: postData,
+      success: function(data) {
+        return location.hash = data.id;
+      }
+    });
+  };
+
+  load = function(id) {
+    return $.getJSON("https://api.github.com/gists/" + id, function(data) {
+      console.log(data);
+      ["data", "style", "template"].each(function(file) {
+        var _ref1;
+        return $("#" + file).val(((_ref1 = data.files[file]) != null ? _ref1.content : void 0) || "");
+      });
+      return rerender();
+    });
   };
 
   $(function() {
-    rerender();
-    return $("#template, #data, #style").on("change", rerender);
+    var id;
+    if (id = location.hash) {
+      load(id.substring(1));
+    } else {
+      rerender();
+    }
+    $("#template, #data, #style").on("change", rerender);
+    return $("#actions .save").on("click", save);
   });
 
 }).call(this);
