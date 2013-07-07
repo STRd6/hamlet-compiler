@@ -107,9 +107,6 @@ save = ->
 
 load = (id) ->
   $.getJSON "https://api.github.com/gists/#{id}", (data) ->
-    console.log data
-
-    # TODO: Load from gist
     ["data", "style", "template"].each (file) ->
       $("##{file}").val(data.files[file]?.content || "")
 
