@@ -123,7 +123,6 @@
 
   load = function(id) {
     return $.getJSON("https://api.github.com/gists/" + id, function(data) {
-      console.log(data);
       ["data", "style", "template"].each(function(file) {
         var _ref1;
         return $("#" + file).val(((_ref1 = data.files[file]) != null ? _ref1.content : void 0) || "");
