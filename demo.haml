@@ -4,6 +4,13 @@
     %script(src="lib/coffee-script.js")
     %script(src="lib/jquery-1.10.2.min.js")
     %script(src="build/web.js")
+
+    :styl
+      textarea
+        font-family: monospace
+        height: 400px
+        width: 300px
+
   %body
     %textarea#data
       :stet
@@ -37,5 +44,11 @@
                 $#{@price}
             - else
               No ticket chosen
+
+    %textarea#style
+      :stet
+        #demo
+          font-family: helvetica
+          padding: 1em
 
     #demo

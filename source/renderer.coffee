@@ -1,4 +1,5 @@
 CoffeeScript = require "coffee-script"
+styl = require 'styl'
 {Runtime} = require("./runtime")
 
 selfClosing =
@@ -31,37 +32,44 @@ util =
   indent: indentText
 
   filters:
+    styl: (content, compiler) ->
+      compiler.styleTag styl(content, whitespace: true).toString()
+
     stet: (content, compiler) ->
       # TODO: Allow """ in content to stand
       compiler.buffer '"""' + content.replace(/(#)/, "\\$1") + '"""'
 
-    # TODO: This is actualy 'compileTime' rather than runtime
-    plain: (content, runtime) ->
-      runtime.buffer JSON.stringify(content)
+    plain: (content, compiler) ->
+      compiler.buffer JSON.stringify(content)
 
-    coffeescript: (content, runtime) ->
-      if runtime.explicitScripts
+    coffeescript: (content, compiler) ->
+      if compiler.explicitScripts
         [
-          runtime.scriptTag(CoffeeScript.compile(content))
+          compiler.scriptTag(CoffeeScript.compile(content))
         ]
       else
         [content]
 
-    javascript: (content, runtime) ->
-      if runtime.explicitScripts
+    javascript: (content, compiler) ->
+      if compiler.explicitScripts
         [
-          runtime.scriptTag(content)
+          compiler.scriptTag(content)
         ]
       else
         [
           "`"
-          runtime.indent(content)
+          compiler.indent(content)
           "`"
         ]
 
+  styleTag: (content) ->
+    @element "style", [], [
+      "__element.innerHTML = #{JSON.stringify("\n" + @indent(content))}"
+    ]
+
   scriptTag: (content) ->
     @element "script", [], [
-      "__element.innerHTML = #{JSON.stringify("\n" + @indent(_.escape(content)))}"
+      "__element.innerHTML = #{JSON.stringify("\n" + @indent(content))}"
     ]
 
   element: (tag, attributes, contents=[]) ->

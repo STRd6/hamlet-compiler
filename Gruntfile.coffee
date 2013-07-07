@@ -37,11 +37,24 @@ module.exports = (grunt) ->
       test:
         command: "coffee source/demo.coffee"
 
+      "gh-pages":
+        command: [
+          "rm -r gh-pages/*"
+          "cp demo.html gh-pages/"
+          "cp -r build lib gh-pages"
+          "cd gh-pages"
+          "git add ."
+          "git ci -am 'updating pages'"
+          "git push"
+        ].join(' && ')
+
   grunt.loadNpmTasks('grunt-browserify')
   grunt.loadNpmTasks('grunt-contrib-coffee')
   grunt.loadNpmTasks('grunt-shell')
 
   grunt.registerTask 'test', ['build', 'shell:test']
   grunt.registerTask 'build', ['shell:lexer', 'coffee', 'browserify', 'shell:demo']
+
+  grunt.registerTask 'gh-pages', ['build', 'shell:gh-pages']
 
   grunt.registerTask 'default', ['test']

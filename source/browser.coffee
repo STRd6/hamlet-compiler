@@ -1,6 +1,7 @@
 {parser} = require('./parser')
 {lexer} = require('../build/lexer')
 {renderJST} = require('./renderer')
+styl = require('styl')
 
 require('./runtime')
 
@@ -74,7 +75,10 @@ rerender = ->
 
   $('#demo').append(template(data))
 
+  style = styl($("#style").val(), whitespace: true).toString()
+  $('#demo').append("<style>#{style}</style>")
+
 $ ->
   rerender()
 
-  $("#template, #data").on "change", rerender
+  $("#template, #data, #style").on "change", rerender

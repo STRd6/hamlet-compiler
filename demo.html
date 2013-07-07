@@ -1,4 +1,9 @@
-<html><head><script src="lib/cornerstone.js"></script><script src="lib/coffee-script.js"></script><script src="lib/jquery-1.10.2.min.js"></script><script src="build/web.js"></script></head><body><textarea id="data">tickets: [
+<html><head><script src="lib/cornerstone.js"></script><script src="lib/coffee-script.js"></script><script src="lib/jquery-1.10.2.min.js"></script><script src="build/web.js"></script><style>
+  textarea {
+    font-family: monospace;
+    height: 400px;
+    width: 300px;
+  }</style></head><body><textarea id="data">tickets: [
   {name: "None", price: null}
   {name: "Economy", price: 199.95}
   {name: "Business", price: 449.22}
@@ -25,4 +30,7 @@ resetTicket: -&gt;
         $#{@price}
     - else
       No ticket chosen
+</textarea><textarea id="style">#demo
+  font-family: helvetica
+  padding: 1em
 </textarea><div id="demo"></div></body></html>
