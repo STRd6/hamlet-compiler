@@ -1,12 +1,10 @@
 (function() {
-  var CoffeeScript, Runtime, indentText, keywords, keywordsRegex, selfClosing, styl, util,
+  var CoffeeScript, indentText, keywords, keywordsRegex, selfClosing, styl, util,
     __slice = [].slice;
 
   CoffeeScript = require("coffee-script");
 
   styl = require('styl');
-
-  Runtime = require("./runtime").Runtime;
 
   selfClosing = {
     area: true,
@@ -82,7 +80,7 @@
       return lines = ["__element = document.createElement(" + (JSON.stringify(tag)) + ")", "__push(__element)"].concat(__slice.call(attributeLines), __slice.call(contents), ["__pop()"]);
     },
     buffer: function(value) {
-      return ["__element = document.createTextNode(" + value + ")", "__observeText(__element, " + value + ")", "__push __element", "__pop()"];
+      return ["__element = document.createTextNode('')", "__observeText(__element, " + value + ")", "__push __element", "__pop()"];
     },
     stringJoin: function(values) {
       var dynamic;
@@ -197,6 +195,8 @@
       return this.element(tag, attributes, contents);
     }
   };
+
+  exports.util = util;
 
   exports.renderJST = function(parseTree, _arg) {
     var compiler, error, explicitScripts, items, name, options, program, programSource, source, _ref;

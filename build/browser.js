@@ -1,12 +1,12 @@
 (function() {
-  var lexer, parser, renderJST, rerender, styl,
+  var lexer, parser, renderJST, rerender, styl, util, _ref,
     __slice = [].slice;
 
   parser = require('./parser').parser;
 
   lexer = require('../build/lexer').lexer;
 
-  renderJST = require('./renderer').renderJST;
+  _ref = require('./renderer'), renderJST = _ref.renderJST, util = _ref.util;
 
   styl = require('styl');
 
@@ -40,10 +40,10 @@
         return listeners.push(listener);
       },
       each: function() {
-        var args, _ref;
+        var args, _ref1;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
         if (value != null) {
-          return (_ref = [value]).each.apply(_ref, args);
+          return (_ref1 = [value]).each.apply(_ref1, args);
         }
       }
     });
@@ -63,11 +63,12 @@
           return value;
         }
       };
+      dummy.observe = function() {};
       dummy.each = function() {
-        var args, _ref;
+        var args, _ref1;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
         if (value != null) {
-          return (_ref = [value]).forEach.apply(_ref, args);
+          return (_ref1 = [value]).forEach.apply(_ref1, args);
         }
       };
       return dummy;
@@ -78,10 +79,10 @@
     var ast, data, style, template;
     $("#demo").empty();
     ast = parser.parse($("#template").val());
-    template = Function("return" + render(ast, {
+    template = Function("return " + render(ast, {
       compiler: CoffeeScript
     }))();
-    data = Function("return " + CoffeeScript.compile($("#data").val(), {
+    data = Function("return " + CoffeeScript.compile("do ->\n" + util.indent($("#data").val()), {
       bare: true
     }))();
     $('#demo').append(template(data));

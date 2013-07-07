@@ -36,19 +36,21 @@
       }) : void 0;
     };
     observeText = function(node, value) {
-      var unobserve;
-      if (!value) {
+      var observable, unobserve, update;
+      if (typeof Observable === "undefined" || Observable === null) {
+        node.nodeValue = value;
         return;
       }
-      if (value.observe != null) {
-        value.observe(function(newValue) {
-          return node.nodeValue(newValue);
-        });
-        unobserve = function() {
-          return console.log("Removed");
-        };
-        return node.addEventListener("DOMNodeRemoved", unobserve, true);
-      }
+      observable = Observable.lift(value);
+      update = function(newValue) {
+        return node.nodeValue = newValue;
+      };
+      observable.observe(update);
+      update(observable());
+      unobserve = function() {
+        return console.log("Removed");
+      };
+      return node.addEventListener("DOMNodeRemoved", unobserve, true);
     };
     return {
       __push: push,
@@ -88,19 +90,32 @@
         var element;
         element = lastParent();
         if (eventName === "change") {
-          element["on" + eventName] = function() {
-            var selectedOption;
-            selectedOption = this.options[this.selectedIndex];
-            return fn(selectedOption[dataName]);
-          };
-          if (fn.observe) {
-            return fn.observe(function(newValue) {
-              return Array.prototype.forEach.call(element.options, function(option, index) {
-                if (option[dataName] === newValue) {
-                  return element.selectedIndex = index;
-                }
-              });
-            });
+          switch (element.nodeName) {
+            case "SELECT":
+              element["on" + eventName] = function() {
+                var selectedOption;
+                selectedOption = this.options[this.selectedIndex];
+                return fn(selectedOption[dataName]);
+              };
+              if (fn.observe) {
+                return fn.observe(function(newValue) {
+                  return Array.prototype.forEach.call(element.options, function(option, index) {
+                    if (option[dataName] === newValue) {
+                      return element.selectedIndex = index;
+                    }
+                  });
+                });
+              }
+              break;
+            default:
+              element["on" + eventName] = function() {
+                return fn(element.value);
+              };
+              if (fn.observe) {
+                return fn.observe(function(newValue) {
+                  return element.value = newValue;
+                });
+              }
           }
         } else {
           return element["on" + eventName] = function() {
