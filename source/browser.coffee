@@ -68,18 +68,27 @@ Observable.lift = (object) ->
     return dummy
 
 rerender = ->
-  $("#preview").empty()
+  if location.search.match("embed")
+    selector = "body"
+  else
+    selector = "#preview"
 
+  # HACK for embedded
+  return unless $("#template").length
+
+  # TODO: Better error reporting
   ast = parser.parse($("#template").val())
 
   template = Function("return " + render(ast, compiler: CoffeeScript))()
 
   data = Function("return " + CoffeeScript.compile("do ->\n" + util.indent($("#data").val()), bare: true))()
 
-  $('#preview').append(template(data))
-
   style = styl($("#style").val(), whitespace: true).toString()
-  $('#preview').append("<style>#{style}</style>")
+
+  $(selector)
+    .empty()
+    .append(template(data))
+    .append("<style>#{style}</style>")
 
 # TODO: Remote sample repos
 save = ->
