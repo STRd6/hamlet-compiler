@@ -76,8 +76,15 @@
   };
 
   rerender = function() {
-    var ast, data, style, template;
-    $("#preview").empty();
+    var ast, data, selector, style, template;
+    if (location.search.match("embed")) {
+      selector = "body";
+    } else {
+      selector = "#preview";
+    }
+    if (!$("#template").length) {
+      return;
+    }
     ast = parser.parse($("#template").val());
     template = Function("return " + render(ast, {
       compiler: CoffeeScript
@@ -85,11 +92,10 @@
     data = Function("return " + CoffeeScript.compile("do ->\n" + util.indent($("#data").val()), {
       bare: true
     }))();
-    $('#preview').append(template(data));
     style = styl($("#style").val(), {
       whitespace: true
     }).toString();
-    return $('#preview').append("<style>" + style + "</style>");
+    return $(selector).empty().append(template(data)).append("<style>" + style + "</style>");
   };
 
   save = function() {
