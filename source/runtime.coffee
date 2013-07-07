@@ -46,8 +46,7 @@ Runtime = (context) ->
 
     update observable()
 
-    unobserve = ->
-      console.log "Removed"
+    unobserve = -> # TODO: Unsubscribe
 
     node.addEventListener("DOMNodeRemoved", unobserve, true)
 

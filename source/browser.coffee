@@ -68,7 +68,7 @@ Observable.lift = (object) ->
     return dummy
 
 rerender = ->
-  $("#demo").empty()
+  $("#preview").empty()
 
   ast = parser.parse($("#template").val())
 
@@ -76,12 +76,51 @@ rerender = ->
 
   data = Function("return " + CoffeeScript.compile("do ->\n" + util.indent($("#data").val()), bare: true))()
 
-  $('#demo').append(template(data))
+  $('#preview').append(template(data))
 
   style = styl($("#style").val(), whitespace: true).toString()
-  $('#demo').append("<style>#{style}</style>")
+  $('#preview').append("<style>#{style}</style>")
+
+# TODO: Remote sample repos
+save = ->
+  data = $("#data").val()
+  template = $("#template").val()
+  style = $("#style").val()
+
+  postData = JSON.stringify(
+    public: true
+    files:
+      data:
+        content: data
+      template:
+        content: template
+      style:
+        content: style
+  )
+
+  $.ajax "https://api.github.com/gists",
+    type: "POST"
+    dataType: 'json'
+    data: postData
+    success: (data) ->
+      location.hash = data.id
+
+load = (id) ->
+  $.getJSON "https://api.github.com/gists/#{id}", (data) ->
+    console.log data
+
+    # TODO: Load from gist
+    ["data", "style", "template"].each (file) ->
+      $("##{file}").val(data.files[file]?.content || "")
+
+    rerender()
 
 $ ->
-  rerender()
+  if id = location.hash
+    load(id.substring(1))
+  else
+    rerender()
 
   $("#template, #data, #style").on "change", rerender
+
+  $("#actions .save").on "click", save

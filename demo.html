@@ -2,12 +2,33 @@
   textarea {
     font-family: monospace;
     height: 400px;
-    width: 300px;
+    width: 320px;
+  }
+  
+  #actions {
+    position: fixed;
+    top: 20px;
+    right: 20px;
   }
   
   #errors {
     color: red;
-  }</style></head><body><div id="errors"></div><textarea id="data">tickets: [
+  }
+  
+  body {
+    background-color: #ECFBFF;
+    color: #2B231C;
+    width: 960px;
+    margin: auto;
+    padding-top: 1em;
+    font-family: helvetica;
+  }
+  
+  .titles h2 {
+    display: inline-block;
+    width: 320px;
+    margin: 0.25em 0;
+  }</style></head><body><h1>Tempest - Alpha</h1><p>Create simple interactive HTML components using CoffeeScript, HamlJr, and Styl</p><p>There are still many bugs, but I think this is interesting enough to put out into the world for feedback.</p><div id="actions"><button class="save">Save</button></div><div id="errors"></div><div class="titles"><h2>Data</h2><h2>Template</h2><h2>Style</h2></div><textarea id="data">tickets: [
   {name: "None", price: null}
   {name: "Economy", price: 199.95}
   {name: "Business", price: 449.22}
@@ -30,11 +51,13 @@ resetTicket: -&gt;
     - if @price
       You have chosen
       %b= @name
-      %span
-        $#{@price}
+      %span $#{@price}
     - else
       No ticket chosen
-</textarea><textarea id="style">#demo
+</textarea><textarea id="style">#preview
   font-family: helvetica
   padding: 1em
-</textarea><div id="demo"></div></body></html>
+
+  b
+    margin: 0 0.25em
+</textarea><h2>Preview</h2><div id="preview"></div></body></html>

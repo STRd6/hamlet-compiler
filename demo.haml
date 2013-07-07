@@ -9,13 +9,46 @@
       textarea
         font-family: monospace
         height: 400px
-        width: 300px
+        width: 320px
+
+      #actions
+        position: fixed
+        top: 20px
+        right: 20px
 
       #errors
         color: red
 
+      body
+        background-color: #ECFBFF
+        color: #2B231C
+        width: 960px
+        margin: auto
+        padding-top: 1em
+        font-family: helvetica
+
+      .titles
+        h2
+          display: inline-block
+          width: 320px
+          margin: 0.25em 0
+
   %body
+    %h1 Tempest - Alpha
+
+    %p Create simple interactive HTML components using CoffeeScript, HamlJr, and Styl
+
+    %p There are still many bugs, but I think this is interesting enough to put out into the world for feedback.
+
+    #actions
+      %button.save Save
+
     #errors
+
+    .titles
+      %h2 Data
+      %h2 Template
+      %h2 Style
 
     %textarea#data
       :stet
@@ -45,15 +78,19 @@
             - if @price
               You have chosen
               %b= @name
-              %span
-                $#{@price}
+              %span $#{@price}
             - else
               No ticket chosen
 
     %textarea#style
       :stet
-        #demo
+        #preview
           font-family: helvetica
           padding: 1em
 
-    #demo
+          b
+            margin: 0 0.25em
+
+    %h2 Preview
+
+    #preview
