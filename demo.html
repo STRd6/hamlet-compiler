@@ -1,0 +1,36 @@
+<html><head><script src="lib/cornerstone.js"></script><script src="lib/coffee-script.js"></script><script src="lib/jquery-1.10.2.min.js"></script><script src="build/web.js"></script><style>
+  textarea {
+    font-family: monospace;
+    height: 400px;
+    width: 300px;
+  }</style></head><body><textarea id="data">tickets: [
+  {name: "None", price: null}
+  {name: "Economy", price: 199.95}
+  {name: "Business", price: 449.22}
+  {name: "First Class", price: 1199.99}
+]
+chosenTicket: Observable()
+resetTicket: -&gt;
+  @chosenTicket(@tickets[0])
+</textarea><textarea id="template">Choose a ticket class:
+%select
+  - on "change", @chosenTicket
+  - each @tickets, -&gt;
+    %option= @name
+
+%button Clear
+  - on "click", @resetTicket
+
+- with @chosenTicket, -&gt;
+  %p
+    - if @price
+      You have chosen
+      %b= @name
+      %span
+        $#{@price}
+    - else
+      No ticket chosen
+</textarea><textarea id="style">#demo
+  font-family: helvetica
+  padding: 1em
+</textarea><div id="demo"></div></body></html>
