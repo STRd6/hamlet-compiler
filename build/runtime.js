@@ -31,9 +31,17 @@
       return append(stack.pop());
     };
     observeAttribute = function(element, name, value) {
-      return typeof value.observe === "function" ? value.observe(function(newValue) {
+      var observable, update;
+      update = function(newValue) {
         return element.setAttribute(name, newValue);
-      }) : void 0;
+      };
+      if (typeof Observable === "undefined" || Observable === null) {
+        update(value);
+        return;
+      }
+      observable = Observable.lift(value);
+      observable.observe(update);
+      return update(observable());
     };
     observeText = function(node, value) {
       var observable, unobserve, update;

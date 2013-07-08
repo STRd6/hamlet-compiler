@@ -75,7 +75,7 @@
         var name, value;
         name = _arg.name, value = _arg.value;
         name = JSON.stringify(name);
-        return "__observeAttribute __element, " + name + ", " + value + "\n__element.setAttribute " + name + ", " + value;
+        return "__observeAttribute __element, " + name + ", " + value;
       });
       return lines = ["__element = document.createElement(" + (JSON.stringify(tag)) + ")", "__push(__element)"].concat(__slice.call(attributeLines), __slice.call(contents), ["__pop()"]);
     },
