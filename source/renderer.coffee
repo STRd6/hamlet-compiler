@@ -77,7 +77,6 @@ util =
 
       """
         __observeAttribute __element, #{name}, #{value}
-        __element.setAttribute #{name}, #{value}
       """
 
     lines = [

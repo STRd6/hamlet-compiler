@@ -13,9 +13,7 @@
       __element = document.createElement("section");
       __push(__element);
       __observeAttribute(__element, "id", "main");
-      __element.setAttribute("id", "main");
       __observeAttribute(__element, "class", "container");
-      __element.setAttribute("class", "container");
       __pop();
       return __pop();
     }).call(data);

@@ -13,9 +13,7 @@
       __element = document.createElement("img");
       __push(__element);
       __observeAttribute(__element, "src", 'http://duderman.info/#{yolocountyusa}');
-      __element.setAttribute("src", 'http://duderman.info/#{yolocountyusa}');
       __observeAttribute(__element, "data-rad", 'what the duder?');
-      __element.setAttribute("data-rad", 'what the duder?');
       __pop();
       return __pop();
     }).call(data);

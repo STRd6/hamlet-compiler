@@ -27,9 +27,21 @@ Runtime = (context) ->
     append(stack.pop())
 
   observeAttribute = (element, name, value) ->
-    # TODO: Make sure this works correctly
-    value.observe? (newValue) ->
+    update = (newValue) ->
       element.setAttribute name, newValue
+
+    # CLI short-circuits here because it doesn't do observables
+    unless Observable?
+      update(value)
+      return
+
+    observable = Observable.lift(value)
+
+    observable.observe update
+
+    update observable()
+
+    # TODO Unsubscribe
 
   observeText = (node, value) ->
     # CLI short-circuits here because it doesn't do observables
