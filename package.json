@@ -12,6 +12,7 @@
   "dependencies": {
     "styl": "~0.2.2",
     "coffee-script": "~1.6.3",
-    "jison": "~0.4.6"
+    "jison": "~0.4.6",
+    "jsdom": "~0.7.0"
   }
 }
