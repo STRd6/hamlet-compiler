@@ -155,7 +155,7 @@
         };
       }), o("text", function() {
         return {
-          text: $text
+          text: $text + "\n"
         };
       })
     ],
