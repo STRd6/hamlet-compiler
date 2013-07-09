@@ -43,8 +43,8 @@ module.exports = (grunt) ->
       "gh-pages":
         command: [
           "rm -r gh-pages/*"
-          "cp demo.html gh-pages/"
           "cp -r build lib gh-pages"
+          "coffee source/cli.coffee demo.haml > gh-pages/index.html"
           "cd gh-pages"
           "git add ."
           "git ci -am 'updating pages'"
