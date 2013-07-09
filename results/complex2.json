@@ -7,7 +7,7 @@
         "children": [
           {
             "tag": "title",
-            "text": "Ravel | #{@name}'s photo tagged #{@tag}"
+            "text": "Ravel | #{@name}'s photo tagged #{@tag}\n"
           },
           {
             "unbufferedCode": "@props.each (key, value) ->",
@@ -117,7 +117,7 @@
                     "tag": "h1",
                     "children": [
                       {
-                        "text": "Ravel"
+                        "text": "Ravel\n"
                       }
                     ]
                   }

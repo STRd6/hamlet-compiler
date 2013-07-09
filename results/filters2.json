@@ -14,7 +14,7 @@
     "tag": "div",
     "children": [
       {
-        "text": "col"
+        "text": "col\n"
       },
       {
         "filter": "plain",
@@ -29,7 +29,7 @@
     "tag": "div",
     "children": [
       {
-        "text": "cool"
+        "text": "cool\n"
       }
     ]
   }

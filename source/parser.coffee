@@ -87,7 +87,7 @@ grammar =
   rest: [
     o "EQUAL CODE",                                  -> { bufferedCode: $CODE }
     o "HYPHEN CODE",                                 -> { unbufferedCode: $CODE }
-    o "text",                                        -> { text: $text }
+    o "text",                                        -> { text: $text + "\n" }
   ]
 
   text: [

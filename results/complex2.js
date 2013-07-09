@@ -17,7 +17,7 @@
       __element = document.createElement("title");
       __push(__element);
       __element = document.createTextNode('');
-      __observeText(__element, "Ravel | " + this.name + "'s photo tagged " + this.tag);
+      __observeText(__element, "Ravel | " + this.name + "'s photo tagged " + this.tag + "\n");
       __push(__element);
       __pop();
       __pop();
@@ -70,7 +70,7 @@
       __push(__element);
       __observeAttribute(__element, "class", "hide-text");
       __element = document.createTextNode('');
-      __observeText(__element, "Ravel");
+      __observeText(__element, "Ravel\n");
       __push(__element);
       __pop();
       __pop();

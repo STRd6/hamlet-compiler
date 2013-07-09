@@ -32,7 +32,10 @@ module.exports = (grunt) ->
           "echo 'exports.lexer = lexer;' >> build/lexer.js"
         ].join(' && ')
       demo:
-        command: "coffee source/cli.coffee demo.haml > demo.html"
+        command: [
+          "mkdir -p gh-pages"
+          "coffee source/cli.coffee demo.haml > gh-pages/index.html"
+        ].join(' && ')
 
       test:
         command: "coffee source/demo.coffee"

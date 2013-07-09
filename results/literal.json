@@ -1,19 +1,19 @@
 [
   {
-    "text": "<literal>",
+    "text": "<literal>\n",
     "children": [
       {
-        "text": "<wat>"
+        "text": "<wat>\n"
       },
       {
-        "text": "</wat>"
+        "text": "</wat>\n"
       }
     ]
   },
   {
-    "text": "</literal>"
+    "text": "</literal>\n"
   },
   {
-    "text": "<yolo></yolo>"
+    "text": "<yolo></yolo>\n"
   }
 ]

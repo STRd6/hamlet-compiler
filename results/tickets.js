@@ -11,7 +11,7 @@
       _ref = Runtime(this), __push = _ref.__push, __pop = _ref.__pop, __observeAttribute = _ref.__observeAttribute, __observeText = _ref.__observeText, __on = _ref.__on, __each = _ref.__each, __with = _ref.__with;
       __push(document.createDocumentFragment());
       __element = document.createTextNode('');
-      __observeText(__element, "Choose a ticket class:");
+      __observeText(__element, "Choose a ticket class:\n");
       __push(__element);
       __pop();
       __element = document.createElement("select");
@@ -30,7 +30,7 @@
       __element = document.createElement("button");
       __push(__element);
       __element = document.createTextNode('');
-      __observeText(__element, "Clear");
+      __observeText(__element, "Clear\n");
       __push(__element);
       __pop();
       __on("click", this.resetTicket);
@@ -40,7 +40,7 @@
         __push(__element);
         if (this.price) {
           __element = document.createTextNode('');
-          __observeText(__element, "You have chosen");
+          __observeText(__element, "You have chosen\n");
           __push(__element);
           __pop();
           __element = document.createElement("b");
@@ -53,13 +53,13 @@
           __element = document.createElement("span");
           __push(__element);
           __element = document.createTextNode('');
-          __observeText(__element, "$" + this.price);
+          __observeText(__element, "$" + this.price + "\n");
           __push(__element);
           __pop();
           __pop();
         } else {
           __element = document.createTextNode('');
-          __observeText(__element, "No ticket chosen");
+          __observeText(__element, "No ticket chosen\n");
           __push(__element);
           __pop();
         }

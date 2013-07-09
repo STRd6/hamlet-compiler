@@ -1,6 +1,6 @@
 [
   {
-    "text": "Choose a ticket class:"
+    "text": "Choose a ticket class:\n"
   },
   {
     "tag": "select",
@@ -21,7 +21,7 @@
   },
   {
     "tag": "button",
-    "text": "Clear",
+    "text": "Clear\n",
     "children": [
       {
         "unbufferedCode": "on \"click\", @resetTicket"
@@ -38,7 +38,7 @@
             "unbufferedCode": "if @price",
             "children": [
               {
-                "text": "You have chosen"
+                "text": "You have chosen\n"
               },
               {
                 "tag": "b",
@@ -48,7 +48,7 @@
                 "tag": "span",
                 "children": [
                   {
-                    "text": "$#{@price}"
+                    "text": "$#{@price}\n"
                   }
                 ]
               }
@@ -58,7 +58,7 @@
             "unbufferedCode": "else",
             "children": [
               {
-                "text": "No ticket chosen"
+                "text": "No ticket chosen\n"
               }
             ]
           }

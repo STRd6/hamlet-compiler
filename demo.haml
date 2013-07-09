@@ -36,9 +36,25 @@
   %body
     %h1 Tempest - Alpha
 
-    %p Create simple interactive HTML components using CoffeeScript, HamlJr, and Styl
+    %p
+      = "Create simple interactive HTML components using "
+      %a(href="http://coffeescript.org/") CoffeeScript
+      = ", "
+      %a(href="https://github.com/STRd6/haml-jr") HamlJr
+      = ", and "
+      %a(href="https://github.com/visionmedia/styl") Styl
 
-    %p There are still many bugs, but I think this is interesting enough to put out into the world for feedback.
+    %p
+      There are still many bugs, but I think this is interesting enough to put out into the world
+      = " for "
+      %a(href="https://github.com/STRd6/haml-jr/issues") feedback
+      .
+
+    %p
+      In the data section you return an object that has observable properties.
+      In the template these properties are bound to attributes or text.
+      As your model is updated the rendered template will always stay up to date.
+      The binding is automatic by introspecting the observable properties.
 
     #actions
       %button.save Save

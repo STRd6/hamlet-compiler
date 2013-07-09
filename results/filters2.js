@@ -20,7 +20,7 @@
       __push(__element);
       __observeAttribute(__element, "class", "duder");
       __element = document.createTextNode('');
-      __observeText(__element, "col");
+      __observeText(__element, "col\n");
       __push(__element);
       __pop();
       __element = document.createTextNode('');
@@ -32,7 +32,7 @@
       __push(__element);
       __observeAttribute(__element, "class", "duder2");
       __element = document.createTextNode('');
-      __observeText(__element, "cool");
+      __observeText(__element, "cool\n");
       __push(__element);
       __pop();
       __pop();
