@@ -39,7 +39,7 @@
           whitespace: true
         }).toString());
       },
-      stet: function(content, compiler) {
+      verbatim: function(content, compiler) {
         return compiler.buffer('"""' + content.replace(/(#)/, "\\$1") + '"""');
       },
       plain: function(content, compiler) {

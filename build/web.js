@@ -701,7 +701,7 @@ return lexer;
 
 }).call(this);
 
-},{"./parser":5,"../build/lexer":1,"./renderer":6,"./runtime":2,"styl":7}],5:[function(require,module,exports){
+},{"./parser":5,"./renderer":6,"../build/lexer":1,"./runtime":2,"styl":7}],5:[function(require,module,exports){
 (function() {
   var create, extend, grammar, o, oldParse, operators, parser, _ref,
     __slice = [].slice;
@@ -1052,7 +1052,7 @@ process.chdir = function (dir) {
           whitespace: true
         }).toString());
       },
-      stet: function(content, compiler) {
+      verbatim: function(content, compiler) {
         return compiler.buffer('"""' + content.replace(/(#)/, "\\$1") + '"""');
       },
       plain: function(content, compiler) {
@@ -1319,7 +1319,7 @@ Style.prototype.toString = function(){
   return this.rework.toString({ compress: this.compress });
 };
 
-},{"css-whitespace":10,"rework":11,"rework-mixins":12}],8:[function(require,module,exports){
+},{"css-whitespace":10,"rework-mixins":11,"rework":12}],8:[function(require,module,exports){
 (function() {
   var Parser, node, unwrap;
 
@@ -1405,9 +1405,6 @@ module.exports = function(str){
 
 },{"./lib/parser":14,"./lib/compiler":15}],11:[function(require,module,exports){
 
-module.exports = require('./lib/rework');
-},{"./lib/rework":16}],12:[function(require,module,exports){
-
 exports['border-radius'] = require('./lib/border-radius');
 exports['overflow'] = require('./lib/ellipsis');
 exports['absolute'] = require('./lib/absolute');
@@ -1416,7 +1413,10 @@ exports['fixed'] = require('./lib/fixed');
 exports['opacity'] = require('./lib/opacity');
 exports['size'] = require('./lib/size');
 
-},{"./lib/border-radius":17,"./lib/ellipsis":18,"./lib/absolute":19,"./lib/relative":20,"./lib/fixed":21,"./lib/opacity":22,"./lib/size":23}],17:[function(require,module,exports){
+},{"./lib/border-radius":16,"./lib/ellipsis":17,"./lib/absolute":18,"./lib/relative":19,"./lib/opacity":20,"./lib/fixed":21,"./lib/size":22}],12:[function(require,module,exports){
+
+module.exports = require('./lib/rework');
+},{"./lib/rework":23}],16:[function(require,module,exports){
 
 /**
  * Positions.
@@ -1470,7 +1470,7 @@ module.exports = function(str){
   return ret;
 };
 
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 
 /**
  * overflow: ellipsis
@@ -1490,7 +1490,7 @@ module.exports = function(type) {
   };
 };
 
-},{}],22:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 
 /**
  * opacity: 1
@@ -1508,7 +1508,7 @@ module.exports = function(str){
   }
 };
 
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /**
  * size: 100px 50px
  */
@@ -1524,9 +1524,6 @@ module.exports = function(sizes) {
 };
 
 },{}],24:[function(require,module,exports){
-// nothing to see here... no file methods for the browser
-
-},{}],25:[function(require,module,exports){
 (function(process){function filter (xs, fn) {
     var res = [];
     for (var i = 0; i < xs.length; i++) {
@@ -1704,7 +1701,10 @@ exports.relative = function(from, to) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":9}],26:[function(require,module,exports){
+},{"__browserify_process":9}],25:[function(require,module,exports){
+// nothing to see here... no file methods for the browser
+
+},{}],26:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -2120,7 +2120,7 @@ module.exports={
   "_from": "jison@"
 }
 
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 
 /**
  * absolute: top left
@@ -2129,7 +2129,7 @@ module.exports={
 
 module.exports = require('./position')('absolute');
 
-},{"./position":29}],20:[function(require,module,exports){
+},{"./position":29}],19:[function(require,module,exports){
 
 /**
  * relative: top left
@@ -2629,6 +2629,50 @@ module.exports = function(str) {
   }
 }
 
+},{}],29:[function(require,module,exports){
+
+/**
+ * Positions.
+ */
+
+var positions = {
+  top: true,
+  left: true,
+  right: true,
+  bottom: true
+};
+
+/**
+ * Return a mixin for the given position `type`.
+ *
+ * @param {String} type
+ * @return {Function}
+ * @api private
+ */
+
+module.exports = function(type){
+  return function(str){
+    var val;
+    var pos;
+    var ret = {};
+    var vals = str.split(/\s+/);
+
+    ret.position = type;
+
+    for (var i = 0; i < vals.length; ++i) {
+      val = vals[i];
+      if (positions[val]) {
+        pos = val;
+        ret[pos] = '0';
+      } else {
+        ret[pos] = val;
+      }
+    }
+
+    return ret;
+  };
+}
+
 },{}],32:[function(require,module,exports){
 
 /**
@@ -2840,50 +2884,6 @@ module.exports = function(){
   console.warn('Warning: vars() has been removed, please use: https://github.com/visionmedia/rework-vars');
   return function(){}
 };
-
-},{}],29:[function(require,module,exports){
-
-/**
- * Positions.
- */
-
-var positions = {
-  top: true,
-  left: true,
-  right: true,
-  bottom: true
-};
-
-/**
- * Return a mixin for the given position `type`.
- *
- * @param {String} type
- * @return {Function}
- * @api private
- */
-
-module.exports = function(type){
-  return function(str){
-    var val;
-    var pos;
-    var ret = {};
-    var vals = str.split(/\s+/);
-
-    ret.position = type;
-
-    for (var i = 0; i < vals.length; ++i) {
-      val = vals[i];
-      if (positions[val]) {
-        pos = val;
-        ret[pos] = '0';
-      } else {
-        ret[pos] = val;
-      }
-    }
-
-    return ret;
-  };
-}
 
 },{}],36:[function(require,module,exports){
 // Set class to wrap arrays
@@ -4700,7 +4700,7 @@ return function Parser (g, options) {
 
 
 })(require("__browserify_process"))
-},{"fs":24,"path":25,"../package.json":28,"./util/typal":30,"./util/set":36,"ebnf-parser":37,"esprima":38,"escodegen":39,"jison-lex":40,"JSONSelect":41,"__browserify_process":9}],38:[function(require,module,exports){
+},{"fs":25,"path":24,"../package.json":28,"./util/typal":30,"./util/set":36,"ebnf-parser":37,"esprima":38,"escodegen":39,"jison-lex":40,"JSONSelect":41,"__browserify_process":9}],38:[function(require,module,exports){
 (function(){/*
   Copyright (C) 2012 Ariya Hidayat <ariya.hidayat@gmail.com>
   Copyright (C) 2012 Mathias Bynens <mathias@qiwi.be>
@@ -8617,6 +8617,65 @@ parseStatement: true, parseSourceElement: true */
  * Module dependencies.
  */
 
+var visit = require('../visit');
+var utils = require('../utils');
+var strip = utils.stripQuotes;
+
+/**
+ * Define custom function.
+ */
+
+module.exports = function(functions, args) {
+  if (!functions) throw new Error('functions object required');
+  return function(style, rework){
+    visit.declarations(style, function(declarations){
+      for (var name in functions) {
+        func(declarations, name, functions[name], args);
+      }
+    });
+  }
+};
+
+/**
+ * Escape regexp codes in string.
+ *
+ * @param {String} s
+ * @api private
+ */
+
+function escape(s) {
+  return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
+/**
+ * Visit declarations and apply functions.
+ *
+ * @param {Array} declarations
+ * @param {Object} functions
+ * @param {Boolean} [parseArgs]
+ * @api private
+ */
+
+function func(declarations, name, func, parseArgs) {
+  if (false !== parseArgs) parseArgs = true;
+  var regexp = new RegExp(escape(name) + '\\(([^\)]+)\\)', 'g');
+  declarations.forEach(function(decl){
+    if ('comment' == decl.type) return;
+    if (!~decl.value.indexOf(name + '(')) return;
+    decl.value = decl.value.replace(regexp, function(_, args){
+      if (!parseArgs) return func.call(decl, strip(args));
+      args = args.split(/,\s*/).map(strip);
+      return func.apply(decl, args);
+    });
+  });
+}
+
+},{"../visit":43,"../utils":44}],45:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
 var utils = require('../utils');
 var visit = require('../visit');
 
@@ -8680,66 +8739,7 @@ function mixin(rework, declarations, mixins) {
   }
 }
 
-},{"../utils":43,"../visit":44}],45:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var visit = require('../visit');
-var utils = require('../utils');
-var strip = utils.stripQuotes;
-
-/**
- * Define custom function.
- */
-
-module.exports = function(functions, args) {
-  if (!functions) throw new Error('functions object required');
-  return function(style, rework){
-    visit.declarations(style, function(declarations){
-      for (var name in functions) {
-        func(declarations, name, functions[name], args);
-      }
-    });
-  }
-};
-
-/**
- * Escape regexp codes in string.
- *
- * @param {String} s
- * @api private
- */
-
-function escape(s) {
-  return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-}
-
-/**
- * Visit declarations and apply functions.
- *
- * @param {Array} declarations
- * @param {Object} functions
- * @param {Boolean} [parseArgs]
- * @api private
- */
-
-function func(declarations, name, func, parseArgs) {
-  if (false !== parseArgs) parseArgs = true;
-  var regexp = new RegExp(escape(name) + '\\(([^\)]+)\\)', 'g');
-  declarations.forEach(function(decl){
-    if ('comment' == decl.type) return;
-    if (!~decl.value.indexOf(name + '(')) return;
-    decl.value = decl.value.replace(regexp, function(_, args){
-      if (!parseArgs) return func.call(decl, strip(args));
-      args = args.split(/,\s*/).map(strip);
-      return func.apply(decl, args);
-    });
-  });
-}
-
-},{"../visit":44,"../utils":43}],46:[function(require,module,exports){
+},{"../utils":44,"../visit":43}],46:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -8803,7 +8803,7 @@ module.exports = function(prop, vendors) {
   }
 };
 
-},{"../visit":44}],16:[function(require,module,exports){
+},{"../visit":43}],23:[function(require,module,exports){
 (function(){
 /**
  * Module dependencies.
@@ -8920,7 +8920,7 @@ exports.vars = require('./plugins/vars');
 
 
 })()
-},{"./visit":44,"./properties":32,"./plugins/mixin":42,"./plugins/function":45,"./plugins/prefix":46,"./plugins/colors":47,"./plugins/references":48,"./plugins/prefix-value":49,"./plugins/prefix-selectors":33,"./plugins/keyframes":34,"./plugins/at2x":50,"./plugins/url":51,"./plugins/ease":52,"./plugins/vars":35,"./plugins/inline":53,"css":54,"rework-inherit":55}],48:[function(require,module,exports){
+},{"./visit":43,"./properties":32,"./plugins/mixin":45,"./plugins/function":42,"./plugins/prefix":46,"./plugins/colors":47,"./plugins/references":48,"./plugins/prefix-value":49,"./plugins/prefix-selectors":33,"./plugins/keyframes":34,"./plugins/at2x":50,"./plugins/url":51,"./plugins/ease":52,"./plugins/vars":35,"./plugins/inline":53,"css":54,"rework-inherit":55}],48:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -8978,7 +8978,7 @@ function substitute(declarations) {
   }
 }
 
-},{"../visit":44}],49:[function(require,module,exports){
+},{"../visit":43}],49:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -9036,7 +9036,7 @@ module.exports = function(value, vendors) {
   }
 };
 
-},{"../visit":44}],50:[function(require,module,exports){
+},{"../visit":43}],50:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -9150,7 +9150,7 @@ function value(decl) {
   return decl.value;
 }
 
-},{"path":25,"../utils":43}],51:[function(require,module,exports){
+},{"path":24,"../utils":44}],51:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -9182,7 +9182,7 @@ module.exports = function(fn) {
   }, false);
 };
 
-},{"../utils":43,"./function":45}],52:[function(require,module,exports){
+},{"../utils":44,"./function":42}],52:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -9269,7 +9269,7 @@ function substitute(declarations) {
   }
 }
 
-},{"../visit":44}],41:[function(require,module,exports){
+},{"../visit":43}],41:[function(require,module,exports){
 /*! Copyright (c) 2011, Lloyd Hilaiel, ISC License */
 /*
  * This is the JSONSelect reference implementation, in javascript.  This
@@ -9956,21 +9956,7 @@ module.exports = function(str) {
   }
 }
 
-},{"util":26,"./lexer":31,"debug":56}],43:[function(require,module,exports){
-
-/**
- * Strip `str` quotes.
- *
- * @param {String} str
- * @return {String}
- * @api private
- */
-
-exports.stripQuotes = function(str) {
-  if ('"' == str[0] || "'" == str[0]) return str.slice(1, -1);
-  return str;
-};
-},{}],15:[function(require,module,exports){
+},{"util":26,"./lexer":31,"debug":56}],15:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -10196,7 +10182,21 @@ function blank(str) {
   return '' != str;
 }
 
-},{"util":26,"debug":56}],56:[function(require,module,exports){
+},{"util":26,"debug":56}],44:[function(require,module,exports){
+
+/**
+ * Strip `str` quotes.
+ *
+ * @param {String} str
+ * @return {String}
+ * @api private
+ */
+
+exports.stripQuotes = function(str) {
+  if ('"' == str[0] || "'" == str[0]) return str.slice(1, -1);
+  return str;
+};
+},{}],56:[function(require,module,exports){
 
 /**
  * Expose `debug()` as the module.
@@ -10433,7 +10433,7 @@ module.exports={
   "_from": "jison-lex@0.2.x"
 }
 
-},{}],44:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 
 // TODO: require() directly in plugins...
 exports.declarations = require('rework-visit');
@@ -13619,7 +13619,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 }
 }
 })(require("__browserify_process"))
-},{"fs":24,"path":25,"./ebnf-transform":62,"__browserify_process":9}],61:[function(require,module,exports){
+},{"fs":25,"path":24,"./ebnf-transform":62,"__browserify_process":9}],61:[function(require,module,exports){
 (function(){/*
   Copyright (C) 2012 Yusuke Suzuki <utatane.tea@gmail.com>
   Copyright (C) 2012 Ariya Hidayat <ariya.hidayat@gmail.com>
@@ -17848,7 +17848,7 @@ module.exports = function(dirs) {
 };
 
 })(require("__browserify_Buffer").Buffer)
-},{"path":25,"fs":24,"./function":45,"mime":66,"__browserify_Buffer":65}],37:[function(require,module,exports){
+},{"path":24,"fs":25,"./function":42,"mime":66,"__browserify_Buffer":65}],37:[function(require,module,exports){
 var bnf = require("./parser").parser,
     ebnf = require("./ebnf-transform"),
     jisonlex = require("lex-parser");
@@ -17884,7 +17884,7 @@ var parseLex = function (text) {
 };
 
 
-},{"./parser":64,"./ebnf-transform":62,"lex-parser":67}],54:[function(require,module,exports){
+},{"./ebnf-transform":62,"./parser":64,"lex-parser":67}],54:[function(require,module,exports){
 
 exports.parse = require('css-parse');
 exports.stringify = require('css-stringify');
@@ -17928,7 +17928,7 @@ module.exports = function() {
   });
 };
 
-},{"./function":45,"color-parser":70}],40:[function(require,module,exports){
+},{"./function":42,"color-parser":70}],40:[function(require,module,exports){
 // Basic Lexer implemented using JavaScript regular expressions
 // MIT Licensed
 
@@ -18868,7 +18868,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 
 
 })(require("__browserify_process"))
-},{"fs":24,"path":25,"__browserify_process":9}],68:[function(require,module,exports){
+},{"fs":25,"path":24,"__browserify_process":9}],68:[function(require,module,exports){
 
 module.exports = function(css, options){
   options = options || {};
@@ -19451,7 +19451,7 @@ mime.charsets = {
 module.exports = mime;
 
 })(require("__browserify_process"),"/../node_modules/styl/node_modules/rework/node_modules/mime")
-},{"path":25,"fs":24,"__browserify_process":9}],67:[function(require,module,exports){
+},{"path":24,"fs":25,"__browserify_process":9}],67:[function(require,module,exports){
 (function(process){/* parser generated by jison 0.4.4 */
 /*
   Returns a Parser object of the following structure:
@@ -20301,7 +20301,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 }
 }
 })(require("__browserify_process"))
-},{"fs":24,"path":25,"__browserify_process":9}],60:[function(require,module,exports){
+},{"fs":25,"path":24,"__browserify_process":9}],60:[function(require,module,exports){
 /*
  * Copyright 2009-2011 Mozilla Foundation and contributors
  * Licensed under the New BSD license. See LICENSE.txt or:
@@ -20566,7 +20566,7 @@ module.exports = function(node, options){
 };
 
 
-},{"./lib/compress":74,"./lib/identity":75}],70:[function(require,module,exports){
+},{"./lib/identity":74,"./lib/compress":75}],70:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -20696,170 +20696,6 @@ function hex3(str) {
 
 
 },{"./colors":76}],74:[function(require,module,exports){
-
-/**
- * Expose compiler.
- */
-
-module.exports = Compiler;
-
-/**
- * Initialize a new `Compiler`.
- */
-
-function Compiler(options) {
-  options = options || {};
-}
-
-/**
- * Compile `node`.
- */
-
-Compiler.prototype.compile = function(node){
-  return node.stylesheet
-    .rules.map(this.visit, this)
-    .join('');
-};
-
-/**
- * Visit `node`.
- */
-
-Compiler.prototype.visit = function(node){
-  return this[node.type](node);
-};
-
-/**
- * Visit comment node.
- */
-
-Compiler.prototype.comment = function(node){
-  if (this.compress) return '';
-};
-
-/**
- * Visit import node.
- */
-
-Compiler.prototype.import = function(node){
-  return '@import ' + node.import + ';';
-};
-
-/**
- * Visit media node.
- */
-
-Compiler.prototype.media = function(node){
-  return '@media '
-    + node.media
-    + '{'
-    + node.rules.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit document node.
- */
-
-Compiler.prototype.document = function(node){
-  var doc = '@' + (node.vendor || '') + 'document ' + node.document;
-
-  return doc
-    + '{'
-    + node.rules.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit charset node.
- */
-
-Compiler.prototype.charset = function(node){
-  return '@charset ' + node.charset + ';';
-};
-
-/**
- * Visit supports node.
- */
-
-Compiler.prototype.supports = function(node){
-  return '@supports '
-    + node.supports
-    + ' {\n'
-    + this.indent(1)
-    + node.rules.map(this.visit, this).join('\n\n')
-    + this.indent(-1)
-    + '\n}';
-};
-
-/**
- * Visit keyframes node.
- */
-
-Compiler.prototype.keyframes = function(node){
-  return '@'
-    + (node.vendor || '')
-    + 'keyframes '
-    + node.name
-    + '{'
-    + node.keyframes.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit keyframe node.
- */
-
-Compiler.prototype.keyframe = function(node){
-  var decls = node.declarations;
-
-  return node.values.join(',')
-    + '{'
-    + decls.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit page node.
- */
-
-Compiler.prototype.page = function(node){
-  var sel = node.selectors.length
-    ? node.selectors.join(', ') + ' '
-    : '';
-
-  return '@page ' + sel
-    + '{\n'
-    + this.indent(1)
-    + node.declarations.map(this.visit, this).join('\n')
-    + this.indent(-1)
-    + '\n}';
-};
-
-/**
- * Visit rule node.
- */
-
-Compiler.prototype.rule = function(node){
-  var decls = node.declarations;
-  if (!decls.length) return '';
-
-  return node.selectors.join(',')
-    + '{'
-    + decls.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit declaration node.
- */
-
-Compiler.prototype.declaration = function(node){
-  return node.property + ':' + node.value + ';';
-};
-
-
-},{}],75:[function(require,module,exports){
 
 /**
  * Expose compiler.
@@ -21049,6 +20885,170 @@ Compiler.prototype.indent = function(level) {
 
   return Array(this.level).join(this.indentation || '  ');
 };
+
+},{}],75:[function(require,module,exports){
+
+/**
+ * Expose compiler.
+ */
+
+module.exports = Compiler;
+
+/**
+ * Initialize a new `Compiler`.
+ */
+
+function Compiler(options) {
+  options = options || {};
+}
+
+/**
+ * Compile `node`.
+ */
+
+Compiler.prototype.compile = function(node){
+  return node.stylesheet
+    .rules.map(this.visit, this)
+    .join('');
+};
+
+/**
+ * Visit `node`.
+ */
+
+Compiler.prototype.visit = function(node){
+  return this[node.type](node);
+};
+
+/**
+ * Visit comment node.
+ */
+
+Compiler.prototype.comment = function(node){
+  if (this.compress) return '';
+};
+
+/**
+ * Visit import node.
+ */
+
+Compiler.prototype.import = function(node){
+  return '@import ' + node.import + ';';
+};
+
+/**
+ * Visit media node.
+ */
+
+Compiler.prototype.media = function(node){
+  return '@media '
+    + node.media
+    + '{'
+    + node.rules.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit document node.
+ */
+
+Compiler.prototype.document = function(node){
+  var doc = '@' + (node.vendor || '') + 'document ' + node.document;
+
+  return doc
+    + '{'
+    + node.rules.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit charset node.
+ */
+
+Compiler.prototype.charset = function(node){
+  return '@charset ' + node.charset + ';';
+};
+
+/**
+ * Visit supports node.
+ */
+
+Compiler.prototype.supports = function(node){
+  return '@supports '
+    + node.supports
+    + ' {\n'
+    + this.indent(1)
+    + node.rules.map(this.visit, this).join('\n\n')
+    + this.indent(-1)
+    + '\n}';
+};
+
+/**
+ * Visit keyframes node.
+ */
+
+Compiler.prototype.keyframes = function(node){
+  return '@'
+    + (node.vendor || '')
+    + 'keyframes '
+    + node.name
+    + '{'
+    + node.keyframes.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit keyframe node.
+ */
+
+Compiler.prototype.keyframe = function(node){
+  var decls = node.declarations;
+
+  return node.values.join(',')
+    + '{'
+    + decls.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit page node.
+ */
+
+Compiler.prototype.page = function(node){
+  var sel = node.selectors.length
+    ? node.selectors.join(', ') + ' '
+    : '';
+
+  return '@page ' + sel
+    + '{\n'
+    + this.indent(1)
+    + node.declarations.map(this.visit, this).join('\n')
+    + this.indent(-1)
+    + '\n}';
+};
+
+/**
+ * Visit rule node.
+ */
+
+Compiler.prototype.rule = function(node){
+  var decls = node.declarations;
+  if (!decls.length) return '';
+
+  return node.selectors.join(',')
+    + '{'
+    + decls.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit declaration node.
+ */
+
+Compiler.prototype.declaration = function(node){
+  return node.property + ':' + node.value + ';';
+};
+
 
 },{}],76:[function(require,module,exports){
 
@@ -22684,7 +22684,7 @@ function amdefine(module, require) {
 module.exports = amdefine;
 
 })(require("__browserify_process"),"/../node_modules/jison/node_modules/escodegen/node_modules/source-map/node_modules/amdefine/amdefine.js")
-},{"path":25,"__browserify_process":9}],77:[function(require,module,exports){
+},{"path":24,"__browserify_process":9}],77:[function(require,module,exports){
 /* -*- Mode: js; js-indent-level: 2; -*- */
 /*
  * Copyright 2011 Mozilla Foundation and contributors
