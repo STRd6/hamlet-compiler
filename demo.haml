@@ -37,16 +37,16 @@
     %h1 Tempest - Alpha
 
     %p
-      = "Create simple interactive HTML components using "
+      Create simple interactive HTML components using
       %a(href="http://coffeescript.org/") CoffeeScript
-      = ", "
+      ,
       %a(href="https://github.com/STRd6/haml-jr") HamlJr
-      = ", and "
+      , and
       %a(href="https://github.com/visionmedia/styl") Styl
 
     %p
-      There are still many bugs, but I think this is interesting enough to put out into the world
-      = " for "
+      There are still many bugs, but I think this is interesting
+      enough to put out into the world for
       %a(href="https://github.com/STRd6/haml-jr/issues") feedback
       .
 
@@ -67,7 +67,7 @@
       %h2 Style
 
     %textarea#data
-      :stet
+      :verbatim
         tickets: [
           {name: "None", price: null}
           {name: "Economy", price: 199.95}
@@ -79,7 +79,7 @@
           @chosenTicket(@tickets[0])
 
     %textarea#template
-      :stet
+      :verbatim
         Choose a ticket class:
         %select
           - on "change", @chosenTicket
@@ -99,13 +99,10 @@
               No ticket chosen
 
     %textarea#style
-      :stet
+      :verbatim
         #preview
           font-family: helvetica
           padding: 1em
-
-          b
-            margin: 0 0.25em
 
     %h2 Preview
 

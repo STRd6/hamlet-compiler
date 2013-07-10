@@ -34,7 +34,7 @@ util =
     styl: (content, compiler) ->
       compiler.styleTag styl(content, whitespace: true).toString()
 
-    stet: (content, compiler) ->
+    verbatim: (content, compiler) ->
       # TODO: Allow """ in content to stand
       compiler.buffer '"""' + content.replace(/(#)/, "\\$1") + '"""'
 
