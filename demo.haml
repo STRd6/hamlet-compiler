@@ -1,15 +1,27 @@
 %html
   %head
+    %title HamlJr
+    %meta(charset="utf-8")
+
     %script(src="javascripts/lib/cornerstone.js")
     %script(src="javascripts/lib/coffee-script.js")
     %script(src="javascripts/lib/jquery-1.10.2.min.js")
+    %script(src="//d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js")
     %script(src="javascripts/web.min.js")
 
     :styl
-      textarea
-        font-family: monospace
+      .editor-wrapper
+        display: inline-block
+        position: relative
         height: 400px
         width: 320px
+
+        & > div
+          position: absolute
+          top: 0
+          right: 0
+          bottom: 0
+          left: 0
 
       #actions
         position: fixed
@@ -66,43 +78,46 @@
       %h2 Template
       %h2 Style
 
-    %textarea#data
-      :verbatim
-        tickets: [
-          {name: "None", price: null}
-          {name: "Economy", price: 199.95}
-          {name: "Business", price: 449.22}
-          {name: "First Class", price: 1199.99}
-        ]
-        chosenTicket: Observable()
-        resetTicket: ->
-          @chosenTicket(@tickets[0])
+    .editor-wrapper
+      #data
+        :verbatim
+          tickets: [
+            {name: "None", price: null}
+            {name: "Economy", price: 199.95}
+            {name: "Business", price: 449.22}
+            {name: "First Class", price: 1199.99}
+          ]
+          chosenTicket: Observable()
+          resetTicket: ->
+            @chosenTicket(@tickets[0])
 
-    %textarea#template
-      :verbatim
-        Choose a ticket class:
-        %select
-          - on "change", @chosenTicket
-          - each @tickets, ->
-            %option= @name
+    .editor-wrapper
+      #template
+        :verbatim
+          Choose a ticket class:
+          %select
+            - on "change", @chosenTicket
+            - each @tickets, ->
+              %option= @name
 
-        %button Clear
-          - on "click", @resetTicket
+          %button Clear
+            - on "click", @resetTicket
 
-        - with @chosenTicket, ->
-          %p
-            - if @price
-              You have chosen
-              %b= @name
-              %span $#{@price}
-            - else
-              No ticket chosen
+          - with @chosenTicket, ->
+            %p
+              - if @price
+                You have chosen
+                %b= @name
+                %span $#{@price}
+              - else
+                No ticket chosen
 
-    %textarea#style
-      :verbatim
-        #preview
-          font-family: helvetica
-          padding: 1em
+    .editor-wrapper
+      #style
+        :verbatim
+          #preview
+            font-family: helvetica
+            padding: 1em
 
     %h2 Preview
 

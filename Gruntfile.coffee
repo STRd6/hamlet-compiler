@@ -63,6 +63,10 @@ module.exports = (grunt) ->
           "cp -r lib gh-pages/javascripts/"
           "cp build/web.min.js gh-pages/javascripts"
           "node build/cli.js demo.haml > gh-pages/index.html"
+        ].join(' && ')
+
+      "gh-pages-push":
+        commands: [
           "cd gh-pages"
           "git add ."
           "git ci -am 'updating pages'"
@@ -88,6 +92,10 @@ module.exports = (grunt) ->
     'shell:setup'
   ]
 
-  grunt.registerTask 'gh-pages', ['build', 'shell:gh-pages']
+  grunt.registerTask 'gh-pages', [
+    'build'
+    'shell:gh-pages'
+    'shell:gh-pages-push'
+  ]
 
   grunt.registerTask 'default', ['test']

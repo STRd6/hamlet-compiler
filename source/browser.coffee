@@ -73,14 +73,16 @@ rerender = ->
   # HACK for embedded
   return unless $("#template").length
 
+  [coffee, haml, style] = editors.map (editor) -> editor.getValue()
+
   # TODO: Better error reporting
-  ast = parser.parse($("#template").val())
+  ast = parser.parse(haml)
 
   template = Function("return " + render(ast, compiler: CoffeeScript))()
 
-  data = Function("return " + CoffeeScript.compile("do ->\n" + util.indent($("#data").val()), bare: true))()
+  data = Function("return " + CoffeeScript.compile("do ->\n" + util.indent(coffee), bare: true))()
 
-  style = styl($("#style").val(), whitespace: true).toString()
+  style = styl(style, whitespace: true).toString()
 
   $(selector)
     .empty()
@@ -119,11 +121,21 @@ load = (id) ->
     rerender()
 
 $ ->
+  window.editors = [
+    ["data", "coffee"]
+    ["template", "haml"]
+    ["style", "stylus"]
+  ].map ([id, mode]) ->
+    editor = ace.edit(id)
+    editor.setTheme("ace/theme/tomorrow");
+    editor.getSession().setMode("ace/mode/#{mode}")
+    editor.getSession().on 'change', rerender
+
+    editor
+
   if id = location.hash
     load(id.substring(1))
   else
     rerender()
-
-  $("#template, #data, #style").on "change", rerender
 
   $("#actions .save").on "click", save
