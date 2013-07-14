@@ -66,7 +66,7 @@ module.exports = (grunt) ->
         ].join(' && ')
 
       "gh-pages-push":
-        commands: [
+        command: [
           "cd gh-pages"
           "git add ."
           "git ci -am 'updating pages'"
