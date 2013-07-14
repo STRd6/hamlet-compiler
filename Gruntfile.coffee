@@ -3,8 +3,10 @@ module.exports = (grunt) ->
   coffeeFiles = {}
   [
     "browser"
+    "cli"
+    "demo"
     "grammar_dsl"
-    "parser"
+    "haml-jr"
     "renderer"
     "runtime"
   ].forEach (name) ->
@@ -20,31 +22,45 @@ module.exports = (grunt) ->
       compile:
         files: coffeeFiles
 
+    uglify:
+      web:
+        files:
+          'build/web.min.js': ['build/web.js']
+
     browserify:
       options:
         ignore: "coffee-script"
       'build/web.js': ['build/browser.js']
 
     shell:
+      options:
+        stdout: true
+        stderr: true
+        failOnError: true
       lexer:
-        command:[
+        command: [
           "jison-lex -o build/lexer.js source/haml.jisonlex"
           "echo 'exports.lexer = lexer;' >> build/lexer.js"
         ].join(' && ')
+      parser:
+        command: "./script/generate.coffee"
       demo:
         command: [
           "mkdir -p gh-pages"
-          "coffee source/cli.coffee demo.haml > gh-pages/index.html"
+          "node build/cli.js demo.haml > gh-pages/index.html"
         ].join(' && ')
 
+      setup:
+        command: "git clone -b gh-pages `git config --get remote.origin.url` gh-pages"
+
       test:
-        command: "coffee source/demo.coffee"
+        command: "node build/demo.js"
 
       "gh-pages":
         command: [
           "rm -r gh-pages/*"
           "cp -r build lib gh-pages"
-          "coffee source/cli.coffee demo.haml > gh-pages/index.html"
+          "node build/cli.js demo.haml > gh-pages/index.html"
           "cd gh-pages"
           "git add ."
           "git ci -am 'updating pages'"
@@ -53,10 +69,22 @@ module.exports = (grunt) ->
 
   grunt.loadNpmTasks('grunt-browserify')
   grunt.loadNpmTasks('grunt-contrib-coffee')
+  grunt.loadNpmTasks('grunt-contrib-uglify')
   grunt.loadNpmTasks('grunt-shell')
 
   grunt.registerTask 'test', ['build', 'shell:test']
-  grunt.registerTask 'build', ['shell:lexer', 'coffee', 'browserify', 'shell:demo']
+  grunt.registerTask 'build', [
+    'shell:lexer'
+    'shell:parser'
+    'coffee'
+    'browserify'
+    'uglify'
+    'shell:demo'
+  ]
+
+  grunt.registerTask 'setup', [
+    'shell:setup'
+  ]
 
   grunt.registerTask 'gh-pages', ['build', 'shell:gh-pages']
 

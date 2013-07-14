@@ -1,11 +1,8 @@
-{parser} = require('./parser')
-{lexer} = require('../build/lexer')
+{parser} = require('./haml-jr')
 {renderJST, util} = require('./renderer')
 styl = require('styl')
 
 require('./runtime')
-
-parser.lexer = lexer
 
 window.parser = parser
 window.render = renderJST

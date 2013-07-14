@@ -1,12 +1,9 @@
 fs = require('fs')
 {jsdom} = require("jsdom")
-{parser} = require('./parser')
-{lexer} = require('../build/lexer')
+{parser} = require('./haml-jr')
 {renderJST, renderHaml} = require('./renderer')
 
 global.Runtime = require('./runtime').Runtime
-
-parser.lexer = lexer
 
 file = process.argv[2]
 

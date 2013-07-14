@@ -1,9 +1,6 @@
 fs = require('fs')
-{parser} = require('./parser')
-{lexer} = require('../build/lexer')
+{parser} = require('./haml-jr')
 {renderJST, renderHaml} = require('./renderer')
-
-parser.lexer = lexer
 
 sampleDir = "test/samples/haml"
 
