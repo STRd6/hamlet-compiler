@@ -1,5 +1,6 @@
 {parser} = require('./haml-jr')
 {renderJST, util} = require('./renderer')
+Gistquire = require './gistquire'
 styl = require('styl')
 
 require('./runtime')
@@ -64,7 +65,7 @@ Observable.lift = (object) ->
 
     return dummy
 
-rerender = ->
+rerender = (->
   if location.search.match("embed")
     selector = "body"
   else
@@ -88,6 +89,8 @@ rerender = ->
     .empty()
     .append(template(data))
     .append("<style>#{style}</style>")
+
+).debounce(100)
 
 # TODO: Remote sample repos
 save = ->
@@ -114,9 +117,13 @@ save = ->
       location.hash = data.id
 
 load = (id) ->
-  $.getJSON "https://api.github.com/gists/#{id}", (data) ->
-    ["data", "style", "template"].each (file) ->
-      $("##{file}").val(data.files[file]?.content || "")
+  Gistquire.get id, (data) ->
+    ["data", "template", "style"].each (file, i) ->
+      content = data.files[file]?.content || ""
+      editor = editors[i]
+      editor.setValue(content)
+      editor.moveCursorTo(0, 0)
+      editor.session.selection.clearSelection()
 
     rerender()
 

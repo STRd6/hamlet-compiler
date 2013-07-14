@@ -5,6 +5,7 @@ module.exports = (grunt) ->
     "browser"
     "cli"
     "demo"
+    "gistquire"
     "grammar_dsl"
     "haml-jr"
     "renderer"
@@ -61,7 +62,7 @@ module.exports = (grunt) ->
           "rm -r gh-pages/*"
           "mkdir -p gh-pages/javascripts"
           "cp -r lib gh-pages/javascripts/"
-          "cp build/web.min.js gh-pages/javascripts"
+          "cp build/*.js gh-pages/javascripts"
           "node build/cli.js demo.haml > gh-pages/index.html"
         ].join(' && ')
 
