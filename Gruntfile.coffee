@@ -59,7 +59,9 @@ module.exports = (grunt) ->
       "gh-pages":
         command: [
           "rm -r gh-pages/*"
-          "cp -r build lib gh-pages"
+          "mkdir -p gh-pages/javascripts"
+          "cp -r lib gh-pages/javascripts/"
+          "cp build/web.min.js gh-pages/javascripts"
           "node build/cli.js demo.haml > gh-pages/index.html"
           "cd gh-pages"
           "git add ."
