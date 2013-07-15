@@ -1,6 +1,20 @@
 (function() {
   module.exports = {
     accessToken: null,
+    update: function(id, data, callback) {
+      var url;
+      url = "https://api.github.com/gists/" + id;
+      if (this.accessToken) {
+        url += "?access_token=" + this.accessToken;
+      }
+      return $.ajax({
+        url: url,
+        type: "PATCH",
+        dataType: 'json',
+        data: data,
+        success: callback
+      });
+    },
     create: function(data, callback) {
       var url;
       url = "https://api.github.com/gists";

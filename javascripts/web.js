@@ -2,6 +2,20 @@
 (function() {
   module.exports = {
     accessToken: null,
+    update: function(id, data, callback) {
+      var url;
+      url = "https://api.github.com/gists/" + id;
+      if (this.accessToken) {
+        url += "?access_token=" + this.accessToken;
+      }
+      return $.ajax({
+        url: url,
+        type: "PATCH",
+        dataType: 'json',
+        data: data,
+        success: callback
+      });
+    },
     create: function(data, callback) {
       var url;
       url = "https://api.github.com/gists";
@@ -185,7 +199,7 @@
 
 },{}],4:[function(require,module,exports){
 (function() {
-  var Gistquire, auth, load, parser, renderJST, rerender, save, styl, util, _ref,
+  var Gistquire, auth, load, parser, postData, renderJST, rerender, save, styl, update, util, _ref,
     __slice = [].slice;
 
   parser = require('./haml-jr').parser;
@@ -312,12 +326,12 @@
     }
   }).debounce(100);
 
-  save = function() {
-    var data, postData, style, template, _ref1;
+  postData = function() {
+    var data, style, template, _ref1;
     _ref1 = editors.map(function(editor) {
       return editor.getValue();
     }), data = _ref1[0], template = _ref1[1], style = _ref1[2];
-    postData = JSON.stringify({
+    return postData = JSON.stringify({
       "public": true,
       files: {
         data: {
@@ -331,7 +345,10 @@
         }
       }
     });
-    return Gistquire.create(postData, function(data) {
+  };
+
+  save = function() {
+    return Gistquire.create(postData(), function(data) {
       return location.hash = data.id;
     });
   };
@@ -356,8 +373,15 @@
     });
   };
 
+  update = function() {
+    var id, _ref1;
+    if (id = (_ref1 = location.hash) != null ? _ref1.substring(1) : void 0) {
+      return Gistquire.update(id, postData(), function(data) {});
+    }
+  };
+
   $(function() {
-    var code, id, _ref1;
+    var code, id, _ref1, _ref2;
     window.editors = [["data", "coffee"], ["template", "haml"], ["style", "stylus"]].map(function(_arg) {
       var editor, id, mode;
       id = _arg[0], mode = _arg[1];
@@ -378,8 +402,8 @@
         }
       });
     }
-    if (id = location.hash) {
-      load(id.substring(1));
+    if (id = (_ref2 = location.hash) != null ? _ref2.substring(1) : void 0) {
+      load(id);
     } else {
       rerender();
     }
@@ -387,12 +411,13 @@
       Gistquire.accessToken = localStorage.authToken;
     }
     $("#actions .save").on("click", save);
-    return $("#actions .auth").on("click", auth);
+    $("#actions .auth").on("click", auth);
+    return $("#actions .update").on("click", update);
   });
 
 }).call(this);
 
-},{"./haml-jr":5,"./renderer":6,"./gistquire":1,"./runtime":2,"styl":7}],5:[function(require,module,exports){
+},{"./haml-jr":5,"./gistquire":1,"./renderer":6,"./runtime":2,"styl":7}],5:[function(require,module,exports){
 (function() {
   var extend, lexer, oldParse, parser,
     __slice = [].slice;
@@ -2980,6 +3005,65 @@ module.exports = function(){
  * Module dependencies.
  */
 
+var visit = require('../visit');
+var utils = require('../utils');
+var strip = utils.stripQuotes;
+
+/**
+ * Define custom function.
+ */
+
+module.exports = function(functions, args) {
+  if (!functions) throw new Error('functions object required');
+  return function(style, rework){
+    visit.declarations(style, function(declarations){
+      for (var name in functions) {
+        func(declarations, name, functions[name], args);
+      }
+    });
+  }
+};
+
+/**
+ * Escape regexp codes in string.
+ *
+ * @param {String} s
+ * @api private
+ */
+
+function escape(s) {
+  return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
+/**
+ * Visit declarations and apply functions.
+ *
+ * @param {Array} declarations
+ * @param {Object} functions
+ * @param {Boolean} [parseArgs]
+ * @api private
+ */
+
+function func(declarations, name, func, parseArgs) {
+  if (false !== parseArgs) parseArgs = true;
+  var regexp = new RegExp(escape(name) + '\\(([^\)]+)\\)', 'g');
+  declarations.forEach(function(decl){
+    if ('comment' == decl.type) return;
+    if (!~decl.value.indexOf(name + '(')) return;
+    decl.value = decl.value.replace(regexp, function(_, args){
+      if (!parseArgs) return func.call(decl, strip(args));
+      args = args.split(/,\s*/).map(strip);
+      return func.apply(decl, args);
+    });
+  });
+}
+
+},{"../visit":35,"../utils":36}],37:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
 var utils = require('../utils');
 var visit = require('../visit');
 
@@ -3043,66 +3127,7 @@ function mixin(rework, declarations, mixins) {
   }
 }
 
-},{"../utils":35,"../visit":36}],37:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var visit = require('../visit');
-var utils = require('../utils');
-var strip = utils.stripQuotes;
-
-/**
- * Define custom function.
- */
-
-module.exports = function(functions, args) {
-  if (!functions) throw new Error('functions object required');
-  return function(style, rework){
-    visit.declarations(style, function(declarations){
-      for (var name in functions) {
-        func(declarations, name, functions[name], args);
-      }
-    });
-  }
-};
-
-/**
- * Escape regexp codes in string.
- *
- * @param {String} s
- * @api private
- */
-
-function escape(s) {
-  return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-}
-
-/**
- * Visit declarations and apply functions.
- *
- * @param {Array} declarations
- * @param {Object} functions
- * @param {Boolean} [parseArgs]
- * @api private
- */
-
-function func(declarations, name, func, parseArgs) {
-  if (false !== parseArgs) parseArgs = true;
-  var regexp = new RegExp(escape(name) + '\\(([^\)]+)\\)', 'g');
-  declarations.forEach(function(decl){
-    if ('comment' == decl.type) return;
-    if (!~decl.value.indexOf(name + '(')) return;
-    decl.value = decl.value.replace(regexp, function(_, args){
-      if (!parseArgs) return func.call(decl, strip(args));
-      args = args.split(/,\s*/).map(strip);
-      return func.apply(decl, args);
-    });
-  });
-}
-
-},{"../visit":36,"../utils":35}],38:[function(require,module,exports){
+},{"../visit":35,"../utils":36}],38:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3166,124 +3191,7 @@ module.exports = function(prop, vendors) {
   }
 };
 
-},{"../visit":36}],25:[function(require,module,exports){
-(function(){
-/**
- * Module dependencies.
- */
-
-var css = require('css');
-
-/**
- * Expose `rework`.
- */
-
-exports = module.exports = rework;
-
-/**
- * Expose `visit` helpers.
- */
-
-exports.visit = require('./visit');
-
-/**
- * Expose prefix properties.
- */
-
-exports.properties = require('./properties');
-
-/**
- * Initialize a new stylesheet `Rework` with `str`.
- *
- * @param {String} str
- * @return {Rework}
- * @api public
- */
-
-function rework(str) {
-  return new Rework(css.parse(str));
-}
-
-/**
- * Initialize a new stylesheet `Rework` with `obj`.
- *
- * @param {Object} obj
- * @api private
- */
-
-function Rework(obj) {
-  this.obj = obj;
-}
-
-/**
- * Use the given plugin `fn(style, rework)`.
- *
- * @param {Function} fn
- * @return {Rework}
- * @api public
- */
-
-Rework.prototype.use = function(fn){
-  fn(this.obj.stylesheet, this);
-  return this;
-};
-
-/**
- * Specify global vendor `prefixes`,
- * explicit ones may still be passed
- * to most plugins.
- *
- * @param {Array} prefixes
- * @return {Rework}
- * @api public
- */
-
-Rework.prototype.vendors = function(prefixes){
-  this.prefixes = prefixes;
-  return this;
-};
-
-/**
- * Stringify the stylesheet.
- *
- * @param {Object} options
- * @return {String}
- * @api public
- */
-
-Rework.prototype.toString = function(options){
-  return css.stringify(this.obj, options);
-};
-
-/**
- * Expose plugins.
- */
-
-exports.mixin = exports.mixins = require('./plugins/mixin');
-exports.function = exports.functions = require('./plugins/function');
-exports.prefix = require('./plugins/prefix');
-exports.colors = require('./plugins/colors');
-exports.extend = require('rework-inherit');
-exports.references = require('./plugins/references');
-exports.prefixValue = require('./plugins/prefix-value');
-exports.prefixSelectors = require('./plugins/prefix-selectors');
-exports.keyframes = require('./plugins/keyframes');
-exports.at2x = require('./plugins/at2x');
-exports.url = require('./plugins/url');
-exports.ease = require('./plugins/ease');
-exports.vars = require('./plugins/vars');
-
-/**
- * Try/catch plugins unavailable in component.
- */
-
- try {
-  exports.inline = require('./plugins/inline');
-} catch (err) {};
-
-
-})()
-},{"./visit":36,"./properties":30,"./plugins/mixin":34,"./plugins/function":37,"./plugins/prefix":38,"./plugins/colors":39,"./plugins/references":40,"./plugins/prefix-value":41,"./plugins/prefix-selectors":31,"./plugins/keyframes":32,"./plugins/at2x":42,"./plugins/url":43,"./plugins/ease":44,"./plugins/vars":33,"./plugins/inline":45,"css":46,"rework-inherit":47}],40:[function(require,module,exports){
+},{"../visit":35}],39:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3341,7 +3249,7 @@ function substitute(declarations) {
   }
 }
 
-},{"../visit":36}],41:[function(require,module,exports){
+},{"../visit":35}],40:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3399,7 +3307,7 @@ module.exports = function(value, vendors) {
   }
 };
 
-},{"../visit":36}],42:[function(require,module,exports){
+},{"../visit":35}],41:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3513,7 +3421,7 @@ function value(decl) {
   return decl.value;
 }
 
-},{"path":12,"../utils":35}],43:[function(require,module,exports){
+},{"path":12,"../utils":36}],42:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3545,7 +3453,7 @@ module.exports = function(fn) {
   }, false);
 };
 
-},{"../utils":35,"./function":37}],44:[function(require,module,exports){
+},{"../utils":36,"./function":34}],43:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3632,7 +3540,7 @@ function substitute(declarations) {
   }
 }
 
-},{"../visit":36}],16:[function(require,module,exports){
+},{"../visit":35}],16:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -3745,7 +3653,7 @@ module.exports = function(str) {
   }
 }
 
-},{"util":26,"./lexer":29,"debug":48}],17:[function(require,module,exports){
+},{"util":26,"./lexer":29,"debug":44}],17:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3971,21 +3879,7 @@ function blank(str) {
   return '' != str;
 }
 
-},{"util":26,"debug":48}],35:[function(require,module,exports){
-
-/**
- * Strip `str` quotes.
- *
- * @param {String} str
- * @return {String}
- * @api private
- */
-
-exports.stripQuotes = function(str) {
-  if ('"' == str[0] || "'" == str[0]) return str.slice(1, -1);
-  return str;
-};
-},{}],48:[function(require,module,exports){
+},{"util":26,"debug":44}],44:[function(require,module,exports){
 
 /**
  * Expose `debug()` as the module.
@@ -4111,52 +4005,7 @@ debug.enabled = function(name) {
 
 if (window.localStorage) debug.enable(localStorage.debug);
 
-},{}],36:[function(require,module,exports){
-
-// TODO: require() directly in plugins...
-exports.declarations = require('rework-visit');
-
-},{"rework-visit":49}],49:[function(require,module,exports){
-
-/**
- * Expose `visit()`.
- */
-
-module.exports = visit;
-
-/**
- * Visit `node`'s declarations recursively and
- * invoke `fn(declarations, node)`.
- *
- * @param {Object} node
- * @param {Function} fn
- * @api private
- */
-
-function visit(node, fn){
-  node.rules.forEach(function(rule){
-    // @media etc
-    if (rule.rules) {
-      visit(rule, fn);
-      return;
-    }
-
-    // keyframes
-    if (rule.keyframes) {
-      rule.keyframes.forEach(function(keyframe){
-        fn(keyframe.declarations, rule);
-      });
-      return;
-    }
-
-    // @charset, @import etc
-    if (!rule.declarations) return;
-
-    fn(rule.declarations, node);
-  });
-};
-
-},{}],50:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 require=(function(e,t,n,r){function i(r){if(!n[r]){if(!t[r]){if(e)return e(r);throw new Error("Cannot find module '"+r+"'")}var s=n[r]={exports:{}};t[r][0](function(e){var n=t[r][1][e];return i(n?n:e)},s,s.exports)}return n[r].exports}for(var s=0;s<r.length;s++)i(r[s]);return i})(typeof require!=="undefined"&&require,{1:[function(require,module,exports){
 // UTILITY
 var util = require('util');
@@ -8018,7 +7867,7 @@ SlowBuffer.prototype.writeDoubleBE = Buffer.prototype.writeDoubleBE;
 },{}]},{},[])
 ;;module.exports=require("buffer-browserify")
 
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 (function(Buffer){
 /**
  * Module dependencies.
@@ -8067,12 +7916,124 @@ module.exports = function(dirs) {
 };
 
 })(require("__browserify_Buffer").Buffer)
-},{"path":12,"fs":11,"./function":37,"mime":51,"__browserify_Buffer":50}],46:[function(require,module,exports){
+},{"path":12,"fs":11,"./function":34,"mime":47,"__browserify_Buffer":45}],25:[function(require,module,exports){
+(function(){
+/**
+ * Module dependencies.
+ */
 
-exports.parse = require('css-parse');
-exports.stringify = require('css-stringify');
+var css = require('css');
 
-},{"css-parse":52,"css-stringify":53}],39:[function(require,module,exports){
+/**
+ * Expose `rework`.
+ */
+
+exports = module.exports = rework;
+
+/**
+ * Expose `visit` helpers.
+ */
+
+exports.visit = require('./visit');
+
+/**
+ * Expose prefix properties.
+ */
+
+exports.properties = require('./properties');
+
+/**
+ * Initialize a new stylesheet `Rework` with `str`.
+ *
+ * @param {String} str
+ * @return {Rework}
+ * @api public
+ */
+
+function rework(str) {
+  return new Rework(css.parse(str));
+}
+
+/**
+ * Initialize a new stylesheet `Rework` with `obj`.
+ *
+ * @param {Object} obj
+ * @api private
+ */
+
+function Rework(obj) {
+  this.obj = obj;
+}
+
+/**
+ * Use the given plugin `fn(style, rework)`.
+ *
+ * @param {Function} fn
+ * @return {Rework}
+ * @api public
+ */
+
+Rework.prototype.use = function(fn){
+  fn(this.obj.stylesheet, this);
+  return this;
+};
+
+/**
+ * Specify global vendor `prefixes`,
+ * explicit ones may still be passed
+ * to most plugins.
+ *
+ * @param {Array} prefixes
+ * @return {Rework}
+ * @api public
+ */
+
+Rework.prototype.vendors = function(prefixes){
+  this.prefixes = prefixes;
+  return this;
+};
+
+/**
+ * Stringify the stylesheet.
+ *
+ * @param {Object} options
+ * @return {String}
+ * @api public
+ */
+
+Rework.prototype.toString = function(options){
+  return css.stringify(this.obj, options);
+};
+
+/**
+ * Expose plugins.
+ */
+
+exports.mixin = exports.mixins = require('./plugins/mixin');
+exports.function = exports.functions = require('./plugins/function');
+exports.prefix = require('./plugins/prefix');
+exports.colors = require('./plugins/colors');
+exports.extend = require('rework-inherit');
+exports.references = require('./plugins/references');
+exports.prefixValue = require('./plugins/prefix-value');
+exports.prefixSelectors = require('./plugins/prefix-selectors');
+exports.keyframes = require('./plugins/keyframes');
+exports.at2x = require('./plugins/at2x');
+exports.url = require('./plugins/url');
+exports.ease = require('./plugins/ease');
+exports.vars = require('./plugins/vars');
+
+/**
+ * Try/catch plugins unavailable in component.
+ */
+
+ try {
+  exports.inline = require('./plugins/inline');
+} catch (err) {};
+
+
+})()
+},{"./visit":35,"./properties":30,"./plugins/mixin":37,"./plugins/function":34,"./plugins/prefix":38,"./plugins/colors":48,"./plugins/references":39,"./plugins/prefix-value":40,"./plugins/prefix-selectors":31,"./plugins/keyframes":32,"./plugins/at2x":41,"./plugins/url":42,"./plugins/ease":43,"./plugins/vars":33,"./plugins/inline":46,"css":49,"rework-inherit":50}],48:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -8111,7 +8072,173 @@ module.exports = function() {
   });
 };
 
-},{"./function":37,"color-parser":54}],52:[function(require,module,exports){
+},{"./function":34,"color-parser":51}],35:[function(require,module,exports){
+
+// TODO: require() directly in plugins...
+exports.declarations = require('rework-visit');
+
+},{"rework-visit":52}],49:[function(require,module,exports){
+
+exports.parse = require('css-parse');
+exports.stringify = require('css-stringify');
+
+},{"css-stringify":53,"css-parse":54}],47:[function(require,module,exports){
+(function(process,__dirname){var path = require('path');
+var fs = require('fs');
+
+function Mime() {
+  // Map of extension -> mime type
+  this.types = Object.create(null);
+
+  // Map of mime type -> extension
+  this.extensions = Object.create(null);
+}
+
+/**
+ * Define mimetype -> extension mappings.  Each key is a mime-type that maps
+ * to an array of extensions associated with the type.  The first extension is
+ * used as the default extension for the type.
+ *
+ * e.g. mime.define({'audio/ogg', ['oga', 'ogg', 'spx']});
+ *
+ * @param map (Object) type definitions
+ */
+Mime.prototype.define = function (map) {
+  for (var type in map) {
+    var exts = map[type];
+
+    for (var i = 0; i < exts.length; i++) {
+      if (process.env.DEBUG_MIME && this.types[exts]) {
+        console.warn(this._loading.replace(/.*\//, ''), 'changes "' + exts[i] + '" extension type from ' +
+          this.types[exts] + ' to ' + type);
+      }
+
+      this.types[exts[i]] = type;
+    }
+
+    // Default extension is the first one we encounter
+    if (!this.extensions[type]) {
+      this.extensions[type] = exts[0];
+    }
+  }
+};
+
+/**
+ * Load an Apache2-style ".types" file
+ *
+ * This may be called multiple times (it's expected).  Where files declare
+ * overlapping types/extensions, the last file wins.
+ *
+ * @param file (String) path of file to load.
+ */
+Mime.prototype.load = function(file) {
+
+  this._loading = file;
+  // Read file and split into lines
+  var map = {},
+      content = fs.readFileSync(file, 'ascii'),
+      lines = content.split(/[\r\n]+/);
+
+  lines.forEach(function(line) {
+    // Clean up whitespace/comments, and split into fields
+    var fields = line.replace(/\s*#.*|^\s*|\s*$/g, '').split(/\s+/);
+    map[fields.shift()] = fields;
+  });
+
+  this.define(map);
+
+  this._loading = null;
+};
+
+/**
+ * Lookup a mime type based on extension
+ */
+Mime.prototype.lookup = function(path, fallback) {
+  var ext = path.replace(/.*[\.\/]/, '').toLowerCase();
+
+  return this.types[ext] || fallback || this.default_type;
+};
+
+/**
+ * Return file extension associated with a mime type
+ */
+Mime.prototype.extension = function(mimeType) {
+  return this.extensions[mimeType];
+};
+
+// Default instance
+var mime = new Mime();
+
+// Load local copy of
+// http://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types
+mime.load(path.join(__dirname, 'types/mime.types'));
+
+// Load additional types from node.js community
+mime.load(path.join(__dirname, 'types/node.types'));
+
+// Default type
+mime.default_type = mime.lookup('bin');
+
+//
+// Additional API specific to the default instance
+//
+
+mime.Mime = Mime;
+
+/**
+ * Lookup a charset based on mime type.
+ */
+mime.charsets = {
+  lookup: function(mimeType, fallback) {
+    // Assume text types are utf8
+    return (/^text\//).test(mimeType) ? 'UTF-8' : fallback;
+  }
+};
+
+module.exports = mime;
+
+})(require("__browserify_process"),"/../node_modules/styl/node_modules/rework/node_modules/mime")
+},{"path":12,"fs":11,"__browserify_process":10}],52:[function(require,module,exports){
+
+/**
+ * Expose `visit()`.
+ */
+
+module.exports = visit;
+
+/**
+ * Visit `node`'s declarations recursively and
+ * invoke `fn(declarations, node)`.
+ *
+ * @param {Object} node
+ * @param {Function} fn
+ * @api private
+ */
+
+function visit(node, fn){
+  node.rules.forEach(function(rule){
+    // @media etc
+    if (rule.rules) {
+      visit(rule, fn);
+      return;
+    }
+
+    // keyframes
+    if (rule.keyframes) {
+      rule.keyframes.forEach(function(keyframe){
+        fn(keyframe.declarations, rule);
+      });
+      return;
+    }
+
+    // @charset, @import etc
+    if (!rule.declarations) return;
+
+    fn(rule.declarations, node);
+  });
+};
+
+},{}],54:[function(require,module,exports){
 
 module.exports = function(css, options){
   options = options || {};
@@ -8579,122 +8706,135 @@ module.exports = function(css, options){
 
 
 },{}],51:[function(require,module,exports){
-(function(process,__dirname){var path = require('path');
-var fs = require('fs');
 
-function Mime() {
-  // Map of extension -> mime type
-  this.types = Object.create(null);
+/**
+ * Module dependencies.
+ */
 
-  // Map of mime type -> extension
-  this.extensions = Object.create(null);
+var colors = require('./colors');
+
+/**
+ * Expose `parse`.
+ */
+
+module.exports = parse;
+
+/**
+ * Parse `str`.
+ *
+ * @param {String} str
+ * @return {Object}
+ * @api public
+ */
+
+function parse(str) {
+  return named(str)
+    || hex3(str)
+    || hex6(str)
+    || rgb(str)
+    || rgba(str);
 }
 
 /**
- * Define mimetype -> extension mappings.  Each key is a mime-type that maps
- * to an array of extensions associated with the type.  The first extension is
- * used as the default extension for the type.
+ * Parse named css color `str`.
  *
- * e.g. mime.define({'audio/ogg', ['oga', 'ogg', 'spx']});
- *
- * @param map (Object) type definitions
+ * @param {String} str
+ * @return {Object}
+ * @api private
  */
-Mime.prototype.define = function (map) {
-  for (var type in map) {
-    var exts = map[type];
 
-    for (var i = 0; i < exts.length; i++) {
-      if (process.env.DEBUG_MIME && this.types[exts]) {
-        console.warn(this._loading.replace(/.*\//, ''), 'changes "' + exts[i] + '" extension type from ' +
-          this.types[exts] + ' to ' + type);
-      }
+function named(str) {
+  var c = colors[str.toLowerCase()];
+  if (!c) return;
+  return {
+    r: c[0],
+    g: c[1],
+    b: c[2]
+  }
+}
 
-      this.types[exts[i]] = type;
-    }
+/**
+ * Parse rgb(n, n, n)
+ *
+ * @param {String} str
+ * @return {Object}
+ * @api private
+ */
 
-    // Default extension is the first one we encounter
-    if (!this.extensions[type]) {
-      this.extensions[type] = exts[0];
+function rgb(str) {
+  if (0 == str.indexOf('rgb(')) {
+    str = str.match(/rgb\(([^)]+)\)/)[1];
+    var parts = str.split(/ *, */).map(Number);
+    return {
+      r: parts[0],
+      g: parts[1],
+      b: parts[2],
+      a: 1
     }
   }
-};
+}
 
 /**
- * Load an Apache2-style ".types" file
+ * Parse rgba(n, n, n, n)
  *
- * This may be called multiple times (it's expected).  Where files declare
- * overlapping types/extensions, the last file wins.
- *
- * @param file (String) path of file to load.
+ * @param {String} str
+ * @return {Object}
+ * @api private
  */
-Mime.prototype.load = function(file) {
 
-  this._loading = file;
-  // Read file and split into lines
-  var map = {},
-      content = fs.readFileSync(file, 'ascii'),
-      lines = content.split(/[\r\n]+/);
-
-  lines.forEach(function(line) {
-    // Clean up whitespace/comments, and split into fields
-    var fields = line.replace(/\s*#.*|^\s*|\s*$/g, '').split(/\s+/);
-    map[fields.shift()] = fields;
-  });
-
-  this.define(map);
-
-  this._loading = null;
-};
-
-/**
- * Lookup a mime type based on extension
- */
-Mime.prototype.lookup = function(path, fallback) {
-  var ext = path.replace(/.*[\.\/]/, '').toLowerCase();
-
-  return this.types[ext] || fallback || this.default_type;
-};
-
-/**
- * Return file extension associated with a mime type
- */
-Mime.prototype.extension = function(mimeType) {
-  return this.extensions[mimeType];
-};
-
-// Default instance
-var mime = new Mime();
-
-// Load local copy of
-// http://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types
-mime.load(path.join(__dirname, 'types/mime.types'));
-
-// Load additional types from node.js community
-mime.load(path.join(__dirname, 'types/node.types'));
-
-// Default type
-mime.default_type = mime.lookup('bin');
-
-//
-// Additional API specific to the default instance
-//
-
-mime.Mime = Mime;
-
-/**
- * Lookup a charset based on mime type.
- */
-mime.charsets = {
-  lookup: function(mimeType, fallback) {
-    // Assume text types are utf8
-    return (/^text\//).test(mimeType) ? 'UTF-8' : fallback;
+function rgba(str) {
+  if (0 == str.indexOf('rgba(')) {
+    str = str.match(/rgba\(([^)]+)\)/)[1];
+    var parts = str.split(/ *, */).map(Number);
+    return {
+      r: parts[0],
+      g: parts[1],
+      b: parts[2],
+      a: parts[3]
+    }
   }
-};
+}
 
-module.exports = mime;
+/**
+ * Parse #nnnnnn
+ *
+ * @param {String} str
+ * @return {Object}
+ * @api private
+ */
 
-})(require("__browserify_process"),"/../node_modules/styl/node_modules/rework/node_modules/mime")
-},{"path":12,"fs":11,"__browserify_process":10}],53:[function(require,module,exports){
+function hex6(str) {
+  if ('#' == str[0] && 7 == str.length) {
+    return {
+      r: parseInt(str.slice(1, 3), 16),
+      g: parseInt(str.slice(3, 5), 16),
+      b: parseInt(str.slice(5, 7), 16),
+      a: 1
+    }
+  }
+}
+
+/**
+ * Parse #nnn
+ *
+ * @param {String} str
+ * @return {Object}
+ * @api private
+ */
+
+function hex3(str) {
+  if ('#' == str[0] && 4 == str.length) {
+    return {
+      r: parseInt(str[1] + str[1], 16),
+      g: parseInt(str[2] + str[2], 16),
+      b: parseInt(str[3] + str[3], 16),
+      a: 1
+    }
+  }
+}
+
+
+},{"./colors":55}],53:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -8723,7 +8863,527 @@ module.exports = function(node, options){
 };
 
 
-},{"./lib/compress":55,"./lib/identity":56}],47:[function(require,module,exports){
+},{"./lib/compress":56,"./lib/identity":57}],36:[function(require,module,exports){
+
+/**
+ * Strip `str` quotes.
+ *
+ * @param {String} str
+ * @return {String}
+ * @api private
+ */
+
+exports.stripQuotes = function(str) {
+  if ('"' == str[0] || "'" == str[0]) return str.slice(1, -1);
+  return str;
+};
+},{}],55:[function(require,module,exports){
+
+module.exports = {
+    aliceblue: [240, 248, 255]
+  , antiquewhite: [250, 235, 215]
+  , aqua: [0, 255, 255]
+  , aquamarine: [127, 255, 212]
+  , azure: [240, 255, 255]
+  , beige: [245, 245, 220]
+  , bisque: [255, 228, 196]
+  , black: [0, 0, 0]
+  , blanchedalmond: [255, 235, 205]
+  , blue: [0, 0, 255]
+  , blueviolet: [138, 43, 226]
+  , brown: [165, 42, 42]
+  , burlywood: [222, 184, 135]
+  , cadetblue: [95, 158, 160]
+  , chartreuse: [127, 255, 0]
+  , chocolate: [210, 105, 30]
+  , coral: [255, 127, 80]
+  , cornflowerblue: [100, 149, 237]
+  , cornsilk: [255, 248, 220]
+  , crimson: [220, 20, 60]
+  , cyan: [0, 255, 255]
+  , darkblue: [0, 0, 139]
+  , darkcyan: [0, 139, 139]
+  , darkgoldenrod: [184, 132, 11]
+  , darkgray: [169, 169, 169]
+  , darkgreen: [0, 100, 0]
+  , darkgrey: [169, 169, 169]
+  , darkkhaki: [189, 183, 107]
+  , darkmagenta: [139, 0, 139]
+  , darkolivegreen: [85, 107, 47]
+  , darkorange: [255, 140, 0]
+  , darkorchid: [153, 50, 204]
+  , darkred: [139, 0, 0]
+  , darksalmon: [233, 150, 122]
+  , darkseagreen: [143, 188, 143]
+  , darkslateblue: [72, 61, 139]
+  , darkslategray: [47, 79, 79]
+  , darkslategrey: [47, 79, 79]
+  , darkturquoise: [0, 206, 209]
+  , darkviolet: [148, 0, 211]
+  , deeppink: [255, 20, 147]
+  , deepskyblue: [0, 191, 255]
+  , dimgray: [105, 105, 105]
+  , dimgrey: [105, 105, 105]
+  , dodgerblue: [30, 144, 255]
+  , firebrick: [178, 34, 34]
+  , floralwhite: [255, 255, 240]
+  , forestgreen: [34, 139, 34]
+  , fuchsia: [255, 0, 255]
+  , gainsboro: [220, 220, 220]
+  , ghostwhite: [248, 248, 255]
+  , gold: [255, 215, 0]
+  , goldenrod: [218, 165, 32]
+  , gray: [128, 128, 128]
+  , green: [0, 128, 0]
+  , greenyellow: [173, 255, 47]
+  , grey: [128, 128, 128]
+  , honeydew: [240, 255, 240]
+  , hotpink: [255, 105, 180]
+  , indianred: [205, 92, 92]
+  , indigo: [75, 0, 130]
+  , ivory: [255, 255, 240]
+  , khaki: [240, 230, 140]
+  , lavender: [230, 230, 250]
+  , lavenderblush: [255, 240, 245]
+  , lawngreen: [124, 252, 0]
+  , lemonchiffon: [255, 250, 205]
+  , lightblue: [173, 216, 230]
+  , lightcoral: [240, 128, 128]
+  , lightcyan: [224, 255, 255]
+  , lightgoldenrodyellow: [250, 250, 210]
+  , lightgray: [211, 211, 211]
+  , lightgreen: [144, 238, 144]
+  , lightgrey: [211, 211, 211]
+  , lightpink: [255, 182, 193]
+  , lightsalmon: [255, 160, 122]
+  , lightseagreen: [32, 178, 170]
+  , lightskyblue: [135, 206, 250]
+  , lightslategray: [119, 136, 153]
+  , lightslategrey: [119, 136, 153]
+  , lightsteelblue: [176, 196, 222]
+  , lightyellow: [255, 255, 224]
+  , lime: [0, 255, 0]
+  , limegreen: [50, 205, 50]
+  , linen: [250, 240, 230]
+  , magenta: [255, 0, 255]
+  , maroon: [128, 0, 0]
+  , mediumaquamarine: [102, 205, 170]
+  , mediumblue: [0, 0, 205]
+  , mediumorchid: [186, 85, 211]
+  , mediumpurple: [147, 112, 219]
+  , mediumseagreen: [60, 179, 113]
+  , mediumslateblue: [123, 104, 238]
+  , mediumspringgreen: [0, 250, 154]
+  , mediumturquoise: [72, 209, 204]
+  , mediumvioletred: [199, 21, 133]
+  , midnightblue: [25, 25, 112]
+  , mintcream: [245, 255, 250]
+  , mistyrose: [255, 228, 225]
+  , moccasin: [255, 228, 181]
+  , navajowhite: [255, 222, 173]
+  , navy: [0, 0, 128]
+  , oldlace: [253, 245, 230]
+  , olive: [128, 128, 0]
+  , olivedrab: [107, 142, 35]
+  , orange: [255, 165, 0]
+  , orangered: [255, 69, 0]
+  , orchid: [218, 112, 214]
+  , palegoldenrod: [238, 232, 170]
+  , palegreen: [152, 251, 152]
+  , paleturquoise: [175, 238, 238]
+  , palevioletred: [219, 112, 147]
+  , papayawhip: [255, 239, 213]
+  , peachpuff: [255, 218, 185]
+  , peru: [205, 133, 63]
+  , pink: [255, 192, 203]
+  , plum: [221, 160, 203]
+  , powderblue: [176, 224, 230]
+  , purple: [128, 0, 128]
+  , red: [255, 0, 0]
+  , rosybrown: [188, 143, 143]
+  , royalblue: [65, 105, 225]
+  , saddlebrown: [139, 69, 19]
+  , salmon: [250, 128, 114]
+  , sandybrown: [244, 164, 96]
+  , seagreen: [46, 139, 87]
+  , seashell: [255, 245, 238]
+  , sienna: [160, 82, 45]
+  , silver: [192, 192, 192]
+  , skyblue: [135, 206, 235]
+  , slateblue: [106, 90, 205]
+  , slategray: [119, 128, 144]
+  , slategrey: [119, 128, 144]
+  , snow: [255, 255, 250]
+  , springgreen: [0, 255, 127]
+  , steelblue: [70, 130, 180]
+  , tan: [210, 180, 140]
+  , teal: [0, 128, 128]
+  , thistle: [216, 191, 216]
+  , tomato: [255, 99, 71]
+  , turquoise: [64, 224, 208]
+  , violet: [238, 130, 238]
+  , wheat: [245, 222, 179]
+  , white: [255, 255, 255]
+  , whitesmoke: [245, 245, 245]
+  , yellow: [255, 255, 0]
+  , yellowgreen: [154, 205, 5]
+};
+},{}],56:[function(require,module,exports){
+
+/**
+ * Expose compiler.
+ */
+
+module.exports = Compiler;
+
+/**
+ * Initialize a new `Compiler`.
+ */
+
+function Compiler(options) {
+  options = options || {};
+}
+
+/**
+ * Compile `node`.
+ */
+
+Compiler.prototype.compile = function(node){
+  return node.stylesheet
+    .rules.map(this.visit, this)
+    .join('');
+};
+
+/**
+ * Visit `node`.
+ */
+
+Compiler.prototype.visit = function(node){
+  return this[node.type](node);
+};
+
+/**
+ * Visit comment node.
+ */
+
+Compiler.prototype.comment = function(node){
+  if (this.compress) return '';
+};
+
+/**
+ * Visit import node.
+ */
+
+Compiler.prototype.import = function(node){
+  return '@import ' + node.import + ';';
+};
+
+/**
+ * Visit media node.
+ */
+
+Compiler.prototype.media = function(node){
+  return '@media '
+    + node.media
+    + '{'
+    + node.rules.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit document node.
+ */
+
+Compiler.prototype.document = function(node){
+  var doc = '@' + (node.vendor || '') + 'document ' + node.document;
+
+  return doc
+    + '{'
+    + node.rules.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit charset node.
+ */
+
+Compiler.prototype.charset = function(node){
+  return '@charset ' + node.charset + ';';
+};
+
+/**
+ * Visit supports node.
+ */
+
+Compiler.prototype.supports = function(node){
+  return '@supports '
+    + node.supports
+    + ' {\n'
+    + this.indent(1)
+    + node.rules.map(this.visit, this).join('\n\n')
+    + this.indent(-1)
+    + '\n}';
+};
+
+/**
+ * Visit keyframes node.
+ */
+
+Compiler.prototype.keyframes = function(node){
+  return '@'
+    + (node.vendor || '')
+    + 'keyframes '
+    + node.name
+    + '{'
+    + node.keyframes.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit keyframe node.
+ */
+
+Compiler.prototype.keyframe = function(node){
+  var decls = node.declarations;
+
+  return node.values.join(',')
+    + '{'
+    + decls.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit page node.
+ */
+
+Compiler.prototype.page = function(node){
+  var sel = node.selectors.length
+    ? node.selectors.join(', ') + ' '
+    : '';
+
+  return '@page ' + sel
+    + '{\n'
+    + this.indent(1)
+    + node.declarations.map(this.visit, this).join('\n')
+    + this.indent(-1)
+    + '\n}';
+};
+
+/**
+ * Visit rule node.
+ */
+
+Compiler.prototype.rule = function(node){
+  var decls = node.declarations;
+  if (!decls.length) return '';
+
+  return node.selectors.join(',')
+    + '{'
+    + decls.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit declaration node.
+ */
+
+Compiler.prototype.declaration = function(node){
+  return node.property + ':' + node.value + ';';
+};
+
+
+},{}],57:[function(require,module,exports){
+
+/**
+ * Expose compiler.
+ */
+
+module.exports = Compiler;
+
+/**
+ * Initialize a new `Compiler`.
+ */
+
+function Compiler(options) {
+  options = options || {};
+  this.indentation = options.indent;
+}
+
+/**
+ * Compile `node`.
+ */
+
+Compiler.prototype.compile = function(node){
+  return node.stylesheet
+    .rules.map(this.visit, this)
+    .join('\n\n');
+};
+
+/**
+ * Visit `node`.
+ */
+
+Compiler.prototype.visit = function(node){
+  return this[node.type](node);
+};
+
+/**
+ * Visit comment node.
+ */
+
+Compiler.prototype.comment = function(node){
+  return this.indent() + '/*' + node.comment + '*/';
+};
+
+/**
+ * Visit import node.
+ */
+
+Compiler.prototype.import = function(node){
+  return '@import ' + node.import + ';';
+};
+
+/**
+ * Visit media node.
+ */
+
+Compiler.prototype.media = function(node){
+  return '@media '
+    + node.media
+    + ' {\n'
+    + this.indent(1)
+    + node.rules.map(this.visit, this).join('\n\n')
+    + this.indent(-1)
+    + '\n}';
+};
+
+/**
+ * Visit document node.
+ */
+
+Compiler.prototype.document = function(node){
+  var doc = '@' + (node.vendor || '') + 'document ' + node.document;
+
+  return doc + ' '
+    + ' {\n'
+    + this.indent(1)
+    + node.rules.map(this.visit, this).join('\n\n')
+    + this.indent(-1)
+    + '\n}';
+};
+
+/**
+ * Visit charset node.
+ */
+
+Compiler.prototype.charset = function(node){
+  return '@charset ' + node.charset + ';\n';
+};
+
+/**
+ * Visit supports node.
+ */
+
+Compiler.prototype.supports = function(node){
+  return '@supports '
+    + node.supports
+    + ' {\n'
+    + this.indent(1)
+    + node.rules.map(this.visit, this).join('\n\n')
+    + this.indent(-1)
+    + '\n}';
+};
+
+/**
+ * Visit keyframes node.
+ */
+
+Compiler.prototype.keyframes = function(node){
+  return '@'
+    + (node.vendor || '')
+    + 'keyframes '
+    + node.name
+    + ' {\n'
+    + this.indent(1)
+    + node.keyframes.map(this.visit, this).join('\n')
+    + this.indent(-1)
+    + '}';
+};
+
+/**
+ * Visit keyframe node.
+ */
+
+Compiler.prototype.keyframe = function(node){
+  var decls = node.declarations;
+
+  return this.indent()
+    + node.values.join(', ')
+    + ' {\n'
+    + this.indent(1)
+    + decls.map(this.visit, this).join('\n')
+    + this.indent(-1)
+    + '\n' + this.indent() + '}\n';
+};
+
+/**
+ * Visit page node.
+ */
+
+Compiler.prototype.page = function(node){
+  var sel = node.selectors.length
+    ? node.selectors.join(', ') + ' '
+    : '';
+
+  return '@page ' + sel
+    + '{\n'
+    + this.indent(1)
+    + node.declarations.map(this.visit, this).join('\n')
+    + this.indent(-1)
+    + '\n}';
+};
+
+/**
+ * Visit rule node.
+ */
+
+Compiler.prototype.rule = function(node){
+  var indent = this.indent();
+  var decls = node.declarations;
+  if (!decls.length) return '';
+
+  return node.selectors.map(function(s){ return indent + s }).join(',\n')
+    + ' {\n'
+    + this.indent(1)
+    + decls.map(this.visit, this).join('\n')
+    + this.indent(-1)
+    + '\n' + this.indent() + '}';
+};
+
+/**
+ * Visit declaration node.
+ */
+
+Compiler.prototype.declaration = function(node){
+  return this.indent() + node.property + ': ' + node.value + ';';
+};
+
+/**
+ * Increase, decrease or return current indentation.
+ */
+
+Compiler.prototype.indent = function(level) {
+  this.level = this.level || 1;
+
+  if (null != level) {
+    this.level += level;
+    return '';
+  }
+
+  return Array(this.level).join(this.indentation || '  ');
+};
+
+},{}],50:[function(require,module,exports){
 exports = module.exports = function (options) {
   return function inherit(style) {
     return new Inherit(style, options || {})
@@ -8949,640 +9609,5 @@ function getRule(x) {
   return x.rule
 }
 
-},{"debug":48}],54:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var colors = require('./colors');
-
-/**
- * Expose `parse`.
- */
-
-module.exports = parse;
-
-/**
- * Parse `str`.
- *
- * @param {String} str
- * @return {Object}
- * @api public
- */
-
-function parse(str) {
-  return named(str)
-    || hex3(str)
-    || hex6(str)
-    || rgb(str)
-    || rgba(str);
-}
-
-/**
- * Parse named css color `str`.
- *
- * @param {String} str
- * @return {Object}
- * @api private
- */
-
-function named(str) {
-  var c = colors[str.toLowerCase()];
-  if (!c) return;
-  return {
-    r: c[0],
-    g: c[1],
-    b: c[2]
-  }
-}
-
-/**
- * Parse rgb(n, n, n)
- *
- * @param {String} str
- * @return {Object}
- * @api private
- */
-
-function rgb(str) {
-  if (0 == str.indexOf('rgb(')) {
-    str = str.match(/rgb\(([^)]+)\)/)[1];
-    var parts = str.split(/ *, */).map(Number);
-    return {
-      r: parts[0],
-      g: parts[1],
-      b: parts[2],
-      a: 1
-    }
-  }
-}
-
-/**
- * Parse rgba(n, n, n, n)
- *
- * @param {String} str
- * @return {Object}
- * @api private
- */
-
-function rgba(str) {
-  if (0 == str.indexOf('rgba(')) {
-    str = str.match(/rgba\(([^)]+)\)/)[1];
-    var parts = str.split(/ *, */).map(Number);
-    return {
-      r: parts[0],
-      g: parts[1],
-      b: parts[2],
-      a: parts[3]
-    }
-  }
-}
-
-/**
- * Parse #nnnnnn
- *
- * @param {String} str
- * @return {Object}
- * @api private
- */
-
-function hex6(str) {
-  if ('#' == str[0] && 7 == str.length) {
-    return {
-      r: parseInt(str.slice(1, 3), 16),
-      g: parseInt(str.slice(3, 5), 16),
-      b: parseInt(str.slice(5, 7), 16),
-      a: 1
-    }
-  }
-}
-
-/**
- * Parse #nnn
- *
- * @param {String} str
- * @return {Object}
- * @api private
- */
-
-function hex3(str) {
-  if ('#' == str[0] && 4 == str.length) {
-    return {
-      r: parseInt(str[1] + str[1], 16),
-      g: parseInt(str[2] + str[2], 16),
-      b: parseInt(str[3] + str[3], 16),
-      a: 1
-    }
-  }
-}
-
-
-},{"./colors":57}],55:[function(require,module,exports){
-
-/**
- * Expose compiler.
- */
-
-module.exports = Compiler;
-
-/**
- * Initialize a new `Compiler`.
- */
-
-function Compiler(options) {
-  options = options || {};
-}
-
-/**
- * Compile `node`.
- */
-
-Compiler.prototype.compile = function(node){
-  return node.stylesheet
-    .rules.map(this.visit, this)
-    .join('');
-};
-
-/**
- * Visit `node`.
- */
-
-Compiler.prototype.visit = function(node){
-  return this[node.type](node);
-};
-
-/**
- * Visit comment node.
- */
-
-Compiler.prototype.comment = function(node){
-  if (this.compress) return '';
-};
-
-/**
- * Visit import node.
- */
-
-Compiler.prototype.import = function(node){
-  return '@import ' + node.import + ';';
-};
-
-/**
- * Visit media node.
- */
-
-Compiler.prototype.media = function(node){
-  return '@media '
-    + node.media
-    + '{'
-    + node.rules.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit document node.
- */
-
-Compiler.prototype.document = function(node){
-  var doc = '@' + (node.vendor || '') + 'document ' + node.document;
-
-  return doc
-    + '{'
-    + node.rules.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit charset node.
- */
-
-Compiler.prototype.charset = function(node){
-  return '@charset ' + node.charset + ';';
-};
-
-/**
- * Visit supports node.
- */
-
-Compiler.prototype.supports = function(node){
-  return '@supports '
-    + node.supports
-    + ' {\n'
-    + this.indent(1)
-    + node.rules.map(this.visit, this).join('\n\n')
-    + this.indent(-1)
-    + '\n}';
-};
-
-/**
- * Visit keyframes node.
- */
-
-Compiler.prototype.keyframes = function(node){
-  return '@'
-    + (node.vendor || '')
-    + 'keyframes '
-    + node.name
-    + '{'
-    + node.keyframes.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit keyframe node.
- */
-
-Compiler.prototype.keyframe = function(node){
-  var decls = node.declarations;
-
-  return node.values.join(',')
-    + '{'
-    + decls.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit page node.
- */
-
-Compiler.prototype.page = function(node){
-  var sel = node.selectors.length
-    ? node.selectors.join(', ') + ' '
-    : '';
-
-  return '@page ' + sel
-    + '{\n'
-    + this.indent(1)
-    + node.declarations.map(this.visit, this).join('\n')
-    + this.indent(-1)
-    + '\n}';
-};
-
-/**
- * Visit rule node.
- */
-
-Compiler.prototype.rule = function(node){
-  var decls = node.declarations;
-  if (!decls.length) return '';
-
-  return node.selectors.join(',')
-    + '{'
-    + decls.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit declaration node.
- */
-
-Compiler.prototype.declaration = function(node){
-  return node.property + ':' + node.value + ';';
-};
-
-
-},{}],56:[function(require,module,exports){
-
-/**
- * Expose compiler.
- */
-
-module.exports = Compiler;
-
-/**
- * Initialize a new `Compiler`.
- */
-
-function Compiler(options) {
-  options = options || {};
-  this.indentation = options.indent;
-}
-
-/**
- * Compile `node`.
- */
-
-Compiler.prototype.compile = function(node){
-  return node.stylesheet
-    .rules.map(this.visit, this)
-    .join('\n\n');
-};
-
-/**
- * Visit `node`.
- */
-
-Compiler.prototype.visit = function(node){
-  return this[node.type](node);
-};
-
-/**
- * Visit comment node.
- */
-
-Compiler.prototype.comment = function(node){
-  return this.indent() + '/*' + node.comment + '*/';
-};
-
-/**
- * Visit import node.
- */
-
-Compiler.prototype.import = function(node){
-  return '@import ' + node.import + ';';
-};
-
-/**
- * Visit media node.
- */
-
-Compiler.prototype.media = function(node){
-  return '@media '
-    + node.media
-    + ' {\n'
-    + this.indent(1)
-    + node.rules.map(this.visit, this).join('\n\n')
-    + this.indent(-1)
-    + '\n}';
-};
-
-/**
- * Visit document node.
- */
-
-Compiler.prototype.document = function(node){
-  var doc = '@' + (node.vendor || '') + 'document ' + node.document;
-
-  return doc + ' '
-    + ' {\n'
-    + this.indent(1)
-    + node.rules.map(this.visit, this).join('\n\n')
-    + this.indent(-1)
-    + '\n}';
-};
-
-/**
- * Visit charset node.
- */
-
-Compiler.prototype.charset = function(node){
-  return '@charset ' + node.charset + ';\n';
-};
-
-/**
- * Visit supports node.
- */
-
-Compiler.prototype.supports = function(node){
-  return '@supports '
-    + node.supports
-    + ' {\n'
-    + this.indent(1)
-    + node.rules.map(this.visit, this).join('\n\n')
-    + this.indent(-1)
-    + '\n}';
-};
-
-/**
- * Visit keyframes node.
- */
-
-Compiler.prototype.keyframes = function(node){
-  return '@'
-    + (node.vendor || '')
-    + 'keyframes '
-    + node.name
-    + ' {\n'
-    + this.indent(1)
-    + node.keyframes.map(this.visit, this).join('\n')
-    + this.indent(-1)
-    + '}';
-};
-
-/**
- * Visit keyframe node.
- */
-
-Compiler.prototype.keyframe = function(node){
-  var decls = node.declarations;
-
-  return this.indent()
-    + node.values.join(', ')
-    + ' {\n'
-    + this.indent(1)
-    + decls.map(this.visit, this).join('\n')
-    + this.indent(-1)
-    + '\n' + this.indent() + '}\n';
-};
-
-/**
- * Visit page node.
- */
-
-Compiler.prototype.page = function(node){
-  var sel = node.selectors.length
-    ? node.selectors.join(', ') + ' '
-    : '';
-
-  return '@page ' + sel
-    + '{\n'
-    + this.indent(1)
-    + node.declarations.map(this.visit, this).join('\n')
-    + this.indent(-1)
-    + '\n}';
-};
-
-/**
- * Visit rule node.
- */
-
-Compiler.prototype.rule = function(node){
-  var indent = this.indent();
-  var decls = node.declarations;
-  if (!decls.length) return '';
-
-  return node.selectors.map(function(s){ return indent + s }).join(',\n')
-    + ' {\n'
-    + this.indent(1)
-    + decls.map(this.visit, this).join('\n')
-    + this.indent(-1)
-    + '\n' + this.indent() + '}';
-};
-
-/**
- * Visit declaration node.
- */
-
-Compiler.prototype.declaration = function(node){
-  return this.indent() + node.property + ': ' + node.value + ';';
-};
-
-/**
- * Increase, decrease or return current indentation.
- */
-
-Compiler.prototype.indent = function(level) {
-  this.level = this.level || 1;
-
-  if (null != level) {
-    this.level += level;
-    return '';
-  }
-
-  return Array(this.level).join(this.indentation || '  ');
-};
-
-},{}],57:[function(require,module,exports){
-
-module.exports = {
-    aliceblue: [240, 248, 255]
-  , antiquewhite: [250, 235, 215]
-  , aqua: [0, 255, 255]
-  , aquamarine: [127, 255, 212]
-  , azure: [240, 255, 255]
-  , beige: [245, 245, 220]
-  , bisque: [255, 228, 196]
-  , black: [0, 0, 0]
-  , blanchedalmond: [255, 235, 205]
-  , blue: [0, 0, 255]
-  , blueviolet: [138, 43, 226]
-  , brown: [165, 42, 42]
-  , burlywood: [222, 184, 135]
-  , cadetblue: [95, 158, 160]
-  , chartreuse: [127, 255, 0]
-  , chocolate: [210, 105, 30]
-  , coral: [255, 127, 80]
-  , cornflowerblue: [100, 149, 237]
-  , cornsilk: [255, 248, 220]
-  , crimson: [220, 20, 60]
-  , cyan: [0, 255, 255]
-  , darkblue: [0, 0, 139]
-  , darkcyan: [0, 139, 139]
-  , darkgoldenrod: [184, 132, 11]
-  , darkgray: [169, 169, 169]
-  , darkgreen: [0, 100, 0]
-  , darkgrey: [169, 169, 169]
-  , darkkhaki: [189, 183, 107]
-  , darkmagenta: [139, 0, 139]
-  , darkolivegreen: [85, 107, 47]
-  , darkorange: [255, 140, 0]
-  , darkorchid: [153, 50, 204]
-  , darkred: [139, 0, 0]
-  , darksalmon: [233, 150, 122]
-  , darkseagreen: [143, 188, 143]
-  , darkslateblue: [72, 61, 139]
-  , darkslategray: [47, 79, 79]
-  , darkslategrey: [47, 79, 79]
-  , darkturquoise: [0, 206, 209]
-  , darkviolet: [148, 0, 211]
-  , deeppink: [255, 20, 147]
-  , deepskyblue: [0, 191, 255]
-  , dimgray: [105, 105, 105]
-  , dimgrey: [105, 105, 105]
-  , dodgerblue: [30, 144, 255]
-  , firebrick: [178, 34, 34]
-  , floralwhite: [255, 255, 240]
-  , forestgreen: [34, 139, 34]
-  , fuchsia: [255, 0, 255]
-  , gainsboro: [220, 220, 220]
-  , ghostwhite: [248, 248, 255]
-  , gold: [255, 215, 0]
-  , goldenrod: [218, 165, 32]
-  , gray: [128, 128, 128]
-  , green: [0, 128, 0]
-  , greenyellow: [173, 255, 47]
-  , grey: [128, 128, 128]
-  , honeydew: [240, 255, 240]
-  , hotpink: [255, 105, 180]
-  , indianred: [205, 92, 92]
-  , indigo: [75, 0, 130]
-  , ivory: [255, 255, 240]
-  , khaki: [240, 230, 140]
-  , lavender: [230, 230, 250]
-  , lavenderblush: [255, 240, 245]
-  , lawngreen: [124, 252, 0]
-  , lemonchiffon: [255, 250, 205]
-  , lightblue: [173, 216, 230]
-  , lightcoral: [240, 128, 128]
-  , lightcyan: [224, 255, 255]
-  , lightgoldenrodyellow: [250, 250, 210]
-  , lightgray: [211, 211, 211]
-  , lightgreen: [144, 238, 144]
-  , lightgrey: [211, 211, 211]
-  , lightpink: [255, 182, 193]
-  , lightsalmon: [255, 160, 122]
-  , lightseagreen: [32, 178, 170]
-  , lightskyblue: [135, 206, 250]
-  , lightslategray: [119, 136, 153]
-  , lightslategrey: [119, 136, 153]
-  , lightsteelblue: [176, 196, 222]
-  , lightyellow: [255, 255, 224]
-  , lime: [0, 255, 0]
-  , limegreen: [50, 205, 50]
-  , linen: [250, 240, 230]
-  , magenta: [255, 0, 255]
-  , maroon: [128, 0, 0]
-  , mediumaquamarine: [102, 205, 170]
-  , mediumblue: [0, 0, 205]
-  , mediumorchid: [186, 85, 211]
-  , mediumpurple: [147, 112, 219]
-  , mediumseagreen: [60, 179, 113]
-  , mediumslateblue: [123, 104, 238]
-  , mediumspringgreen: [0, 250, 154]
-  , mediumturquoise: [72, 209, 204]
-  , mediumvioletred: [199, 21, 133]
-  , midnightblue: [25, 25, 112]
-  , mintcream: [245, 255, 250]
-  , mistyrose: [255, 228, 225]
-  , moccasin: [255, 228, 181]
-  , navajowhite: [255, 222, 173]
-  , navy: [0, 0, 128]
-  , oldlace: [253, 245, 230]
-  , olive: [128, 128, 0]
-  , olivedrab: [107, 142, 35]
-  , orange: [255, 165, 0]
-  , orangered: [255, 69, 0]
-  , orchid: [218, 112, 214]
-  , palegoldenrod: [238, 232, 170]
-  , palegreen: [152, 251, 152]
-  , paleturquoise: [175, 238, 238]
-  , palevioletred: [219, 112, 147]
-  , papayawhip: [255, 239, 213]
-  , peachpuff: [255, 218, 185]
-  , peru: [205, 133, 63]
-  , pink: [255, 192, 203]
-  , plum: [221, 160, 203]
-  , powderblue: [176, 224, 230]
-  , purple: [128, 0, 128]
-  , red: [255, 0, 0]
-  , rosybrown: [188, 143, 143]
-  , royalblue: [65, 105, 225]
-  , saddlebrown: [139, 69, 19]
-  , salmon: [250, 128, 114]
-  , sandybrown: [244, 164, 96]
-  , seagreen: [46, 139, 87]
-  , seashell: [255, 245, 238]
-  , sienna: [160, 82, 45]
-  , silver: [192, 192, 192]
-  , skyblue: [135, 206, 235]
-  , slateblue: [106, 90, 205]
-  , slategray: [119, 128, 144]
-  , slategrey: [119, 128, 144]
-  , snow: [255, 255, 250]
-  , springgreen: [0, 255, 127]
-  , steelblue: [70, 130, 180]
-  , tan: [210, 180, 140]
-  , teal: [0, 128, 128]
-  , thistle: [216, 191, 216]
-  , tomato: [255, 99, 71]
-  , turquoise: [64, 224, 208]
-  , violet: [238, 130, 238]
-  , wheat: [245, 222, 179]
-  , white: [255, 255, 255]
-  , whitesmoke: [245, 245, 245]
-  , yellow: [255, 255, 0]
-  , yellowgreen: [154, 205, 5]
-};
-},{}]},{},[4])
+},{"debug":44}]},{},[4])
 ;

@@ -1,5 +1,5 @@
 (function() {
-  var Gistquire, auth, load, parser, renderJST, rerender, save, styl, util, _ref,
+  var Gistquire, auth, load, parser, postData, renderJST, rerender, save, styl, update, util, _ref,
     __slice = [].slice;
 
   parser = require('./haml-jr').parser;
@@ -126,12 +126,12 @@
     }
   }).debounce(100);
 
-  save = function() {
-    var data, postData, style, template, _ref1;
+  postData = function() {
+    var data, style, template, _ref1;
     _ref1 = editors.map(function(editor) {
       return editor.getValue();
     }), data = _ref1[0], template = _ref1[1], style = _ref1[2];
-    postData = JSON.stringify({
+    return postData = JSON.stringify({
       "public": true,
       files: {
         data: {
@@ -145,7 +145,10 @@
         }
       }
     });
-    return Gistquire.create(postData, function(data) {
+  };
+
+  save = function() {
+    return Gistquire.create(postData(), function(data) {
       return location.hash = data.id;
     });
   };
@@ -170,8 +173,15 @@
     });
   };
 
+  update = function() {
+    var id, _ref1;
+    if (id = (_ref1 = location.hash) != null ? _ref1.substring(1) : void 0) {
+      return Gistquire.update(id, postData(), function(data) {});
+    }
+  };
+
   $(function() {
-    var code, id, _ref1;
+    var code, id, _ref1, _ref2;
     window.editors = [["data", "coffee"], ["template", "haml"], ["style", "stylus"]].map(function(_arg) {
       var editor, id, mode;
       id = _arg[0], mode = _arg[1];
@@ -192,8 +202,8 @@
         }
       });
     }
-    if (id = location.hash) {
-      load(id.substring(1));
+    if (id = (_ref2 = location.hash) != null ? _ref2.substring(1) : void 0) {
+      load(id);
     } else {
       rerender();
     }
@@ -201,7 +211,8 @@
       Gistquire.accessToken = localStorage.authToken;
     }
     $("#actions .save").on("click", save);
-    return $("#actions .auth").on("click", auth);
+    $("#actions .auth").on("click", auth);
+    return $("#actions .update").on("click", update);
   });
 
 }).call(this);
