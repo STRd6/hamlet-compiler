@@ -2,6 +2,20 @@
 (function() {
   module.exports = {
     accessToken: null,
+    create: function(data, callback) {
+      var url;
+      url = "https://api.github.com/gists";
+      if (this.accessToken) {
+        url += "?access_token=" + this.accessToken;
+      }
+      return $.ajax({
+        url: url,
+        type: "POST",
+        dataType: 'json',
+        data: data,
+        success: callback
+      });
+    },
     get: function(id, callback) {
       var data;
       if (this.accessToken) {
@@ -171,7 +185,7 @@
 
 },{}],4:[function(require,module,exports){
 (function() {
-  var Gistquire, load, parser, renderJST, rerender, save, styl, util, _ref,
+  var Gistquire, auth, load, parser, renderJST, rerender, save, styl, util, _ref,
     __slice = [].slice;
 
   parser = require('./haml-jr').parser;
@@ -246,7 +260,7 @@
   };
 
   rerender = (function() {
-    var ast, coffee, data, haml, selector, style, template, _ref1;
+    var ast, coffee, data, error, fragment, haml, selector, style, template, _ref1;
     if (location.search.match("embed")) {
       selector = "body";
     } else {
@@ -258,24 +272,51 @@
     _ref1 = editors.map(function(editor) {
       return editor.getValue();
     }), coffee = _ref1[0], haml = _ref1[1], style = _ref1[2];
-    ast = parser.parse(haml);
-    template = Function("return " + render(ast, {
-      compiler: CoffeeScript
-    }))();
-    data = Function("return " + CoffeeScript.compile("do ->\n" + util.indent(coffee), {
-      bare: true
-    }))();
-    style = styl(style, {
-      whitespace: true
-    }).toString();
-    return $(selector).empty().append(template(data)).append("<style>" + style + "</style>");
+    try {
+      data = Function("return " + CoffeeScript.compile("do ->\n" + util.indent(coffee), {
+        bare: true
+      }))();
+      $("#errors p").eq(0).empty();
+    } catch (_error) {
+      error = _error;
+      $("#errors p").eq(0).text(error);
+    }
+    try {
+      ast = parser.parse(haml + "\n");
+      template = Function("return " + render(ast, {
+        compiler: CoffeeScript
+      }))();
+      $("#errors p").eq(1).empty();
+      $("#debug code").eq(1).text(template);
+    } catch (_error) {
+      error = _error;
+      $("#errors p").eq(1).text(error);
+    }
+    try {
+      style = styl(style, {
+        whitespace: true
+      }).toString();
+      $("#errors p").eq(2).empty();
+    } catch (_error) {
+      error = _error;
+      $("#errors p").eq(2).text(error);
+    }
+    if ((template != null) && (data != null)) {
+      try {
+        fragment = template(data);
+        return $(selector).empty().append(fragment).append("<style>" + style + "</style>");
+      } catch (_error) {
+        error = _error;
+        return $("#errors p").eq(1).text(error);
+      }
+    }
   }).debounce(100);
 
   save = function() {
-    var data, postData, style, template;
-    data = $("#data").val();
-    template = $("#template").val();
-    style = $("#style").val();
+    var data, postData, style, template, _ref1;
+    _ref1 = editors.map(function(editor) {
+      return editor.getValue();
+    }), data = _ref1[0], template = _ref1[1], style = _ref1[2];
     postData = JSON.stringify({
       "public": true,
       files: {
@@ -290,14 +331,16 @@
         }
       }
     });
-    return $.ajax("https://api.github.com/gists", {
-      type: "POST",
-      dataType: 'json',
-      data: postData,
-      success: function(data) {
-        return location.hash = data.id;
-      }
+    return Gistquire.create(postData, function(data) {
+      debugger;
+      return location.hash = data.id;
     });
+  };
+
+  auth = function() {
+    var url;
+    url = 'https://github.com/login/oauth/authorize?client_id=bc46af967c926ba4ff87&scope=gist,user:email';
+    return window.location = url;
   };
 
   load = function(id) {
@@ -315,7 +358,7 @@
   };
 
   $(function() {
-    var id;
+    var code, id, _ref1;
     window.editors = [["data", "coffee"], ["template", "haml"], ["style", "stylus"]].map(function(_arg) {
       var editor, id, mode;
       id = _arg[0], mode = _arg[1];
@@ -323,14 +366,29 @@
       editor.setTheme("ace/theme/tomorrow");
       editor.getSession().setMode("ace/mode/" + mode);
       editor.getSession().on('change', rerender);
+      editor.getSession().setUseSoftTabs(true);
+      editor.getSession().setTabSize(2);
       return editor;
     });
+    if (code = (_ref1 = window.location.href.match(/\?code=(.*)/)) != null ? _ref1[1] : void 0) {
+      $.getJSON('https://hamljr-auth.herokuapp.com/authenticate/#{code}', function(data) {
+        var token;
+        if (token = data.token) {
+          Gistquire.authToken = token;
+          return localStorage.authToken = token;
+        }
+      });
+    }
     if (id = location.hash) {
       load(id.substring(1));
     } else {
       rerender();
     }
-    return $("#actions .save").on("click", save);
+    if (localStorage.authToken) {
+      Gistquire.accessToken = localStorage.authToken;
+    }
+    $("#actions .save").on("click", save);
+    return $("#actions .auth").on("click", auth);
   });
 
 }).call(this);
@@ -1781,7 +1839,7 @@ exports['fixed'] = require('./lib/fixed');
 exports['opacity'] = require('./lib/opacity');
 exports['size'] = require('./lib/size');
 
-},{"./lib/border-radius":18,"./lib/ellipsis":19,"./lib/absolute":20,"./lib/relative":21,"./lib/fixed":22,"./lib/opacity":23,"./lib/size":24}],15:[function(require,module,exports){
+},{"./lib/border-radius":18,"./lib/ellipsis":19,"./lib/absolute":20,"./lib/fixed":21,"./lib/relative":22,"./lib/opacity":23,"./lib/size":24}],15:[function(require,module,exports){
 
 module.exports = require('./lib/rework');
 },{"./lib/rework":25}],18:[function(require,module,exports){
@@ -2253,7 +2311,7 @@ exports.format = function(f) {
 
 module.exports = require('./position')('absolute');
 
-},{"./position":28}],22:[function(require,module,exports){
+},{"./position":28}],21:[function(require,module,exports){
 
 /**
  * fixed: top left
@@ -2262,7 +2320,7 @@ module.exports = require('./position')('absolute');
 
 module.exports = require('./position')('fixed');
 
-},{"./position":28}],21:[function(require,module,exports){
+},{"./position":28}],22:[function(require,module,exports){
 
 /**
  * relative: top left

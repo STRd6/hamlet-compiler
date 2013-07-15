@@ -1,6 +1,20 @@
 (function() {
   module.exports = {
     accessToken: null,
+    create: function(data, callback) {
+      var url;
+      url = "https://api.github.com/gists";
+      if (this.accessToken) {
+        url += "?access_token=" + this.accessToken;
+      }
+      return $.ajax({
+        url: url,
+        type: "POST",
+        dataType: 'json',
+        data: data,
+        success: callback
+      });
+    },
     get: function(id, callback) {
       var data;
       if (this.accessToken) {
