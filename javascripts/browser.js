@@ -146,7 +146,6 @@
       }
     });
     return Gistquire.create(postData, function(data) {
-      debugger;
       return location.hash = data.id;
     });
   };

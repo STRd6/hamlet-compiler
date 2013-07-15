@@ -332,7 +332,6 @@
       }
     });
     return Gistquire.create(postData, function(data) {
-      debugger;
       return location.hash = data.id;
     });
   };
@@ -1839,7 +1838,7 @@ exports['fixed'] = require('./lib/fixed');
 exports['opacity'] = require('./lib/opacity');
 exports['size'] = require('./lib/size');
 
-},{"./lib/border-radius":18,"./lib/ellipsis":19,"./lib/absolute":20,"./lib/fixed":21,"./lib/relative":22,"./lib/opacity":23,"./lib/size":24}],15:[function(require,module,exports){
+},{"./lib/border-radius":18,"./lib/ellipsis":19,"./lib/absolute":20,"./lib/relative":21,"./lib/fixed":22,"./lib/opacity":23,"./lib/size":24}],15:[function(require,module,exports){
 
 module.exports = require('./lib/rework');
 },{"./lib/rework":25}],18:[function(require,module,exports){
@@ -2314,20 +2313,20 @@ module.exports = require('./position')('absolute');
 },{"./position":28}],21:[function(require,module,exports){
 
 /**
- * fixed: top left
- * fixed: top 5px left 5px
- */
-
-module.exports = require('./position')('fixed');
-
-},{"./position":28}],22:[function(require,module,exports){
-
-/**
  * relative: top left
  * relative: top 5px left 5px
  */
 
 module.exports = require('./position')('relative');
+
+},{"./position":28}],22:[function(require,module,exports){
+
+/**
+ * fixed: top left
+ * fixed: top 5px left 5px
+ */
+
+module.exports = require('./position')('fixed');
 
 },{"./position":28}],27:[function(require,module,exports){
 (function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
@@ -8695,7 +8694,36 @@ mime.charsets = {
 module.exports = mime;
 
 })(require("__browserify_process"),"/../node_modules/styl/node_modules/rework/node_modules/mime")
-},{"path":12,"fs":11,"__browserify_process":10}],47:[function(require,module,exports){
+},{"path":12,"fs":11,"__browserify_process":10}],53:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var Compressed = require('./lib/compress');
+var Identity = require('./lib/identity');
+
+/**
+ * Stringfy the given AST `node`.
+ *
+ * @param {Object} node
+ * @param {Object} [options]
+ * @return {String}
+ * @api public
+ */
+
+module.exports = function(node, options){
+  options = options || {};
+
+  var compiler = options.compress
+    ? new Compressed(options)
+    : new Identity(options);
+
+  return compiler.compile(node);
+};
+
+
+},{"./lib/compress":55,"./lib/identity":56}],47:[function(require,module,exports){
 exports = module.exports = function (options) {
   return function inherit(style) {
     return new Inherit(style, options || {})
@@ -8921,36 +8949,7 @@ function getRule(x) {
   return x.rule
 }
 
-},{"debug":48}],53:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var Compressed = require('./lib/compress');
-var Identity = require('./lib/identity');
-
-/**
- * Stringfy the given AST `node`.
- *
- * @param {Object} node
- * @param {Object} [options]
- * @return {String}
- * @api public
- */
-
-module.exports = function(node, options){
-  options = options || {};
-
-  var compiler = options.compress
-    ? new Compressed(options)
-    : new Identity(options);
-
-  return compiler.compile(node);
-};
-
-
-},{"./lib/compress":55,"./lib/identity":56}],54:[function(require,module,exports){
+},{"debug":48}],54:[function(require,module,exports){
 
 /**
  * Module dependencies.
