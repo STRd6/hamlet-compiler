@@ -1,6 +1,19 @@
 module.exports =
   accessToken: null
 
+  update: (id, data, callback) ->
+    url = "https://api.github.com/gists/#{id}"
+
+    if @accessToken
+      url += "?access_token=#{@accessToken}"
+
+    $.ajax
+      url: url
+      type: "PATCH"
+      dataType: 'json'
+      data: data
+      success: callback
+
   create: (data, callback) ->
     url = "https://api.github.com/gists"
 

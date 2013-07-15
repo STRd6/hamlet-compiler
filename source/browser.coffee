@@ -111,8 +111,7 @@ rerender = (->
 
 ).debounce(100)
 
-# TODO: Remote sample repos
-save = ->
+postData = ->
   [data, template, style] = editors.map (editor) ->
     editor.getValue()
 
@@ -127,7 +126,9 @@ save = ->
         content: style
   )
 
-  Gistquire.create postData, (data) ->
+# TODO: Remote sample repos
+save = ->
+  Gistquire.create postData(), (data) ->
     location.hash = data.id
 
 auth = ->
@@ -145,6 +146,10 @@ load = (id) ->
       editor.session.selection.clearSelection()
 
     rerender()
+
+update = ->
+  if id = location.hash?.substring(1)
+    Gistquire.update id, postData(), (data) ->
 
 $ ->
   window.editors = [
@@ -167,8 +172,8 @@ $ ->
         Gistquire.authToken = token
         localStorage.authToken = token
 
-  if id = location.hash
-    load(id.substring(1))
+  if id = location.hash?.substring(1)
+    load(id)
   else
     rerender()
 
@@ -177,3 +182,4 @@ $ ->
 
   $("#actions .save").on "click", save
   $("#actions .auth").on "click", auth
+  $("#actions .update").on "click", update
