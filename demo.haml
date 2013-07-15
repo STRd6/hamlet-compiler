@@ -45,6 +45,23 @@
           width: 33%
           margin: 0.25em 0
 
+      #errors
+        p
+          display: inline-block
+          width: 33%
+          color: red
+
+          &:empty
+            margin: 0
+
+      #debug
+        display: none
+
+        code
+          display: inline-block
+          white-space: pre
+          width: 33%
+
   %body
     %h1 Tempest - Alpha
 
@@ -69,14 +86,23 @@
       The binding is automatic by introspecting the observable properties.
 
     #actions
+      %button.auth Auth
       %button.save Save
-
-    #errors
 
     .titles
       %h2 Data
       %h2 Template
       %h2 Style
+
+    #errors
+      %p
+      %p
+      %p
+
+    #debug
+      %code
+      %code
+      %code
 
     .editor-wrapper
       #data

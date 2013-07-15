@@ -76,27 +76,45 @@ rerender = (->
 
   [coffee, haml, style] = editors.map (editor) -> editor.getValue()
 
-  # TODO: Better error reporting
-  ast = parser.parse(haml)
+  try
+    data = Function("return " + CoffeeScript.compile("do ->\n" + util.indent(coffee), bare: true))()
+    $("#errors p").eq(0).empty()
+  catch error
+    $("#errors p").eq(0).text(error)
 
-  template = Function("return " + render(ast, compiler: CoffeeScript))()
+  try
+    ast = parser.parse(haml + "\n")
+    template = Function("return " + render(ast, compiler: CoffeeScript))()
+    $("#errors p").eq(1).empty()
+    $("#debug code").eq(1).text(template)
+  catch error
+    $("#errors p").eq(1).text(error)
 
-  data = Function("return " + CoffeeScript.compile("do ->\n" + util.indent(coffee), bare: true))()
+  try
+    style = styl(style, whitespace: true).toString()
+    $("#errors p").eq(2).empty()
+  catch error
+    $("#errors p").eq(2).text(error)
 
-  style = styl(style, whitespace: true).toString()
 
-  $(selector)
-    .empty()
-    .append(template(data))
-    .append("<style>#{style}</style>")
+  if template? and data?
+    try
+      fragment = template(data)
+
+      $(selector)
+        .empty()
+        .append(fragment)
+        .append("<style>#{style}</style>")
+
+    catch error
+      $("#errors p").eq(1).text(error)
 
 ).debounce(100)
 
 # TODO: Remote sample repos
 save = ->
-  data = $("#data").val()
-  template = $("#template").val()
-  style = $("#style").val()
+  [data, template, style] = editors.map (editor) ->
+    editor.getValue()
 
   postData = JSON.stringify(
     public: true
@@ -109,12 +127,13 @@ save = ->
         content: style
   )
 
-  $.ajax "https://api.github.com/gists",
-    type: "POST"
-    dataType: 'json'
-    data: postData
-    success: (data) ->
-      location.hash = data.id
+  Gistquire.create postData, (data) ->
+    location.hash = data.id
+
+auth = ->
+  url = 'https://github.com/login/oauth/authorize?client_id=bc46af967c926ba4ff87&scope=gist,user:email'
+
+  window.location = url
 
 load = (id) ->
   Gistquire.get id, (data) ->
@@ -137,12 +156,24 @@ $ ->
     editor.setTheme("ace/theme/tomorrow");
     editor.getSession().setMode("ace/mode/#{mode}")
     editor.getSession().on 'change', rerender
+    editor.getSession().setUseSoftTabs(true)
+    editor.getSession().setTabSize(2)
 
     editor
+
+  if code = window.location.href.match(/\?code=(.*)/)?[1]
+    $.getJSON 'https://hamljr-auth.herokuapp.com/authenticate/#{code}', (data) ->
+      if token = data.token
+        Gistquire.authToken = token
+        localStorage.authToken = token
 
   if id = location.hash
     load(id.substring(1))
   else
     rerender()
 
+  if localStorage.authToken
+    Gistquire.accessToken = localStorage.authToken
+
   $("#actions .save").on "click", save
+  $("#actions .auth").on "click", auth
