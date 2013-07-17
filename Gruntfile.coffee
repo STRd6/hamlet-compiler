@@ -8,6 +8,7 @@ module.exports = (grunt) ->
     "gistquire"
     "grammar_dsl"
     "haml-jr"
+    "observable"
     "renderer"
     "runtime"
   ].forEach (name) ->
@@ -99,4 +100,4 @@ module.exports = (grunt) ->
     'shell:gh-pages-push'
   ]
 
-  grunt.registerTask 'default', ['test']
+  grunt.registerTask 'default', ['build', 'shell:gh-pages']

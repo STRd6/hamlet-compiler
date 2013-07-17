@@ -6,4 +6,5 @@ Handle Nullable Data
 
 Whitespace between text elements
 
+Move Runtime under HAMLjr namespace
 Move move optional filters into runtime, (styl, markdown)

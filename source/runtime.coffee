@@ -67,16 +67,47 @@ Runtime = (context) ->
     __push: push
     __pop: pop
 
-    # TODO: Reconsider these observing methods
     __observeAttribute: observeAttribute
     __observeText: observeText
 
     __each: (items, fn) ->
-      # TODO: Work with observable arrays
+      items = Observable.lift(items)
+      elements = []
+      parent = lastParent()
+
       # TODO: Work when rendering many sibling elements
-      items.each (item) ->
-        element = fn.call(item)
-        element[dataName] = item
+      items.observe (newItems) ->
+        replace elements, newItems
+
+      replace = (oldElements, items) ->
+        if oldElements
+          # TODO: There a lot of trouble if we can't find a parent
+          # We may be able to hack around it by observing when
+          # we're inserted into the dom and finding out what parent element
+          # we have
+          # TODO: We may have trouble if the list starts out empty so we can't
+          # find the first element to insert into the correct position
+          firstElement = oldElements[0]
+          parent = firstElement?.parentElement
+
+          elements = items.map (item) ->
+            element = fn.call(item)
+            element[dataName] = item
+
+            parent.insertBefore element, firstElement
+
+            return element
+
+          oldElements.each (element) ->
+            element.remove()
+        else
+          elements = items.map (item) ->
+            element = fn.call(item)
+            element[dataName] = item
+
+            return element
+
+      replace(null, items)
 
     __with: (item, fn) ->
       element = null
@@ -128,6 +159,8 @@ Runtime = (context) ->
 
       else
         element["on#{eventName}"] = ->
+          # TODO: Make sure this context is correct for nested
+          # things like `with` and `each`
           fn.call(context, event)
   }
 
