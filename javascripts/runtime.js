@@ -64,11 +64,38 @@
       __observeAttribute: observeAttribute,
       __observeText: observeText,
       __each: function(items, fn) {
-        return items.each(function(item) {
-          var element;
-          element = fn.call(item);
-          return element[dataName] = item;
+        var elements, parent, replace;
+        items = Observable.lift(items);
+        elements = [];
+        parent = lastParent();
+        items.observe(function(newItems) {
+          return replace(elements, newItems);
         });
+        replace = function(oldElements, items) {
+          var firstElement;
+          if (oldElements) {
+            firstElement = oldElements[0];
+            parent = firstElement != null ? firstElement.parentElement : void 0;
+            elements = items.map(function(item) {
+              var element;
+              element = fn.call(item);
+              element[dataName] = item;
+              parent.insertBefore(element, firstElement);
+              return element;
+            });
+            return oldElements.each(function(element) {
+              return element.remove();
+            });
+          } else {
+            return elements = items.map(function(item) {
+              var element;
+              element = fn.call(item);
+              element[dataName] = item;
+              return element;
+            });
+          }
+        };
+        return replace(null, items);
       },
       __with: function(item, fn) {
         var element, replace, value;

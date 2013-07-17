@@ -58,6 +58,104 @@
 
 },{}],2:[function(require,module,exports){
 (function() {
+  var Observable,
+    __slice = [].slice;
+
+  Observable = function(value) {
+    var listeners, notify, self;
+    listeners = [];
+    notify = function(newValue) {
+      return listeners.each(function(listener) {
+        return listener(newValue);
+      });
+    };
+    self = function(newValue) {
+      if (arguments.length > 0) {
+        if (value !== newValue) {
+          value = newValue;
+          notify(newValue);
+        }
+      }
+      return value;
+    };
+    Object.extend(self, {
+      observe: function(listener) {
+        return listeners.push(listener);
+      },
+      each: function() {
+        var args, _ref;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        if (value != null) {
+          return (_ref = [value]).each.apply(_ref, args);
+        }
+      }
+    });
+    if (Array.isArray(value)) {
+      Object.extend(self, {
+        each: function() {
+          var args;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          return value.each.apply(value, args);
+        },
+        map: function() {
+          var args;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          return value.map.apply(value, args);
+        },
+        remove: function(item) {
+          var ret;
+          ret = value.remove(item);
+          notify(value);
+          return ret;
+        },
+        push: function(item) {
+          var ret;
+          ret = value.push(item);
+          notify(value);
+          return ret;
+        },
+        pop: function() {
+          var ret;
+          ret = value.pop();
+          notify(value);
+          return ret;
+        }
+      });
+    }
+    return self;
+  };
+
+  Observable.lift = function(object) {
+    var dummy, value;
+    if (typeof object.observe === "function") {
+      return object;
+    } else {
+      value = object;
+      dummy = function(newValue) {
+        if (arguments.length > 0) {
+          return value = newValue;
+        } else {
+          return value;
+        }
+      };
+      dummy.observe = function() {};
+      dummy.each = function() {
+        var args, _ref;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        if (value != null) {
+          return (_ref = [value]).forEach.apply(_ref, args);
+        }
+      };
+      return dummy;
+    }
+  };
+
+  module.exports = Observable;
+
+}).call(this);
+
+},{}],3:[function(require,module,exports){
+(function() {
   var Runtime, dataName;
 
   dataName = "__hamlJR_data";
@@ -123,11 +221,38 @@
       __observeAttribute: observeAttribute,
       __observeText: observeText,
       __each: function(items, fn) {
-        return items.each(function(item) {
-          var element;
-          element = fn.call(item);
-          return element[dataName] = item;
+        var elements, parent, replace;
+        items = Observable.lift(items);
+        elements = [];
+        parent = lastParent();
+        items.observe(function(newItems) {
+          return replace(elements, newItems);
         });
+        replace = function(oldElements, items) {
+          var firstElement;
+          if (oldElements) {
+            firstElement = oldElements[0];
+            parent = firstElement != null ? firstElement.parentElement : void 0;
+            elements = items.map(function(item) {
+              var element;
+              element = fn.call(item);
+              element[dataName] = item;
+              parent.insertBefore(element, firstElement);
+              return element;
+            });
+            return oldElements.each(function(element) {
+              return element.remove();
+            });
+          } else {
+            return elements = items.map(function(item) {
+              var element;
+              element = fn.call(item);
+              element[dataName] = item;
+              return element;
+            });
+          }
+        };
+        return replace(null, items);
       },
       __with: function(item, fn) {
         var element, replace, value;
@@ -195,12 +320,11 @@
 
 }).call(this);
 
-},{}],3:[function(require,module,exports){
-
 },{}],4:[function(require,module,exports){
+
+},{}],5:[function(require,module,exports){
 (function() {
-  var Gistquire, auth, load, parser, postData, renderJST, rerender, save, styl, update, util, _ref,
-    __slice = [].slice;
+  var Gistquire, auth, load, parser, postData, renderJST, rerender, save, styl, update, util, _ref;
 
   parser = require('./haml-jr').parser;
 
@@ -210,68 +334,13 @@
 
   styl = require('styl');
 
+  window.Observable = require('./observable');
+
   require('./runtime');
 
   window.parser = parser;
 
   window.render = renderJST;
-
-  window.Observable = function(value) {
-    var listeners, notify, self;
-    listeners = [];
-    notify = function(newValue) {
-      return listeners.each(function(listener) {
-        return listener(newValue);
-      });
-    };
-    self = function(newValue) {
-      if (arguments.length > 0) {
-        if (value !== newValue) {
-          value = newValue;
-          notify(newValue);
-        }
-      }
-      return value;
-    };
-    Object.extend(self, {
-      observe: function(listener) {
-        return listeners.push(listener);
-      },
-      each: function() {
-        var args, _ref1;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        if (value != null) {
-          return (_ref1 = [value]).each.apply(_ref1, args);
-        }
-      }
-    });
-    return self;
-  };
-
-  Observable.lift = function(object) {
-    var dummy, value;
-    if (typeof object.observe === "function") {
-      return object;
-    } else {
-      value = object;
-      dummy = function(newValue) {
-        if (arguments.length > 0) {
-          return value = newValue;
-        } else {
-          return value;
-        }
-      };
-      dummy.observe = function() {};
-      dummy.each = function() {
-        var args, _ref1;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        if (value != null) {
-          return (_ref1 = [value]).forEach.apply(_ref1, args);
-        }
-      };
-      return dummy;
-    }
-  };
 
   rerender = (function() {
     var ast, coffee, data, error, fragment, haml, selector, style, template, _ref1;
@@ -331,7 +400,7 @@
     _ref1 = editors.map(function(editor) {
       return editor.getValue();
     }), data = _ref1[0], template = _ref1[1], style = _ref1[2];
-    return postData = JSON.stringify({
+    return JSON.stringify({
       "public": true,
       files: {
         data: {
@@ -417,7 +486,7 @@
 
 }).call(this);
 
-},{"./haml-jr":5,"./gistquire":1,"./renderer":6,"./runtime":2,"styl":7}],5:[function(require,module,exports){
+},{"./haml-jr":6,"./renderer":7,"./gistquire":1,"./observable":2,"./runtime":3,"styl":8}],6:[function(require,module,exports){
 (function() {
   var extend, lexer, oldParse, parser,
     __slice = [].slice;
@@ -500,7 +569,7 @@
 
 }).call(this);
 
-},{"./parser":8,"./lexer":9}],9:[function(require,module,exports){
+},{"./parser":9,"./lexer":10}],10:[function(require,module,exports){
 /* generated by jison-lex 0.2.1 */
 var lexer = (function(){
 var lexer = {
@@ -909,7 +978,7 @@ conditions: {"filter":{"rules":[18,19,20],"inclusive":false},"value":{"rules":[1
 return lexer;
 })();exports.lexer = lexer;
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -963,7 +1032,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function(process){/* parser generated by jison 0.4.6 */
 /*
   Returns a Parser object of the following structure:
@@ -1340,10 +1409,10 @@ if (typeof module !== 'undefined' && require.main === module) {
 }
 }
 })(require("__browserify_process"))
-},{"fs":11,"path":12,"__browserify_process":10}],11:[function(require,module,exports){
+},{"fs":12,"path":13,"__browserify_process":11}],12:[function(require,module,exports){
 // nothing to see here... no file methods for the browser
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 (function(process){function filter (xs, fn) {
     var res = [];
     for (var i = 0; i < xs.length; i++) {
@@ -1521,7 +1590,7 @@ exports.relative = function(from, to) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":10}],6:[function(require,module,exports){
+},{"__browserify_process":11}],7:[function(require,module,exports){
 (function(process){(function() {
   var CoffeeScript, indentText, keywords, keywordsRegex, selfClosing, styl, util,
     __slice = [].slice;
@@ -1753,7 +1822,7 @@ exports.relative = function(from, to) {
 }).call(this);
 
 })(require("__browserify_process"))
-},{"coffee-script":3,"styl":7,"__browserify_process":10}],7:[function(require,module,exports){
+},{"coffee-script":4,"styl":8,"__browserify_process":11}],8:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -1830,7 +1899,7 @@ Style.prototype.toString = function(){
   return this.rework.toString({ compress: this.compress });
 };
 
-},{"css-whitespace":13,"rework-mixins":14,"rework":15}],13:[function(require,module,exports){
+},{"css-whitespace":14,"rework-mixins":15,"rework":16}],14:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -1853,7 +1922,7 @@ module.exports = function(str){
   return compile(parse(str));
 };
 
-},{"./lib/parser":16,"./lib/compiler":17}],14:[function(require,module,exports){
+},{"./lib/parser":17,"./lib/compiler":18}],15:[function(require,module,exports){
 
 exports['border-radius'] = require('./lib/border-radius');
 exports['overflow'] = require('./lib/ellipsis');
@@ -1863,10 +1932,10 @@ exports['fixed'] = require('./lib/fixed');
 exports['opacity'] = require('./lib/opacity');
 exports['size'] = require('./lib/size');
 
-},{"./lib/border-radius":18,"./lib/ellipsis":19,"./lib/absolute":20,"./lib/relative":21,"./lib/fixed":22,"./lib/opacity":23,"./lib/size":24}],15:[function(require,module,exports){
+},{"./lib/ellipsis":19,"./lib/border-radius":20,"./lib/absolute":21,"./lib/relative":22,"./lib/fixed":23,"./lib/opacity":24,"./lib/size":25}],16:[function(require,module,exports){
 
 module.exports = require('./lib/rework');
-},{"./lib/rework":25}],18:[function(require,module,exports){
+},{"./lib/rework":26}],20:[function(require,module,exports){
 
 /**
  * Positions.
@@ -1940,7 +2009,7 @@ module.exports = function(type) {
   };
 };
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 
 /**
  * opacity: 1
@@ -1958,7 +2027,7 @@ module.exports = function(str){
   }
 };
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 /**
  * size: 100px 50px
  */
@@ -1973,7 +2042,7 @@ module.exports = function(sizes) {
   };
 };
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -2326,7 +2395,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":27}],20:[function(require,module,exports){
+},{"events":28}],21:[function(require,module,exports){
 
 /**
  * absolute: top left
@@ -2335,7 +2404,7 @@ exports.format = function(f) {
 
 module.exports = require('./position')('absolute');
 
-},{"./position":28}],21:[function(require,module,exports){
+},{"./position":29}],22:[function(require,module,exports){
 
 /**
  * relative: top left
@@ -2344,7 +2413,7 @@ module.exports = require('./position')('absolute');
 
 module.exports = require('./position')('relative');
 
-},{"./position":28}],22:[function(require,module,exports){
+},{"./position":29}],23:[function(require,module,exports){
 
 /**
  * fixed: top left
@@ -2353,7 +2422,7 @@ module.exports = require('./position')('relative');
 
 module.exports = require('./position')('fixed');
 
-},{"./position":28}],27:[function(require,module,exports){
+},{"./position":29}],28:[function(require,module,exports){
 (function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -2539,7 +2608,7 @@ EventEmitter.prototype.listeners = function(type) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":10}],29:[function(require,module,exports){
+},{"__browserify_process":11}],30:[function(require,module,exports){
 
 /**
  * Pesudo selectors.
@@ -2743,7 +2812,7 @@ module.exports = function(str) {
   }
 }
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 
 /**
  * Positions.
@@ -2787,7 +2856,7 @@ module.exports = function(type){
   };
 }
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 
 /**
  * Prefixed properties.
@@ -2865,34 +2934,6 @@ module.exports = [
   'overflow-scrolling'
 ];
 
-},{}],31:[function(require,module,exports){
-
-/**
- * Prefix selectors with `str`.
- *
- *    button {
- *      color: red;
- *    }
- *
- * yields:
- *
- *    #dialog button {
- *      color: red;
- *    }
- *
- */
-
-module.exports = function(str) {
-  return function(style){
-    style.rules = style.rules.map(function(rule){
-      if (!rule.selectors) return rule;
-      rule.selectors = rule.selectors.map(function(selector){
-        return str + ' ' + selector;
-      });
-      return rule;
-    });
-  }
-};
 },{}],32:[function(require,module,exports){
 
 /**
@@ -2994,71 +3035,40 @@ function cloneKeyframe(keyframe) {
 
 },{}],33:[function(require,module,exports){
 
+/**
+ * Prefix selectors with `str`.
+ *
+ *    button {
+ *      color: red;
+ *    }
+ *
+ * yields:
+ *
+ *    #dialog button {
+ *      color: red;
+ *    }
+ *
+ */
+
+module.exports = function(str) {
+  return function(style){
+    style.rules = style.rules.map(function(rule){
+      if (!rule.selectors) return rule;
+      rule.selectors = rule.selectors.map(function(selector){
+        return str + ' ' + selector;
+      });
+      return rule;
+    });
+  }
+};
+},{}],34:[function(require,module,exports){
+
 module.exports = function(){
   console.warn('Warning: vars() has been removed, please use: https://github.com/visionmedia/rework-vars');
   return function(){}
 };
 
-},{}],34:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var visit = require('../visit');
-var utils = require('../utils');
-var strip = utils.stripQuotes;
-
-/**
- * Define custom function.
- */
-
-module.exports = function(functions, args) {
-  if (!functions) throw new Error('functions object required');
-  return function(style, rework){
-    visit.declarations(style, function(declarations){
-      for (var name in functions) {
-        func(declarations, name, functions[name], args);
-      }
-    });
-  }
-};
-
-/**
- * Escape regexp codes in string.
- *
- * @param {String} s
- * @api private
- */
-
-function escape(s) {
-  return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-}
-
-/**
- * Visit declarations and apply functions.
- *
- * @param {Array} declarations
- * @param {Object} functions
- * @param {Boolean} [parseArgs]
- * @api private
- */
-
-function func(declarations, name, func, parseArgs) {
-  if (false !== parseArgs) parseArgs = true;
-  var regexp = new RegExp(escape(name) + '\\(([^\)]+)\\)', 'g');
-  declarations.forEach(function(decl){
-    if ('comment' == decl.type) return;
-    if (!~decl.value.indexOf(name + '(')) return;
-    decl.value = decl.value.replace(regexp, function(_, args){
-      if (!parseArgs) return func.call(decl, strip(args));
-      args = args.split(/,\s*/).map(strip);
-      return func.apply(decl, args);
-    });
-  });
-}
-
-},{"../visit":35,"../utils":36}],37:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3127,7 +3137,66 @@ function mixin(rework, declarations, mixins) {
   }
 }
 
-},{"../visit":35,"../utils":36}],38:[function(require,module,exports){
+},{"../visit":36,"../utils":37}],38:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var visit = require('../visit');
+var utils = require('../utils');
+var strip = utils.stripQuotes;
+
+/**
+ * Define custom function.
+ */
+
+module.exports = function(functions, args) {
+  if (!functions) throw new Error('functions object required');
+  return function(style, rework){
+    visit.declarations(style, function(declarations){
+      for (var name in functions) {
+        func(declarations, name, functions[name], args);
+      }
+    });
+  }
+};
+
+/**
+ * Escape regexp codes in string.
+ *
+ * @param {String} s
+ * @api private
+ */
+
+function escape(s) {
+  return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
+/**
+ * Visit declarations and apply functions.
+ *
+ * @param {Array} declarations
+ * @param {Object} functions
+ * @param {Boolean} [parseArgs]
+ * @api private
+ */
+
+function func(declarations, name, func, parseArgs) {
+  if (false !== parseArgs) parseArgs = true;
+  var regexp = new RegExp(escape(name) + '\\(([^\)]+)\\)', 'g');
+  declarations.forEach(function(decl){
+    if ('comment' == decl.type) return;
+    if (!~decl.value.indexOf(name + '(')) return;
+    decl.value = decl.value.replace(regexp, function(_, args){
+      if (!parseArgs) return func.call(decl, strip(args));
+      args = args.split(/,\s*/).map(strip);
+      return func.apply(decl, args);
+    });
+  });
+}
+
+},{"../visit":36,"../utils":37}],39:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3191,7 +3260,124 @@ module.exports = function(prop, vendors) {
   }
 };
 
-},{"../visit":35}],39:[function(require,module,exports){
+},{"../visit":36}],26:[function(require,module,exports){
+(function(){
+/**
+ * Module dependencies.
+ */
+
+var css = require('css');
+
+/**
+ * Expose `rework`.
+ */
+
+exports = module.exports = rework;
+
+/**
+ * Expose `visit` helpers.
+ */
+
+exports.visit = require('./visit');
+
+/**
+ * Expose prefix properties.
+ */
+
+exports.properties = require('./properties');
+
+/**
+ * Initialize a new stylesheet `Rework` with `str`.
+ *
+ * @param {String} str
+ * @return {Rework}
+ * @api public
+ */
+
+function rework(str) {
+  return new Rework(css.parse(str));
+}
+
+/**
+ * Initialize a new stylesheet `Rework` with `obj`.
+ *
+ * @param {Object} obj
+ * @api private
+ */
+
+function Rework(obj) {
+  this.obj = obj;
+}
+
+/**
+ * Use the given plugin `fn(style, rework)`.
+ *
+ * @param {Function} fn
+ * @return {Rework}
+ * @api public
+ */
+
+Rework.prototype.use = function(fn){
+  fn(this.obj.stylesheet, this);
+  return this;
+};
+
+/**
+ * Specify global vendor `prefixes`,
+ * explicit ones may still be passed
+ * to most plugins.
+ *
+ * @param {Array} prefixes
+ * @return {Rework}
+ * @api public
+ */
+
+Rework.prototype.vendors = function(prefixes){
+  this.prefixes = prefixes;
+  return this;
+};
+
+/**
+ * Stringify the stylesheet.
+ *
+ * @param {Object} options
+ * @return {String}
+ * @api public
+ */
+
+Rework.prototype.toString = function(options){
+  return css.stringify(this.obj, options);
+};
+
+/**
+ * Expose plugins.
+ */
+
+exports.mixin = exports.mixins = require('./plugins/mixin');
+exports.function = exports.functions = require('./plugins/function');
+exports.prefix = require('./plugins/prefix');
+exports.colors = require('./plugins/colors');
+exports.extend = require('rework-inherit');
+exports.references = require('./plugins/references');
+exports.prefixValue = require('./plugins/prefix-value');
+exports.prefixSelectors = require('./plugins/prefix-selectors');
+exports.keyframes = require('./plugins/keyframes');
+exports.at2x = require('./plugins/at2x');
+exports.url = require('./plugins/url');
+exports.ease = require('./plugins/ease');
+exports.vars = require('./plugins/vars');
+
+/**
+ * Try/catch plugins unavailable in component.
+ */
+
+ try {
+  exports.inline = require('./plugins/inline');
+} catch (err) {};
+
+
+})()
+},{"./visit":36,"./properties":31,"./plugins/mixin":35,"./plugins/function":38,"./plugins/prefix":39,"./plugins/colors":40,"./plugins/references":41,"./plugins/prefix-value":42,"./plugins/prefix-selectors":33,"./plugins/keyframes":32,"./plugins/at2x":43,"./plugins/url":44,"./plugins/ease":45,"./plugins/vars":34,"./plugins/inline":46,"css":47,"rework-inherit":48}],41:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3249,7 +3435,7 @@ function substitute(declarations) {
   }
 }
 
-},{"../visit":35}],40:[function(require,module,exports){
+},{"../visit":36}],42:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3307,7 +3493,7 @@ module.exports = function(value, vendors) {
   }
 };
 
-},{"../visit":35}],41:[function(require,module,exports){
+},{"../visit":36}],43:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3421,7 +3607,7 @@ function value(decl) {
   return decl.value;
 }
 
-},{"path":12,"../utils":36}],42:[function(require,module,exports){
+},{"path":13,"../utils":37}],44:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3453,7 +3639,7 @@ module.exports = function(fn) {
   }, false);
 };
 
-},{"../utils":36,"./function":34}],43:[function(require,module,exports){
+},{"../utils":37,"./function":38}],45:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3540,7 +3726,7 @@ function substitute(declarations) {
   }
 }
 
-},{"../visit":35}],16:[function(require,module,exports){
+},{"../visit":36}],17:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -3653,7 +3839,7 @@ module.exports = function(str) {
   }
 }
 
-},{"util":26,"./lexer":29,"debug":44}],17:[function(require,module,exports){
+},{"util":27,"./lexer":30,"debug":49}],18:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -3879,7 +4065,21 @@ function blank(str) {
   return '' != str;
 }
 
-},{"util":26,"debug":44}],44:[function(require,module,exports){
+},{"util":27,"debug":49}],37:[function(require,module,exports){
+
+/**
+ * Strip `str` quotes.
+ *
+ * @param {String} str
+ * @return {String}
+ * @api private
+ */
+
+exports.stripQuotes = function(str) {
+  if ('"' == str[0] || "'" == str[0]) return str.slice(1, -1);
+  return str;
+};
+},{}],49:[function(require,module,exports){
 
 /**
  * Expose `debug()` as the module.
@@ -4005,7 +4205,52 @@ debug.enabled = function(name) {
 
 if (window.localStorage) debug.enable(localStorage.debug);
 
-},{}],45:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
+
+// TODO: require() directly in plugins...
+exports.declarations = require('rework-visit');
+
+},{"rework-visit":50}],50:[function(require,module,exports){
+
+/**
+ * Expose `visit()`.
+ */
+
+module.exports = visit;
+
+/**
+ * Visit `node`'s declarations recursively and
+ * invoke `fn(declarations, node)`.
+ *
+ * @param {Object} node
+ * @param {Function} fn
+ * @api private
+ */
+
+function visit(node, fn){
+  node.rules.forEach(function(rule){
+    // @media etc
+    if (rule.rules) {
+      visit(rule, fn);
+      return;
+    }
+
+    // keyframes
+    if (rule.keyframes) {
+      rule.keyframes.forEach(function(keyframe){
+        fn(keyframe.declarations, rule);
+      });
+      return;
+    }
+
+    // @charset, @import etc
+    if (!rule.declarations) return;
+
+    fn(rule.declarations, node);
+  });
+};
+
+},{}],51:[function(require,module,exports){
 require=(function(e,t,n,r){function i(r){if(!n[r]){if(!t[r]){if(e)return e(r);throw new Error("Cannot find module '"+r+"'")}var s=n[r]={exports:{}};t[r][0](function(e){var n=t[r][1][e];return i(n?n:e)},s,s.exports)}return n[r].exports}for(var s=0;s<r.length;s++)i(r[s]);return i})(typeof require!=="undefined"&&require,{1:[function(require,module,exports){
 // UTILITY
 var util = require('util');
@@ -7916,124 +8161,12 @@ module.exports = function(dirs) {
 };
 
 })(require("__browserify_Buffer").Buffer)
-},{"path":12,"fs":11,"./function":34,"mime":47,"__browserify_Buffer":45}],25:[function(require,module,exports){
-(function(){
-/**
- * Module dependencies.
- */
+},{"path":13,"fs":12,"./function":38,"mime":52,"__browserify_Buffer":51}],47:[function(require,module,exports){
 
-var css = require('css');
+exports.parse = require('css-parse');
+exports.stringify = require('css-stringify');
 
-/**
- * Expose `rework`.
- */
-
-exports = module.exports = rework;
-
-/**
- * Expose `visit` helpers.
- */
-
-exports.visit = require('./visit');
-
-/**
- * Expose prefix properties.
- */
-
-exports.properties = require('./properties');
-
-/**
- * Initialize a new stylesheet `Rework` with `str`.
- *
- * @param {String} str
- * @return {Rework}
- * @api public
- */
-
-function rework(str) {
-  return new Rework(css.parse(str));
-}
-
-/**
- * Initialize a new stylesheet `Rework` with `obj`.
- *
- * @param {Object} obj
- * @api private
- */
-
-function Rework(obj) {
-  this.obj = obj;
-}
-
-/**
- * Use the given plugin `fn(style, rework)`.
- *
- * @param {Function} fn
- * @return {Rework}
- * @api public
- */
-
-Rework.prototype.use = function(fn){
-  fn(this.obj.stylesheet, this);
-  return this;
-};
-
-/**
- * Specify global vendor `prefixes`,
- * explicit ones may still be passed
- * to most plugins.
- *
- * @param {Array} prefixes
- * @return {Rework}
- * @api public
- */
-
-Rework.prototype.vendors = function(prefixes){
-  this.prefixes = prefixes;
-  return this;
-};
-
-/**
- * Stringify the stylesheet.
- *
- * @param {Object} options
- * @return {String}
- * @api public
- */
-
-Rework.prototype.toString = function(options){
-  return css.stringify(this.obj, options);
-};
-
-/**
- * Expose plugins.
- */
-
-exports.mixin = exports.mixins = require('./plugins/mixin');
-exports.function = exports.functions = require('./plugins/function');
-exports.prefix = require('./plugins/prefix');
-exports.colors = require('./plugins/colors');
-exports.extend = require('rework-inherit');
-exports.references = require('./plugins/references');
-exports.prefixValue = require('./plugins/prefix-value');
-exports.prefixSelectors = require('./plugins/prefix-selectors');
-exports.keyframes = require('./plugins/keyframes');
-exports.at2x = require('./plugins/at2x');
-exports.url = require('./plugins/url');
-exports.ease = require('./plugins/ease');
-exports.vars = require('./plugins/vars');
-
-/**
- * Try/catch plugins unavailable in component.
- */
-
- try {
-  exports.inline = require('./plugins/inline');
-} catch (err) {};
-
-
-})()
-},{"./visit":35,"./properties":30,"./plugins/mixin":37,"./plugins/function":34,"./plugins/prefix":38,"./plugins/colors":48,"./plugins/references":39,"./plugins/prefix-value":40,"./plugins/prefix-selectors":31,"./plugins/keyframes":32,"./plugins/at2x":41,"./plugins/url":42,"./plugins/ease":43,"./plugins/vars":33,"./plugins/inline":46,"css":49,"rework-inherit":50}],48:[function(require,module,exports){
+},{"css-parse":53,"css-stringify":54}],40:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -8072,173 +8205,7 @@ module.exports = function() {
   });
 };
 
-},{"./function":34,"color-parser":51}],35:[function(require,module,exports){
-
-// TODO: require() directly in plugins...
-exports.declarations = require('rework-visit');
-
-},{"rework-visit":52}],49:[function(require,module,exports){
-
-exports.parse = require('css-parse');
-exports.stringify = require('css-stringify');
-
-},{"css-stringify":53,"css-parse":54}],47:[function(require,module,exports){
-(function(process,__dirname){var path = require('path');
-var fs = require('fs');
-
-function Mime() {
-  // Map of extension -> mime type
-  this.types = Object.create(null);
-
-  // Map of mime type -> extension
-  this.extensions = Object.create(null);
-}
-
-/**
- * Define mimetype -> extension mappings.  Each key is a mime-type that maps
- * to an array of extensions associated with the type.  The first extension is
- * used as the default extension for the type.
- *
- * e.g. mime.define({'audio/ogg', ['oga', 'ogg', 'spx']});
- *
- * @param map (Object) type definitions
- */
-Mime.prototype.define = function (map) {
-  for (var type in map) {
-    var exts = map[type];
-
-    for (var i = 0; i < exts.length; i++) {
-      if (process.env.DEBUG_MIME && this.types[exts]) {
-        console.warn(this._loading.replace(/.*\//, ''), 'changes "' + exts[i] + '" extension type from ' +
-          this.types[exts] + ' to ' + type);
-      }
-
-      this.types[exts[i]] = type;
-    }
-
-    // Default extension is the first one we encounter
-    if (!this.extensions[type]) {
-      this.extensions[type] = exts[0];
-    }
-  }
-};
-
-/**
- * Load an Apache2-style ".types" file
- *
- * This may be called multiple times (it's expected).  Where files declare
- * overlapping types/extensions, the last file wins.
- *
- * @param file (String) path of file to load.
- */
-Mime.prototype.load = function(file) {
-
-  this._loading = file;
-  // Read file and split into lines
-  var map = {},
-      content = fs.readFileSync(file, 'ascii'),
-      lines = content.split(/[\r\n]+/);
-
-  lines.forEach(function(line) {
-    // Clean up whitespace/comments, and split into fields
-    var fields = line.replace(/\s*#.*|^\s*|\s*$/g, '').split(/\s+/);
-    map[fields.shift()] = fields;
-  });
-
-  this.define(map);
-
-  this._loading = null;
-};
-
-/**
- * Lookup a mime type based on extension
- */
-Mime.prototype.lookup = function(path, fallback) {
-  var ext = path.replace(/.*[\.\/]/, '').toLowerCase();
-
-  return this.types[ext] || fallback || this.default_type;
-};
-
-/**
- * Return file extension associated with a mime type
- */
-Mime.prototype.extension = function(mimeType) {
-  return this.extensions[mimeType];
-};
-
-// Default instance
-var mime = new Mime();
-
-// Load local copy of
-// http://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types
-mime.load(path.join(__dirname, 'types/mime.types'));
-
-// Load additional types from node.js community
-mime.load(path.join(__dirname, 'types/node.types'));
-
-// Default type
-mime.default_type = mime.lookup('bin');
-
-//
-// Additional API specific to the default instance
-//
-
-mime.Mime = Mime;
-
-/**
- * Lookup a charset based on mime type.
- */
-mime.charsets = {
-  lookup: function(mimeType, fallback) {
-    // Assume text types are utf8
-    return (/^text\//).test(mimeType) ? 'UTF-8' : fallback;
-  }
-};
-
-module.exports = mime;
-
-})(require("__browserify_process"),"/../node_modules/styl/node_modules/rework/node_modules/mime")
-},{"path":12,"fs":11,"__browserify_process":10}],52:[function(require,module,exports){
-
-/**
- * Expose `visit()`.
- */
-
-module.exports = visit;
-
-/**
- * Visit `node`'s declarations recursively and
- * invoke `fn(declarations, node)`.
- *
- * @param {Object} node
- * @param {Function} fn
- * @api private
- */
-
-function visit(node, fn){
-  node.rules.forEach(function(rule){
-    // @media etc
-    if (rule.rules) {
-      visit(rule, fn);
-      return;
-    }
-
-    // keyframes
-    if (rule.keyframes) {
-      rule.keyframes.forEach(function(keyframe){
-        fn(keyframe.declarations, rule);
-      });
-      return;
-    }
-
-    // @charset, @import etc
-    if (!rule.declarations) return;
-
-    fn(rule.declarations, node);
-  });
-};
-
-},{}],54:[function(require,module,exports){
+},{"./function":38,"color-parser":55}],53:[function(require,module,exports){
 
 module.exports = function(css, options){
   options = options || {};
@@ -8705,7 +8672,378 @@ module.exports = function(css, options){
 };
 
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
+(function(process,__dirname){var path = require('path');
+var fs = require('fs');
+
+function Mime() {
+  // Map of extension -> mime type
+  this.types = Object.create(null);
+
+  // Map of mime type -> extension
+  this.extensions = Object.create(null);
+}
+
+/**
+ * Define mimetype -> extension mappings.  Each key is a mime-type that maps
+ * to an array of extensions associated with the type.  The first extension is
+ * used as the default extension for the type.
+ *
+ * e.g. mime.define({'audio/ogg', ['oga', 'ogg', 'spx']});
+ *
+ * @param map (Object) type definitions
+ */
+Mime.prototype.define = function (map) {
+  for (var type in map) {
+    var exts = map[type];
+
+    for (var i = 0; i < exts.length; i++) {
+      if (process.env.DEBUG_MIME && this.types[exts]) {
+        console.warn(this._loading.replace(/.*\//, ''), 'changes "' + exts[i] + '" extension type from ' +
+          this.types[exts] + ' to ' + type);
+      }
+
+      this.types[exts[i]] = type;
+    }
+
+    // Default extension is the first one we encounter
+    if (!this.extensions[type]) {
+      this.extensions[type] = exts[0];
+    }
+  }
+};
+
+/**
+ * Load an Apache2-style ".types" file
+ *
+ * This may be called multiple times (it's expected).  Where files declare
+ * overlapping types/extensions, the last file wins.
+ *
+ * @param file (String) path of file to load.
+ */
+Mime.prototype.load = function(file) {
+
+  this._loading = file;
+  // Read file and split into lines
+  var map = {},
+      content = fs.readFileSync(file, 'ascii'),
+      lines = content.split(/[\r\n]+/);
+
+  lines.forEach(function(line) {
+    // Clean up whitespace/comments, and split into fields
+    var fields = line.replace(/\s*#.*|^\s*|\s*$/g, '').split(/\s+/);
+    map[fields.shift()] = fields;
+  });
+
+  this.define(map);
+
+  this._loading = null;
+};
+
+/**
+ * Lookup a mime type based on extension
+ */
+Mime.prototype.lookup = function(path, fallback) {
+  var ext = path.replace(/.*[\.\/]/, '').toLowerCase();
+
+  return this.types[ext] || fallback || this.default_type;
+};
+
+/**
+ * Return file extension associated with a mime type
+ */
+Mime.prototype.extension = function(mimeType) {
+  return this.extensions[mimeType];
+};
+
+// Default instance
+var mime = new Mime();
+
+// Load local copy of
+// http://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types
+mime.load(path.join(__dirname, 'types/mime.types'));
+
+// Load additional types from node.js community
+mime.load(path.join(__dirname, 'types/node.types'));
+
+// Default type
+mime.default_type = mime.lookup('bin');
+
+//
+// Additional API specific to the default instance
+//
+
+mime.Mime = Mime;
+
+/**
+ * Lookup a charset based on mime type.
+ */
+mime.charsets = {
+  lookup: function(mimeType, fallback) {
+    // Assume text types are utf8
+    return (/^text\//).test(mimeType) ? 'UTF-8' : fallback;
+  }
+};
+
+module.exports = mime;
+
+})(require("__browserify_process"),"/../node_modules/styl/node_modules/rework/node_modules/mime")
+},{"path":13,"fs":12,"__browserify_process":11}],48:[function(require,module,exports){
+exports = module.exports = function (options) {
+  return function inherit(style) {
+    return new Inherit(style, options || {})
+  }
+}
+
+exports.Inherit = Inherit
+
+exports.debug = require('debug')('rework-inherit')
+
+function Inherit(style, options) {
+  if (!(this instanceof Inherit))
+    return new Inherit(style, options);
+
+  options = options || {}
+
+  this.propertyRegExp = options.propertyRegExp
+    || /^(inherit|extend)s?$/i
+
+  var rules = this.rules = style.rules
+  this.matches = {}
+
+  for (var i = 0; i < rules.length; i++) {
+    var rule = rules[i]
+    if (rule.rules) {
+      // Media queries
+      this.inheritMedia(rule)
+      if (!rule.rules.length) rules.splice(i--, 1);
+    } else if (rule.selectors) {
+      // Regular rules
+      this.inheritRules(rule)
+      if (!rule.declarations.length) rules.splice(i--, 1);
+    }
+  }
+
+  this.removePlaceholders()
+}
+
+Inherit.prototype.inheritMedia = function (mediaRule) {
+  var rules = mediaRule.rules
+  var query = mediaRule.media
+
+  for (var i = 0; i < rules.length; i++) {
+    var rule = rules[i]
+    if (!rule.selectors) continue;
+
+    var additionalRules = this.inheritMediaRules(rule, query)
+
+    if (!rule.declarations.length) rules.splice(i--, 1);
+
+    // I don't remember why I'm using apply here.
+    ;[].splice.apply(rules, [i, 0].concat(additionalRules))
+    i += additionalRules.length
+  }
+}
+
+Inherit.prototype.inheritMediaRules = function (rule, query) {
+  var declarations = rule.declarations
+  var selectors = rule.selectors
+  var appendRules = []
+
+  for (var i = 0; i < declarations.length; i++) {
+    var decl = declarations[i]
+    // Could be comments
+    if (decl.type !== 'declaration') continue;
+    if (!this.propertyRegExp.test(decl.property)) continue;
+
+    decl.value.split(',').map(trim).forEach(function (val) {
+      // Should probably just use concat here
+      ;[].push.apply(appendRules, this.inheritMediaRule(val, selectors, query));
+    }, this)
+
+    declarations.splice(i--, 1)
+  }
+
+  return appendRules
+}
+
+Inherit.prototype.inheritMediaRule = function (val, selectors, query) {
+  var matchedRules = this.matches[val] || this.matchRules(val)
+  var alreadyMatched = matchedRules.media[query]
+  var matchedQueryRules = alreadyMatched || this.matchQueryRule(val, query)
+
+  if (!matchedQueryRules.rules.length)
+    throw new Error('Failed to extend as media query from ' + val + '.');
+
+  exports.debug('extend %j in @media %j with %j', selectors, query, val);
+
+  this.appendSelectors(matchedQueryRules, val, selectors)
+
+  return alreadyMatched
+    ? []
+    : matchedQueryRules.rules.map(getRule)
+}
+
+Inherit.prototype.inheritRules = function (rule) {
+  var declarations = rule.declarations
+  var selectors = rule.selectors
+
+  for (var i = 0; i < declarations.length; i++) {
+    var decl = declarations[i]
+    // Could be comments
+    if (decl.type !== 'declaration') continue;
+    if (!this.propertyRegExp.test(decl.property)) continue;
+
+    decl.value.split(',').map(trim).forEach(function (val) {
+      this.inheritRule(val, selectors)
+    }, this)
+
+    declarations.splice(i--, 1)
+  }
+}
+
+Inherit.prototype.inheritRule = function (val, selectors) {
+  var matchedRules = this.matches[val] || this.matchRules(val)
+
+  if (!matchedRules.rules.length)
+    throw new Error('Failed to extend from ' + val + '.');
+
+  exports.debug('extend %j with %j', selectors, val);
+
+  this.appendSelectors(matchedRules, val, selectors)
+}
+
+Inherit.prototype.matchQueryRule = function (val, query) {
+  var matchedRules = this.matches[val] || this.matchRules(val)
+
+  return matchedRules.media[query] = {
+    media: query,
+    rules: matchedRules.rules.map(function (rule) {
+      return {
+        selectors: rule.selectors,
+        declarations: rule.declarations,
+        rule: {
+          type: 'rule',
+          selectors: [],
+          declarations: rule.declarations
+        }
+      }
+    })
+  }
+}
+
+Inherit.prototype.matchRules = function (val) {
+  var matchedRules = this.matches[val] = {
+    rules: [],
+    media: {}
+  }
+
+  this.rules.forEach(function (rule) {
+    if (!rule.selectors) return;
+
+    var matchedSelectors = rule.selectors.filter(function (selector) {
+      return selector.match(replaceRegExp(val))
+    })
+
+    if (!matchedSelectors.length) return;
+
+    matchedRules.rules.push({
+      selectors: matchedSelectors,
+      declarations: rule.declarations,
+      rule: rule
+    })
+  })
+
+  return matchedRules
+}
+
+Inherit.prototype.appendSelectors = function (matchedRules, val, selectors) {
+  matchedRules.rules.forEach(function (matchedRule) {
+    // Selector to actually inherit
+    var selectorReference = matchedRule.rule.selectors
+
+    matchedRule.selectors.forEach(function (matchedSelector) {
+      ;[].push.apply(selectorReference, selectors.map(function (selector) {
+        return replaceSelector(matchedSelector, val, selector)
+      }))
+    })
+  })
+}
+
+// Placeholders are not allowed in media queries
+Inherit.prototype.removePlaceholders = function () {
+  var rules = this.rules
+
+  for (var i = 0; i < rules.length; i++) {
+    var selectors = rules[i].selectors
+    if (!selectors) continue;
+
+    for (var j = 0; j < selectors.length; j++) {
+      var selector = selectors[j]
+      if (~selector.indexOf('%')) selectors.splice(j--, 1);
+    }
+
+    if (!selectors.length) rules.splice(i--, 1);
+  }
+}
+
+function replaceSelector(matchedSelector, val, selector) {
+  return matchedSelector.replace(replaceRegExp(val), function (_, first, last) {
+    return first + selector + last
+  })
+}
+
+function replaceRegExp(val) {
+  return new RegExp(
+    '(^|\\s|\\>|\\+|~)' +
+    escapeRegExp(val) +
+    '($|\\s|\\>|\\+|~|\\:)'
+    , 'g'
+  )
+}
+
+function escapeRegExp(str) {
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
+}
+
+function trim(x) {
+  return x.trim()
+}
+
+function getRule(x) {
+  return x.rule
+}
+
+},{"debug":49}],54:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var Compressed = require('./lib/compress');
+var Identity = require('./lib/identity');
+
+/**
+ * Stringfy the given AST `node`.
+ *
+ * @param {Object} node
+ * @param {Object} [options]
+ * @return {String}
+ * @api public
+ */
+
+module.exports = function(node, options){
+  options = options || {};
+
+  var compiler = options.compress
+    ? new Compressed(options)
+    : new Identity(options);
+
+  return compiler.compile(node);
+};
+
+
+},{"./lib/compress":56,"./lib/identity":57}],55:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -8834,201 +9172,7 @@ function hex3(str) {
 }
 
 
-},{"./colors":55}],53:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var Compressed = require('./lib/compress');
-var Identity = require('./lib/identity');
-
-/**
- * Stringfy the given AST `node`.
- *
- * @param {Object} node
- * @param {Object} [options]
- * @return {String}
- * @api public
- */
-
-module.exports = function(node, options){
-  options = options || {};
-
-  var compiler = options.compress
-    ? new Compressed(options)
-    : new Identity(options);
-
-  return compiler.compile(node);
-};
-
-
-},{"./lib/compress":56,"./lib/identity":57}],36:[function(require,module,exports){
-
-/**
- * Strip `str` quotes.
- *
- * @param {String} str
- * @return {String}
- * @api private
- */
-
-exports.stripQuotes = function(str) {
-  if ('"' == str[0] || "'" == str[0]) return str.slice(1, -1);
-  return str;
-};
-},{}],55:[function(require,module,exports){
-
-module.exports = {
-    aliceblue: [240, 248, 255]
-  , antiquewhite: [250, 235, 215]
-  , aqua: [0, 255, 255]
-  , aquamarine: [127, 255, 212]
-  , azure: [240, 255, 255]
-  , beige: [245, 245, 220]
-  , bisque: [255, 228, 196]
-  , black: [0, 0, 0]
-  , blanchedalmond: [255, 235, 205]
-  , blue: [0, 0, 255]
-  , blueviolet: [138, 43, 226]
-  , brown: [165, 42, 42]
-  , burlywood: [222, 184, 135]
-  , cadetblue: [95, 158, 160]
-  , chartreuse: [127, 255, 0]
-  , chocolate: [210, 105, 30]
-  , coral: [255, 127, 80]
-  , cornflowerblue: [100, 149, 237]
-  , cornsilk: [255, 248, 220]
-  , crimson: [220, 20, 60]
-  , cyan: [0, 255, 255]
-  , darkblue: [0, 0, 139]
-  , darkcyan: [0, 139, 139]
-  , darkgoldenrod: [184, 132, 11]
-  , darkgray: [169, 169, 169]
-  , darkgreen: [0, 100, 0]
-  , darkgrey: [169, 169, 169]
-  , darkkhaki: [189, 183, 107]
-  , darkmagenta: [139, 0, 139]
-  , darkolivegreen: [85, 107, 47]
-  , darkorange: [255, 140, 0]
-  , darkorchid: [153, 50, 204]
-  , darkred: [139, 0, 0]
-  , darksalmon: [233, 150, 122]
-  , darkseagreen: [143, 188, 143]
-  , darkslateblue: [72, 61, 139]
-  , darkslategray: [47, 79, 79]
-  , darkslategrey: [47, 79, 79]
-  , darkturquoise: [0, 206, 209]
-  , darkviolet: [148, 0, 211]
-  , deeppink: [255, 20, 147]
-  , deepskyblue: [0, 191, 255]
-  , dimgray: [105, 105, 105]
-  , dimgrey: [105, 105, 105]
-  , dodgerblue: [30, 144, 255]
-  , firebrick: [178, 34, 34]
-  , floralwhite: [255, 255, 240]
-  , forestgreen: [34, 139, 34]
-  , fuchsia: [255, 0, 255]
-  , gainsboro: [220, 220, 220]
-  , ghostwhite: [248, 248, 255]
-  , gold: [255, 215, 0]
-  , goldenrod: [218, 165, 32]
-  , gray: [128, 128, 128]
-  , green: [0, 128, 0]
-  , greenyellow: [173, 255, 47]
-  , grey: [128, 128, 128]
-  , honeydew: [240, 255, 240]
-  , hotpink: [255, 105, 180]
-  , indianred: [205, 92, 92]
-  , indigo: [75, 0, 130]
-  , ivory: [255, 255, 240]
-  , khaki: [240, 230, 140]
-  , lavender: [230, 230, 250]
-  , lavenderblush: [255, 240, 245]
-  , lawngreen: [124, 252, 0]
-  , lemonchiffon: [255, 250, 205]
-  , lightblue: [173, 216, 230]
-  , lightcoral: [240, 128, 128]
-  , lightcyan: [224, 255, 255]
-  , lightgoldenrodyellow: [250, 250, 210]
-  , lightgray: [211, 211, 211]
-  , lightgreen: [144, 238, 144]
-  , lightgrey: [211, 211, 211]
-  , lightpink: [255, 182, 193]
-  , lightsalmon: [255, 160, 122]
-  , lightseagreen: [32, 178, 170]
-  , lightskyblue: [135, 206, 250]
-  , lightslategray: [119, 136, 153]
-  , lightslategrey: [119, 136, 153]
-  , lightsteelblue: [176, 196, 222]
-  , lightyellow: [255, 255, 224]
-  , lime: [0, 255, 0]
-  , limegreen: [50, 205, 50]
-  , linen: [250, 240, 230]
-  , magenta: [255, 0, 255]
-  , maroon: [128, 0, 0]
-  , mediumaquamarine: [102, 205, 170]
-  , mediumblue: [0, 0, 205]
-  , mediumorchid: [186, 85, 211]
-  , mediumpurple: [147, 112, 219]
-  , mediumseagreen: [60, 179, 113]
-  , mediumslateblue: [123, 104, 238]
-  , mediumspringgreen: [0, 250, 154]
-  , mediumturquoise: [72, 209, 204]
-  , mediumvioletred: [199, 21, 133]
-  , midnightblue: [25, 25, 112]
-  , mintcream: [245, 255, 250]
-  , mistyrose: [255, 228, 225]
-  , moccasin: [255, 228, 181]
-  , navajowhite: [255, 222, 173]
-  , navy: [0, 0, 128]
-  , oldlace: [253, 245, 230]
-  , olive: [128, 128, 0]
-  , olivedrab: [107, 142, 35]
-  , orange: [255, 165, 0]
-  , orangered: [255, 69, 0]
-  , orchid: [218, 112, 214]
-  , palegoldenrod: [238, 232, 170]
-  , palegreen: [152, 251, 152]
-  , paleturquoise: [175, 238, 238]
-  , palevioletred: [219, 112, 147]
-  , papayawhip: [255, 239, 213]
-  , peachpuff: [255, 218, 185]
-  , peru: [205, 133, 63]
-  , pink: [255, 192, 203]
-  , plum: [221, 160, 203]
-  , powderblue: [176, 224, 230]
-  , purple: [128, 0, 128]
-  , red: [255, 0, 0]
-  , rosybrown: [188, 143, 143]
-  , royalblue: [65, 105, 225]
-  , saddlebrown: [139, 69, 19]
-  , salmon: [250, 128, 114]
-  , sandybrown: [244, 164, 96]
-  , seagreen: [46, 139, 87]
-  , seashell: [255, 245, 238]
-  , sienna: [160, 82, 45]
-  , silver: [192, 192, 192]
-  , skyblue: [135, 206, 235]
-  , slateblue: [106, 90, 205]
-  , slategray: [119, 128, 144]
-  , slategrey: [119, 128, 144]
-  , snow: [255, 255, 250]
-  , springgreen: [0, 255, 127]
-  , steelblue: [70, 130, 180]
-  , tan: [210, 180, 140]
-  , teal: [0, 128, 128]
-  , thistle: [216, 191, 216]
-  , tomato: [255, 99, 71]
-  , turquoise: [64, 224, 208]
-  , violet: [238, 130, 238]
-  , wheat: [245, 222, 179]
-  , white: [255, 255, 255]
-  , whitesmoke: [245, 245, 245]
-  , yellow: [255, 255, 0]
-  , yellowgreen: [154, 205, 5]
-};
-},{}],56:[function(require,module,exports){
+},{"./colors":58}],56:[function(require,module,exports){
 
 /**
  * Expose compiler.
@@ -9383,231 +9527,156 @@ Compiler.prototype.indent = function(level) {
   return Array(this.level).join(this.indentation || '  ');
 };
 
-},{}],50:[function(require,module,exports){
-exports = module.exports = function (options) {
-  return function inherit(style) {
-    return new Inherit(style, options || {})
-  }
-}
+},{}],58:[function(require,module,exports){
 
-exports.Inherit = Inherit
-
-exports.debug = require('debug')('rework-inherit')
-
-function Inherit(style, options) {
-  if (!(this instanceof Inherit))
-    return new Inherit(style, options);
-
-  options = options || {}
-
-  this.propertyRegExp = options.propertyRegExp
-    || /^(inherit|extend)s?$/i
-
-  var rules = this.rules = style.rules
-  this.matches = {}
-
-  for (var i = 0; i < rules.length; i++) {
-    var rule = rules[i]
-    if (rule.rules) {
-      // Media queries
-      this.inheritMedia(rule)
-      if (!rule.rules.length) rules.splice(i--, 1);
-    } else if (rule.selectors) {
-      // Regular rules
-      this.inheritRules(rule)
-      if (!rule.declarations.length) rules.splice(i--, 1);
-    }
-  }
-
-  this.removePlaceholders()
-}
-
-Inherit.prototype.inheritMedia = function (mediaRule) {
-  var rules = mediaRule.rules
-  var query = mediaRule.media
-
-  for (var i = 0; i < rules.length; i++) {
-    var rule = rules[i]
-    if (!rule.selectors) continue;
-
-    var additionalRules = this.inheritMediaRules(rule, query)
-
-    if (!rule.declarations.length) rules.splice(i--, 1);
-
-    // I don't remember why I'm using apply here.
-    ;[].splice.apply(rules, [i, 0].concat(additionalRules))
-    i += additionalRules.length
-  }
-}
-
-Inherit.prototype.inheritMediaRules = function (rule, query) {
-  var declarations = rule.declarations
-  var selectors = rule.selectors
-  var appendRules = []
-
-  for (var i = 0; i < declarations.length; i++) {
-    var decl = declarations[i]
-    // Could be comments
-    if (decl.type !== 'declaration') continue;
-    if (!this.propertyRegExp.test(decl.property)) continue;
-
-    decl.value.split(',').map(trim).forEach(function (val) {
-      // Should probably just use concat here
-      ;[].push.apply(appendRules, this.inheritMediaRule(val, selectors, query));
-    }, this)
-
-    declarations.splice(i--, 1)
-  }
-
-  return appendRules
-}
-
-Inherit.prototype.inheritMediaRule = function (val, selectors, query) {
-  var matchedRules = this.matches[val] || this.matchRules(val)
-  var alreadyMatched = matchedRules.media[query]
-  var matchedQueryRules = alreadyMatched || this.matchQueryRule(val, query)
-
-  if (!matchedQueryRules.rules.length)
-    throw new Error('Failed to extend as media query from ' + val + '.');
-
-  exports.debug('extend %j in @media %j with %j', selectors, query, val);
-
-  this.appendSelectors(matchedQueryRules, val, selectors)
-
-  return alreadyMatched
-    ? []
-    : matchedQueryRules.rules.map(getRule)
-}
-
-Inherit.prototype.inheritRules = function (rule) {
-  var declarations = rule.declarations
-  var selectors = rule.selectors
-
-  for (var i = 0; i < declarations.length; i++) {
-    var decl = declarations[i]
-    // Could be comments
-    if (decl.type !== 'declaration') continue;
-    if (!this.propertyRegExp.test(decl.property)) continue;
-
-    decl.value.split(',').map(trim).forEach(function (val) {
-      this.inheritRule(val, selectors)
-    }, this)
-
-    declarations.splice(i--, 1)
-  }
-}
-
-Inherit.prototype.inheritRule = function (val, selectors) {
-  var matchedRules = this.matches[val] || this.matchRules(val)
-
-  if (!matchedRules.rules.length)
-    throw new Error('Failed to extend from ' + val + '.');
-
-  exports.debug('extend %j with %j', selectors, val);
-
-  this.appendSelectors(matchedRules, val, selectors)
-}
-
-Inherit.prototype.matchQueryRule = function (val, query) {
-  var matchedRules = this.matches[val] || this.matchRules(val)
-
-  return matchedRules.media[query] = {
-    media: query,
-    rules: matchedRules.rules.map(function (rule) {
-      return {
-        selectors: rule.selectors,
-        declarations: rule.declarations,
-        rule: {
-          type: 'rule',
-          selectors: [],
-          declarations: rule.declarations
-        }
-      }
-    })
-  }
-}
-
-Inherit.prototype.matchRules = function (val) {
-  var matchedRules = this.matches[val] = {
-    rules: [],
-    media: {}
-  }
-
-  this.rules.forEach(function (rule) {
-    if (!rule.selectors) return;
-
-    var matchedSelectors = rule.selectors.filter(function (selector) {
-      return selector.match(replaceRegExp(val))
-    })
-
-    if (!matchedSelectors.length) return;
-
-    matchedRules.rules.push({
-      selectors: matchedSelectors,
-      declarations: rule.declarations,
-      rule: rule
-    })
-  })
-
-  return matchedRules
-}
-
-Inherit.prototype.appendSelectors = function (matchedRules, val, selectors) {
-  matchedRules.rules.forEach(function (matchedRule) {
-    // Selector to actually inherit
-    var selectorReference = matchedRule.rule.selectors
-
-    matchedRule.selectors.forEach(function (matchedSelector) {
-      ;[].push.apply(selectorReference, selectors.map(function (selector) {
-        return replaceSelector(matchedSelector, val, selector)
-      }))
-    })
-  })
-}
-
-// Placeholders are not allowed in media queries
-Inherit.prototype.removePlaceholders = function () {
-  var rules = this.rules
-
-  for (var i = 0; i < rules.length; i++) {
-    var selectors = rules[i].selectors
-    if (!selectors) continue;
-
-    for (var j = 0; j < selectors.length; j++) {
-      var selector = selectors[j]
-      if (~selector.indexOf('%')) selectors.splice(j--, 1);
-    }
-
-    if (!selectors.length) rules.splice(i--, 1);
-  }
-}
-
-function replaceSelector(matchedSelector, val, selector) {
-  return matchedSelector.replace(replaceRegExp(val), function (_, first, last) {
-    return first + selector + last
-  })
-}
-
-function replaceRegExp(val) {
-  return new RegExp(
-    '(^|\\s|\\>|\\+|~)' +
-    escapeRegExp(val) +
-    '($|\\s|\\>|\\+|~|\\:)'
-    , 'g'
-  )
-}
-
-function escapeRegExp(str) {
-  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
-}
-
-function trim(x) {
-  return x.trim()
-}
-
-function getRule(x) {
-  return x.rule
-}
-
-},{"debug":44}]},{},[4])
+module.exports = {
+    aliceblue: [240, 248, 255]
+  , antiquewhite: [250, 235, 215]
+  , aqua: [0, 255, 255]
+  , aquamarine: [127, 255, 212]
+  , azure: [240, 255, 255]
+  , beige: [245, 245, 220]
+  , bisque: [255, 228, 196]
+  , black: [0, 0, 0]
+  , blanchedalmond: [255, 235, 205]
+  , blue: [0, 0, 255]
+  , blueviolet: [138, 43, 226]
+  , brown: [165, 42, 42]
+  , burlywood: [222, 184, 135]
+  , cadetblue: [95, 158, 160]
+  , chartreuse: [127, 255, 0]
+  , chocolate: [210, 105, 30]
+  , coral: [255, 127, 80]
+  , cornflowerblue: [100, 149, 237]
+  , cornsilk: [255, 248, 220]
+  , crimson: [220, 20, 60]
+  , cyan: [0, 255, 255]
+  , darkblue: [0, 0, 139]
+  , darkcyan: [0, 139, 139]
+  , darkgoldenrod: [184, 132, 11]
+  , darkgray: [169, 169, 169]
+  , darkgreen: [0, 100, 0]
+  , darkgrey: [169, 169, 169]
+  , darkkhaki: [189, 183, 107]
+  , darkmagenta: [139, 0, 139]
+  , darkolivegreen: [85, 107, 47]
+  , darkorange: [255, 140, 0]
+  , darkorchid: [153, 50, 204]
+  , darkred: [139, 0, 0]
+  , darksalmon: [233, 150, 122]
+  , darkseagreen: [143, 188, 143]
+  , darkslateblue: [72, 61, 139]
+  , darkslategray: [47, 79, 79]
+  , darkslategrey: [47, 79, 79]
+  , darkturquoise: [0, 206, 209]
+  , darkviolet: [148, 0, 211]
+  , deeppink: [255, 20, 147]
+  , deepskyblue: [0, 191, 255]
+  , dimgray: [105, 105, 105]
+  , dimgrey: [105, 105, 105]
+  , dodgerblue: [30, 144, 255]
+  , firebrick: [178, 34, 34]
+  , floralwhite: [255, 255, 240]
+  , forestgreen: [34, 139, 34]
+  , fuchsia: [255, 0, 255]
+  , gainsboro: [220, 220, 220]
+  , ghostwhite: [248, 248, 255]
+  , gold: [255, 215, 0]
+  , goldenrod: [218, 165, 32]
+  , gray: [128, 128, 128]
+  , green: [0, 128, 0]
+  , greenyellow: [173, 255, 47]
+  , grey: [128, 128, 128]
+  , honeydew: [240, 255, 240]
+  , hotpink: [255, 105, 180]
+  , indianred: [205, 92, 92]
+  , indigo: [75, 0, 130]
+  , ivory: [255, 255, 240]
+  , khaki: [240, 230, 140]
+  , lavender: [230, 230, 250]
+  , lavenderblush: [255, 240, 245]
+  , lawngreen: [124, 252, 0]
+  , lemonchiffon: [255, 250, 205]
+  , lightblue: [173, 216, 230]
+  , lightcoral: [240, 128, 128]
+  , lightcyan: [224, 255, 255]
+  , lightgoldenrodyellow: [250, 250, 210]
+  , lightgray: [211, 211, 211]
+  , lightgreen: [144, 238, 144]
+  , lightgrey: [211, 211, 211]
+  , lightpink: [255, 182, 193]
+  , lightsalmon: [255, 160, 122]
+  , lightseagreen: [32, 178, 170]
+  , lightskyblue: [135, 206, 250]
+  , lightslategray: [119, 136, 153]
+  , lightslategrey: [119, 136, 153]
+  , lightsteelblue: [176, 196, 222]
+  , lightyellow: [255, 255, 224]
+  , lime: [0, 255, 0]
+  , limegreen: [50, 205, 50]
+  , linen: [250, 240, 230]
+  , magenta: [255, 0, 255]
+  , maroon: [128, 0, 0]
+  , mediumaquamarine: [102, 205, 170]
+  , mediumblue: [0, 0, 205]
+  , mediumorchid: [186, 85, 211]
+  , mediumpurple: [147, 112, 219]
+  , mediumseagreen: [60, 179, 113]
+  , mediumslateblue: [123, 104, 238]
+  , mediumspringgreen: [0, 250, 154]
+  , mediumturquoise: [72, 209, 204]
+  , mediumvioletred: [199, 21, 133]
+  , midnightblue: [25, 25, 112]
+  , mintcream: [245, 255, 250]
+  , mistyrose: [255, 228, 225]
+  , moccasin: [255, 228, 181]
+  , navajowhite: [255, 222, 173]
+  , navy: [0, 0, 128]
+  , oldlace: [253, 245, 230]
+  , olive: [128, 128, 0]
+  , olivedrab: [107, 142, 35]
+  , orange: [255, 165, 0]
+  , orangered: [255, 69, 0]
+  , orchid: [218, 112, 214]
+  , palegoldenrod: [238, 232, 170]
+  , palegreen: [152, 251, 152]
+  , paleturquoise: [175, 238, 238]
+  , palevioletred: [219, 112, 147]
+  , papayawhip: [255, 239, 213]
+  , peachpuff: [255, 218, 185]
+  , peru: [205, 133, 63]
+  , pink: [255, 192, 203]
+  , plum: [221, 160, 203]
+  , powderblue: [176, 224, 230]
+  , purple: [128, 0, 128]
+  , red: [255, 0, 0]
+  , rosybrown: [188, 143, 143]
+  , royalblue: [65, 105, 225]
+  , saddlebrown: [139, 69, 19]
+  , salmon: [250, 128, 114]
+  , sandybrown: [244, 164, 96]
+  , seagreen: [46, 139, 87]
+  , seashell: [255, 245, 238]
+  , sienna: [160, 82, 45]
+  , silver: [192, 192, 192]
+  , skyblue: [135, 206, 235]
+  , slateblue: [106, 90, 205]
+  , slategray: [119, 128, 144]
+  , slategrey: [119, 128, 144]
+  , snow: [255, 255, 250]
+  , springgreen: [0, 255, 127]
+  , steelblue: [70, 130, 180]
+  , tan: [210, 180, 140]
+  , teal: [0, 128, 128]
+  , thistle: [216, 191, 216]
+  , tomato: [255, 99, 71]
+  , turquoise: [64, 224, 208]
+  , violet: [238, 130, 238]
+  , wheat: [245, 222, 179]
+  , white: [255, 255, 255]
+  , whitesmoke: [245, 245, 245]
+  , yellow: [255, 255, 0]
+  , yellowgreen: [154, 205, 5]
+};
+},{}]},{},[5])
 ;

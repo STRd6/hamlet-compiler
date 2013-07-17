@@ -1,6 +1,5 @@
 (function() {
-  var Gistquire, auth, load, parser, postData, renderJST, rerender, save, styl, update, util, _ref,
-    __slice = [].slice;
+  var Gistquire, auth, load, parser, postData, renderJST, rerender, save, styl, update, util, _ref;
 
   parser = require('./haml-jr').parser;
 
@@ -10,68 +9,13 @@
 
   styl = require('styl');
 
+  window.Observable = require('./observable');
+
   require('./runtime');
 
   window.parser = parser;
 
   window.render = renderJST;
-
-  window.Observable = function(value) {
-    var listeners, notify, self;
-    listeners = [];
-    notify = function(newValue) {
-      return listeners.each(function(listener) {
-        return listener(newValue);
-      });
-    };
-    self = function(newValue) {
-      if (arguments.length > 0) {
-        if (value !== newValue) {
-          value = newValue;
-          notify(newValue);
-        }
-      }
-      return value;
-    };
-    Object.extend(self, {
-      observe: function(listener) {
-        return listeners.push(listener);
-      },
-      each: function() {
-        var args, _ref1;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        if (value != null) {
-          return (_ref1 = [value]).each.apply(_ref1, args);
-        }
-      }
-    });
-    return self;
-  };
-
-  Observable.lift = function(object) {
-    var dummy, value;
-    if (typeof object.observe === "function") {
-      return object;
-    } else {
-      value = object;
-      dummy = function(newValue) {
-        if (arguments.length > 0) {
-          return value = newValue;
-        } else {
-          return value;
-        }
-      };
-      dummy.observe = function() {};
-      dummy.each = function() {
-        var args, _ref1;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        if (value != null) {
-          return (_ref1 = [value]).forEach.apply(_ref1, args);
-        }
-      };
-      return dummy;
-    }
-  };
 
   rerender = (function() {
     var ast, coffee, data, error, fragment, haml, selector, style, template, _ref1;
@@ -131,7 +75,7 @@
     _ref1 = editors.map(function(editor) {
       return editor.getValue();
     }), data = _ref1[0], template = _ref1[1], style = _ref1[2];
-    return postData = JSON.stringify({
+    return JSON.stringify({
       "public": true,
       files: {
         data: {
