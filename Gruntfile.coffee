@@ -53,7 +53,11 @@ module.exports = (grunt) ->
         ].join(' && ')
 
       setup:
-        command: "git clone -b gh-pages `git config --get remote.origin.url` gh-pages"
+        command: [
+          "if [ ! -d gh-pages ]; then git clone -b gh-pages `git config --get remote.origin.url` gh-pages; fi"
+          "mkdir -p build"
+          "npm install -g coffee-script jison jison-lex simple-http-server"
+        ].join(' && ')
 
       test:
         command: "node build/demo.js"
