@@ -80,13 +80,22 @@
         }
       };
       dummy.observe = function() {};
-      dummy.each = function() {
-        var args, _ref;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        if (value != null) {
-          return (_ref = [value]).forEach.apply(_ref, args);
+      Object.extend(dummy, {
+        each: function() {
+          var args, _ref;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          if (value != null) {
+            return (_ref = [].concat(value)).forEach.apply(_ref, args);
+          }
+        },
+        map: function() {
+          var args, _ref;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          if (value != null) {
+            return (_ref = [].concat(value)).map.apply(_ref, args);
+          }
         }
-      };
+      });
       return dummy;
     }
   };
