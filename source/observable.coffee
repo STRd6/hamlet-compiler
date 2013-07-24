@@ -21,6 +21,7 @@ Observable = (value) ->
   Object.extend self,
     observe: (listener) ->
       listeners.push listener
+
     each: (args...) ->
       # Don't add null or undefined values to iteration
       if value?
@@ -77,9 +78,13 @@ Observable.lift = (object) ->
     # No-op
     dummy.observe = ->
 
-    dummy.each = (args...) ->
-      if value?
-        [value].forEach(args...)
+    Object.extend dummy,
+      each: (args...) ->
+        if value?
+          [].concat(value).forEach(args...)
+      map: (args...) ->
+        if value?
+          [].concat(value).map(args...)
 
     return dummy
 
