@@ -14,7 +14,9 @@ Development
 To get set up:
 
     git clone git@github.com:STRd6/haml-jr.git
+    cd haml-jr
     npm install -g grunt-cli
+    npm install
     grunt setup
 
 To run the demo site:
