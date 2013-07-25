@@ -1,18 +1,6 @@
 CoffeeScript = require "coffee-script"
 styl = require 'styl'
 
-selfClosing =
-  area: true
-  base: true
-  br: true
-  col: true
-  hr: true
-  img: true
-  input: true
-  link: true
-  meta: true
-  param: true
-
 indentText = (text, indent="  ") ->
   indent + text.replace(/\n/g, "\n#{indent}")
 
@@ -25,10 +13,7 @@ keywords = [
 
 keywordsRegex = RegExp("\\s*(#{keywords.join('|')})\\s+")
 
-# JST Renderer Util
 util =
-  selfClosing: selfClosing
-
   indent: indentText
 
   filters:
