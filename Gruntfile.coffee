@@ -51,16 +51,14 @@ module.exports = (grunt) ->
           "mkdir -p gh-pages"
           "node build/cli.js demo.haml > gh-pages/index.html"
         ].join(' && ')
-
+      test:
+        command: "mocha --compilers coffee:coffee-script --reporter spec"
       setup:
         command: [
           "if [ ! -d gh-pages ]; then git clone -b gh-pages `git config --get remote.origin.url` gh-pages; fi"
           "mkdir -p build"
           "npm install -g coffee-script jison jison-lex simple-http-server"
         ].join(' && ')
-
-      test:
-        command: "node build/demo.js"
 
       "gh-pages":
         command: [

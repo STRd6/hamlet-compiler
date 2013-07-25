@@ -1,23 +1,20 @@
 assert = require('assert')
 fs = require('fs')
 
-{parser} = require('../haml.coffee')
-{lexer} = require('../build/lexer')
+{parser} = require('../build/haml-jr')
 
-parser.lexer = lexer
-
-suite 'Parser', ->
-  test 'should exist', ->
+describe 'Parser', ->
+  it 'should exist', ->
     assert(parser)
 
-  test 'should parse some stuff', ->
+  it 'should parse some stuff', ->
     assert parser.parse("%yolo")
 
-  suite 'samples', ->
+  describe 'samples', ->
     sampleDir = "test/samples/haml"
 
     fs.readdirSync(sampleDir).forEach (file) ->
       data = fs.readFileSync "#{sampleDir}/#{file}", "UTF-8"
 
-      test "should parse #{file}", ->
+      it "should parse #{file}", ->
         assert parser.parse(data)
