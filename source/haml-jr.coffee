@@ -1,5 +1,7 @@
-{parser} = require "./parser"
+{compile, util} = require "./compiler"
 {lexer} = require "./lexer" # This is only in the build dir right now
+{parser} = require "./parser"
+{Runtime} = require "./runtime"
 
 extend = (target, sources...) ->
   for source in sources
@@ -62,4 +64,8 @@ extend parser.yy,
     filter.content ||= ""
     filter.content += "#{content}\n"
 
-exports.parser = parser
+extend exports,
+  compile: compile
+  parser: parser
+  Runtime: Runtime
+  util: util

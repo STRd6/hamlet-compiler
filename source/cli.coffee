@@ -1,9 +1,6 @@
 fs = require('fs')
 {jsdom} = require("jsdom")
-{parser} = require('./haml-jr')
-{renderJST, renderHaml} = require('./renderer')
-
-global.Runtime = require('./runtime').Runtime
+{parser, compile} = HAMLjr = require('./haml-jr')
 
 file = process.argv[2]
 
@@ -13,7 +10,7 @@ runFile = (name) ->
   data = fs.readFileSync name, "UTF-8"
   ast = parser.parse(data)
 
-  program = renderJST ast,
+  program = compile ast,
     explicitScripts: true
 
   # console.log program

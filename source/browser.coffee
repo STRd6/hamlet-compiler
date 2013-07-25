@@ -1,14 +1,13 @@
-{parser} = require('./haml-jr')
-{renderJST, util} = require('./renderer')
+{parser, compile, util} = HAMLjr = require('./haml-jr')
 Gistquire = require './gistquire'
 styl = require('styl')
 
+window.HAMLjr = HAMLjr
 window.Observable = require('./observable')
 
 require('./runtime')
 
 window.parser = parser
-window.render = renderJST
 
 rerender = (->
   if location.search.match("embed")
@@ -29,7 +28,7 @@ rerender = (->
 
   try
     ast = parser.parse(haml + "\n")
-    template = Function("return " + render(ast, compiler: CoffeeScript))()
+    template = Function("return " + compile(ast, compiler: CoffeeScript))()
     $("#errors p").eq(1).empty()
     $("#debug code").eq(1).text(template)
   catch error

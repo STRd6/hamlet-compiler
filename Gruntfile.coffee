@@ -4,12 +4,12 @@ module.exports = (grunt) ->
   [
     "browser"
     "cli"
+    "compiler"
     "demo"
     "gistquire"
     "grammar_dsl"
     "haml-jr"
     "observable"
-    "renderer"
     "runtime"
   ].forEach (name) ->
     destination = "build/#{name}.js"

@@ -20,6 +20,7 @@ keywords = [
   "on"
   "each"
   "with"
+  "render"
 ]
 
 keywordsRegex = RegExp("\\s*(#{keywords.join('|')})\\s+")
@@ -202,7 +203,7 @@ util =
 
 exports.util = util
 
-exports.renderJST = (parseTree, {explicitScripts, name, compiler}={}) ->
+exports.compile = (parseTree, {explicitScripts, name, compiler}={}) ->
   # HAX: Browserify can't put CoffeeScript into the web...
   if compiler
     CoffeeScript = compiler
@@ -222,7 +223,8 @@ exports.renderJST = (parseTree, {explicitScripts, name, compiler}={}) ->
           __on
           __each
           __with
-        } = Runtime(this) # TODO Namespace
+          __render
+        } = HAMLjr.Runtime(this)
 
         __push document.createDocumentFragment()
     #{util.indent(items.join("\n"), "    ")}

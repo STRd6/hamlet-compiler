@@ -62,6 +62,12 @@ Runtime = (context) ->
 
     node.addEventListener("DOMNodeRemoved", unobserve, true)
 
+  render = (object) ->
+    {template} = object
+
+    push HAMLjr.templates[template](object)
+    pop()
+
   return {
     # Pushing and popping creates the node tree
     __push: push
@@ -164,4 +170,4 @@ Runtime = (context) ->
           fn.call(context, event)
   }
 
-(window ? exports).Runtime = Runtime
+exports.Runtime = Runtime
