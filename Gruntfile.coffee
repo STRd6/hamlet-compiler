@@ -57,7 +57,7 @@ module.exports = (grunt) ->
         command: [
           "if [ ! -d gh-pages ]; then git clone -b gh-pages `git config --get remote.origin.url` gh-pages; fi"
           "mkdir -p build"
-          "npm install -g coffee-script jison jison-lex simple-http-server"
+          "npm install -g coffee-script jison jison-lex simple-http-server mocha"
         ].join(' && ')
 
       "gh-pages":
