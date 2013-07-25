@@ -5,8 +5,6 @@ styl = require('styl')
 window.HAMLjr = HAMLjr
 window.Observable = require('./observable')
 
-require('./runtime')
-
 window.parser = parser
 
 rerender = (->
