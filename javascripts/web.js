@@ -1,355 +1,18 @@
 ;(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
 (function() {
-  module.exports = {
-    accessToken: null,
-    update: function(id, data, callback) {
-      var url;
-      url = "https://api.github.com/gists/" + id;
-      if (this.accessToken) {
-        url += "?access_token=" + this.accessToken;
-      }
-      return $.ajax({
-        url: url,
-        type: "PATCH",
-        dataType: 'json',
-        data: data,
-        success: callback
-      });
-    },
-    create: function(data, callback) {
-      var url;
-      url = "https://api.github.com/gists";
-      if (this.accessToken) {
-        url += "?access_token=" + this.accessToken;
-      }
-      return $.ajax({
-        url: url,
-        type: "POST",
-        dataType: 'json',
-        data: data,
-        success: callback
-      });
-    },
-    get: function(id, callback) {
-      var data;
-      if (this.accessToken) {
-        data = {
-          access_token: this.accessToken
-        };
-      } else {
-        data = {};
-      }
-      return $.getJSON("https://api.github.com/gists/" + id, data, callback);
-    },
-    load: function(id, _arg) {
-      var callback, file;
-      file = _arg.file, callback = _arg.callback;
-      if (file == null) {
-        file = "build.js";
-      }
-      return this.get(id, function(data) {
-        Function(data.files[file])();
-        return callback();
-      });
-    }
-  };
+  var Gistquire, HAMLjr, auth, compile, load, parser, postData, rerender, save, styl, update, util, _ref;
 
-}).call(this);
-
-},{}],2:[function(require,module,exports){
-(function() {
-  var Observable,
-    __slice = [].slice;
-
-  Observable = function(value) {
-    var listeners, notify, self;
-    listeners = [];
-    notify = function(newValue) {
-      return listeners.each(function(listener) {
-        return listener(newValue);
-      });
-    };
-    self = function(newValue) {
-      if (arguments.length > 0) {
-        if (value !== newValue) {
-          value = newValue;
-          notify(newValue);
-        }
-      }
-      return value;
-    };
-    Object.extend(self, {
-      observe: function(listener) {
-        return listeners.push(listener);
-      },
-      each: function() {
-        var args, _ref;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        if (value != null) {
-          return (_ref = [value]).each.apply(_ref, args);
-        }
-      }
-    });
-    if (Array.isArray(value)) {
-      Object.extend(self, {
-        each: function() {
-          var args;
-          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          return value.each.apply(value, args);
-        },
-        map: function() {
-          var args;
-          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          return value.map.apply(value, args);
-        },
-        remove: function(item) {
-          var ret;
-          ret = value.remove(item);
-          notify(value);
-          return ret;
-        },
-        push: function(item) {
-          var ret;
-          ret = value.push(item);
-          notify(value);
-          return ret;
-        },
-        pop: function() {
-          var ret;
-          ret = value.pop();
-          notify(value);
-          return ret;
-        }
-      });
-    }
-    return self;
-  };
-
-  Observable.lift = function(object) {
-    var dummy, value;
-    if (typeof object.observe === "function") {
-      return object;
-    } else {
-      value = object;
-      dummy = function(newValue) {
-        if (arguments.length > 0) {
-          return value = newValue;
-        } else {
-          return value;
-        }
-      };
-      dummy.observe = function() {};
-      Object.extend(dummy, {
-        each: function() {
-          var args, _ref;
-          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          if (value != null) {
-            return (_ref = [].concat(value)).forEach.apply(_ref, args);
-          }
-        },
-        map: function() {
-          var args, _ref;
-          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          if (value != null) {
-            return (_ref = [].concat(value)).map.apply(_ref, args);
-          }
-        }
-      });
-      return dummy;
-    }
-  };
-
-  module.exports = Observable;
-
-}).call(this);
-
-},{}],3:[function(require,module,exports){
-(function() {
-  var Runtime, dataName;
-
-  dataName = "__hamlJR_data";
-
-  Runtime = function(context) {
-    var append, lastParent, observeAttribute, observeText, pop, push, stack, top;
-    stack = [];
-    lastParent = function() {
-      var element, i;
-      i = stack.length - 1;
-      while ((element = stack[i]) && element.nodeType === 11) {
-        i -= 1;
-      }
-      return element;
-    };
-    top = function() {
-      return stack[stack.length - 1];
-    };
-    append = function(child) {
-      var _ref;
-      if ((_ref = top()) != null) {
-        _ref.appendChild(child);
-      }
-      return child;
-    };
-    push = function(child) {
-      return stack.push(child);
-    };
-    pop = function() {
-      return append(stack.pop());
-    };
-    observeAttribute = function(element, name, value) {
-      var observable, update;
-      update = function(newValue) {
-        return element.setAttribute(name, newValue);
-      };
-      if (typeof Observable === "undefined" || Observable === null) {
-        update(value);
-        return;
-      }
-      observable = Observable.lift(value);
-      observable.observe(update);
-      return update(observable());
-    };
-    observeText = function(node, value) {
-      var observable, unobserve, update;
-      if (typeof Observable === "undefined" || Observable === null) {
-        node.nodeValue = value;
-        return;
-      }
-      observable = Observable.lift(value);
-      update = function(newValue) {
-        return node.nodeValue = newValue;
-      };
-      observable.observe(update);
-      update(observable());
-      unobserve = function() {};
-      return node.addEventListener("DOMNodeRemoved", unobserve, true);
-    };
-    return {
-      __push: push,
-      __pop: pop,
-      __observeAttribute: observeAttribute,
-      __observeText: observeText,
-      __each: function(items, fn) {
-        var elements, parent, replace;
-        items = Observable.lift(items);
-        elements = [];
-        parent = lastParent();
-        items.observe(function(newItems) {
-          return replace(elements, newItems);
-        });
-        replace = function(oldElements, items) {
-          var firstElement;
-          if (oldElements) {
-            firstElement = oldElements[0];
-            parent = firstElement != null ? firstElement.parentElement : void 0;
-            elements = items.map(function(item) {
-              var element;
-              element = fn.call(item);
-              element[dataName] = item;
-              parent.insertBefore(element, firstElement);
-              return element;
-            });
-            return oldElements.each(function(element) {
-              return element.remove();
-            });
-          } else {
-            return elements = items.map(function(item) {
-              var element;
-              element = fn.call(item);
-              element[dataName] = item;
-              return element;
-            });
-          }
-        };
-        return replace(null, items);
-      },
-      __with: function(item, fn) {
-        var element, replace, value;
-        element = null;
-        item = Observable.lift(item);
-        item.observe(function(newValue) {
-          return replace(element, newValue);
-        });
-        value = item();
-        replace = function(oldElement, value) {
-          var parent;
-          element = fn.call(value);
-          element[dataName] = item;
-          if (oldElement) {
-            parent = oldElement.parentElement;
-            parent.insertBefore(element, oldElement);
-            return oldElement.remove();
-          } else {
-
-          }
-        };
-        return replace(element, value);
-      },
-      __on: function(eventName, fn) {
-        var element;
-        element = lastParent();
-        if (eventName === "change") {
-          switch (element.nodeName) {
-            case "SELECT":
-              element["on" + eventName] = function() {
-                var selectedOption;
-                selectedOption = this.options[this.selectedIndex];
-                return fn(selectedOption[dataName]);
-              };
-              if (fn.observe) {
-                return fn.observe(function(newValue) {
-                  return Array.prototype.forEach.call(element.options, function(option, index) {
-                    if (option[dataName] === newValue) {
-                      return element.selectedIndex = index;
-                    }
-                  });
-                });
-              }
-              break;
-            default:
-              element["on" + eventName] = function() {
-                return fn(element.value);
-              };
-              if (fn.observe) {
-                return fn.observe(function(newValue) {
-                  return element.value = newValue;
-                });
-              }
-          }
-        } else {
-          return element["on" + eventName] = function() {
-            return fn.call(context, event);
-          };
-        }
-      }
-    };
-  };
-
-  (typeof window !== "undefined" && window !== null ? window : exports).Runtime = Runtime;
-
-}).call(this);
-
-},{}],4:[function(require,module,exports){
-
-},{}],5:[function(require,module,exports){
-(function() {
-  var Gistquire, auth, load, parser, postData, renderJST, rerender, save, styl, update, util, _ref;
-
-  parser = require('./haml-jr').parser;
-
-  _ref = require('./renderer'), renderJST = _ref.renderJST, util = _ref.util;
+  _ref = HAMLjr = require('./haml-jr'), parser = _ref.parser, compile = _ref.compile, util = _ref.util;
 
   Gistquire = require('./gistquire');
 
   styl = require('styl');
 
+  window.HAMLjr = HAMLjr;
+
   window.Observable = require('./observable');
 
-  require('./runtime');
-
   window.parser = parser;
-
-  window.render = renderJST;
 
   rerender = (function() {
     var ast, coffee, data, error, fragment, haml, selector, style, template, _ref1;
@@ -375,7 +38,7 @@
     }
     try {
       ast = parser.parse(haml + "\n");
-      template = Function("return " + render(ast, {
+      template = Function("return " + compile(ast, {
         compiler: CoffeeScript
       }))();
       $("#errors p").eq(1).empty();
@@ -495,14 +158,294 @@
 
 }).call(this);
 
-},{"./gistquire":1,"./haml-jr":6,"./observable":2,"./renderer":7,"./runtime":3,"styl":8}],6:[function(require,module,exports){
-(function() {
-  var extend, lexer, oldParse, parser,
+},{"./gistquire":3,"./haml-jr":4,"./observable":6,"styl":16}],2:[function(require,module,exports){
+(function(process){(function() {
+  var CoffeeScript, indentText, keywords, keywordsRegex, styl, util,
     __slice = [].slice;
+
+  CoffeeScript = require("coffee-script");
+
+  styl = require('styl');
+
+  indentText = function(text, indent) {
+    if (indent == null) {
+      indent = "  ";
+    }
+    return indent + text.replace(/\n/g, "\n" + indent);
+  };
+
+  keywords = ["on", "each", "with", "render"];
+
+  keywordsRegex = RegExp("\\s*(" + (keywords.join('|')) + ")\\s+");
+
+  util = {
+    indent: indentText,
+    filters: {
+      styl: function(content, compiler) {
+        return compiler.styleTag(styl(content, {
+          whitespace: true
+        }).toString());
+      },
+      verbatim: function(content, compiler) {
+        return compiler.buffer('"""' + content.replace(/(#)/, "\\$1") + '"""');
+      },
+      plain: function(content, compiler) {
+        return compiler.buffer(JSON.stringify(content));
+      },
+      coffeescript: function(content, compiler) {
+        if (compiler.explicitScripts) {
+          return [compiler.scriptTag(CoffeeScript.compile(content))];
+        } else {
+          return [content];
+        }
+      },
+      javascript: function(content, compiler) {
+        if (compiler.explicitScripts) {
+          return [compiler.scriptTag(content)];
+        } else {
+          return ["`", compiler.indent(content), "`"];
+        }
+      }
+    },
+    styleTag: function(content) {
+      return this.element("style", [], ["__element.innerHTML = " + (JSON.stringify("\n" + this.indent(content)))]);
+    },
+    scriptTag: function(content) {
+      return this.element("script", [], ["__element.innerHTML = " + (JSON.stringify("\n" + this.indent(content)))]);
+    },
+    element: function(tag, attributes, contents) {
+      var attributeLines, lines;
+      if (contents == null) {
+        contents = [];
+      }
+      attributeLines = attributes.map(function(_arg) {
+        var name, value;
+        name = _arg.name, value = _arg.value;
+        name = JSON.stringify(name);
+        return "__attribute __element, " + name + ", " + value;
+      });
+      return lines = ["__element = document.createElement(" + (JSON.stringify(tag)) + ")", "__push(__element)"].concat(__slice.call(attributeLines), __slice.call(contents), ["__pop()"]);
+    },
+    buffer: function(value) {
+      return ["__element = document.createTextNode('')", "__text(__element, " + value + ")", "__push __element", "__pop()"];
+    },
+    stringJoin: function(values) {
+      var dynamic;
+      dynamic = this.dynamic;
+      values = values.map(function(value) {
+        if (value.indexOf("\"") === 0) {
+          return JSON.parse(value);
+        } else {
+          return dynamic(value);
+        }
+      });
+      return JSON.stringify(values.join(" "));
+    },
+    dynamic: function(value) {
+      return "\#{" + value + "}";
+    },
+    attributes: function(node) {
+      var attributeId, attributes, classes, dynamic, id;
+      dynamic = this.dynamic;
+      id = node.id, classes = node.classes, attributes = node.attributes;
+      classes = (classes || []).map(JSON.stringify);
+      attributeId = void 0;
+      if (attributes) {
+        attributes = attributes.filter(function(_arg) {
+          var name, value;
+          name = _arg.name, value = _arg.value;
+          if (name === "class") {
+            classes.push(value);
+            return false;
+          } else if (name === "id") {
+            attributeId = value;
+            return false;
+          } else {
+            return true;
+          }
+        });
+      } else {
+        attributes = [];
+      }
+      if (classes.length) {
+        attributes.unshift({
+          name: "class",
+          value: this.stringJoin(classes)
+        });
+      }
+      if (attributeId) {
+        attributes.unshift({
+          name: "id",
+          value: attributeId
+        });
+      } else if (id) {
+        attributes.unshift({
+          name: "id",
+          value: JSON.stringify(id)
+        });
+      }
+      return attributes;
+    },
+    render: function(node) {
+      var filter, tag, text;
+      tag = node.tag, filter = node.filter, text = node.text;
+      if (tag) {
+        return this.tag(node);
+      } else if (filter) {
+        return this.filter(node);
+      } else {
+        return this.contents(node);
+      }
+    },
+    replaceKeywords: function(codeString) {
+      return codeString.replace(keywordsRegex, "__$1 ");
+    },
+    filter: function(node) {
+      return [].concat.apply([], this.filters[node.filter](node.content, this));
+    },
+    contents: function(node) {
+      var bufferedCode, childContent, children, code, contents, indent, text, unbufferedCode;
+      children = node.children, bufferedCode = node.bufferedCode, unbufferedCode = node.unbufferedCode, text = node.text;
+      if (unbufferedCode) {
+        indent = true;
+        code = this.replaceKeywords(unbufferedCode);
+        contents = [code];
+      } else if (bufferedCode) {
+        contents = this.buffer(bufferedCode);
+      } else if (text) {
+        contents = this.buffer(JSON.stringify(text));
+      } else if (node.tag) {
+        contents = [];
+      } else if (node.comment) {
+        return [];
+      } else {
+        contents = [];
+        console.warn("No content for node:", node);
+      }
+      if (children) {
+        childContent = this.renderNodes(children);
+        if (indent) {
+          childContent = this.indent(childContent.join("\n"));
+        }
+        contents = contents.concat(childContent);
+      }
+      return contents;
+    },
+    renderNodes: function(nodes) {
+      return [].concat.apply([], nodes.map(this.render, this));
+    },
+    tag: function(node) {
+      var attributes, contents, tag;
+      tag = node.tag;
+      attributes = this.attributes(node);
+      contents = this.contents(node);
+      return this.element(tag, attributes, contents);
+    }
+  };
+
+  exports.util = util;
+
+  exports.compile = function(parseTree, _arg) {
+    var compiler, error, explicitScripts, items, name, options, program, programSource, source, _ref;
+    _ref = _arg != null ? _arg : {}, explicitScripts = _ref.explicitScripts, name = _ref.name, compiler = _ref.compiler;
+    if (compiler) {
+      CoffeeScript = compiler;
+    }
+    util.explicitScripts = explicitScripts;
+    items = util.renderNodes(parseTree);
+    source = "(data) ->\n  (->\n    {\n      __push\n      __pop\n      __attribute\n      __text\n      __on\n      __each\n      __with\n      __render\n    } = HAMLjr.Runtime(this)\n\n    __push document.createDocumentFragment()\n" + (util.indent(items.join("\n"), "    ")) + "\n    __pop()\n  ).call(data)";
+    if (name) {
+      options = {};
+      programSource = "@HAMLjr ||= {}\n@HAMLjr.templates ||= {}\n@HAMLjr.templates[" + (JSON.stringify(name)) + "] = " + source;
+    } else {
+      options = {
+        bare: true
+      };
+      programSource = source;
+    }
+    try {
+      program = CoffeeScript.compile(programSource, options);
+      return program;
+    } catch (_error) {
+      error = _error;
+      process.stderr.write("COMPILE ERROR:\n  SOURCE:\n " + programSource + "\n");
+      throw error;
+    }
+  };
+
+}).call(this);
+
+})(require("__browserify_process"))
+},{"__browserify_process":15,"coffee-script":9,"styl":16}],3:[function(require,module,exports){
+(function() {
+  module.exports = {
+    accessToken: null,
+    update: function(id, data, callback) {
+      var url;
+      url = "https://api.github.com/gists/" + id;
+      if (this.accessToken) {
+        url += "?access_token=" + this.accessToken;
+      }
+      return $.ajax({
+        url: url,
+        type: "PATCH",
+        dataType: 'json',
+        data: data,
+        success: callback
+      });
+    },
+    create: function(data, callback) {
+      var url;
+      url = "https://api.github.com/gists";
+      if (this.accessToken) {
+        url += "?access_token=" + this.accessToken;
+      }
+      return $.ajax({
+        url: url,
+        type: "POST",
+        dataType: 'json',
+        data: data,
+        success: callback
+      });
+    },
+    get: function(id, callback) {
+      var data;
+      if (this.accessToken) {
+        data = {
+          access_token: this.accessToken
+        };
+      } else {
+        data = {};
+      }
+      return $.getJSON("https://api.github.com/gists/" + id, data, callback);
+    },
+    load: function(id, _arg) {
+      var callback, file;
+      file = _arg.file, callback = _arg.callback;
+      if (file == null) {
+        file = "build.js";
+      }
+      return this.get(id, function(data) {
+        Function(data.files[file])();
+        return callback();
+      });
+    }
+  };
+
+}).call(this);
+
+},{}],4:[function(require,module,exports){
+(function() {
+  var Runtime, compile, extend, lexer, oldParse, parser, util, _ref,
+    __slice = [].slice;
+
+  _ref = require("./compiler"), compile = _ref.compile, util = _ref.util;
+
+  lexer = require("./lexer").lexer;
 
   parser = require("./parser").parser;
 
-  lexer = require("./lexer").lexer;
+  Runtime = require("./runtime").Runtime;
 
   extend = function() {
     var name, source, sources, target, _i, _len;
@@ -574,11 +517,16 @@
     }
   });
 
-  exports.parser = parser;
+  extend(exports, {
+    compile: compile,
+    parser: parser,
+    Runtime: Runtime,
+    util: util
+  });
 
 }).call(this);
 
-},{"./lexer":10,"./parser":9}],10:[function(require,module,exports){
+},{"./compiler":2,"./lexer":5,"./parser":7,"./runtime":8}],5:[function(require,module,exports){
 /* generated by jison-lex 0.2.1 */
 var lexer = (function(){
 var lexer = {
@@ -987,62 +935,115 @@ conditions: {"filter":{"rules":[18,19,20],"inclusive":false},"value":{"rules":[1
 return lexer;
 })();exports.lexer = lexer;
 
-},{}],11:[function(require,module,exports){
-// shim for using process in browser
+},{}],6:[function(require,module,exports){
+(function() {
+  var Observable,
+    __slice = [].slice;
 
-var process = module.exports = {};
-
-process.nextTick = (function () {
-    var canSetImmediate = typeof window !== 'undefined'
-    && window.setImmediate;
-    var canPost = typeof window !== 'undefined'
-    && window.postMessage && window.addEventListener
-    ;
-
-    if (canSetImmediate) {
-        return function (f) { return window.setImmediate(f) };
-    }
-
-    if (canPost) {
-        var queue = [];
-        window.addEventListener('message', function (ev) {
-            if (ev.source === window && ev.data === 'process-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-
-        return function nextTick(fn) {
-            queue.push(fn);
-            window.postMessage('process-tick', '*');
-        };
-    }
-
-    return function nextTick(fn) {
-        setTimeout(fn, 0);
+  Observable = function(value) {
+    var listeners, notify, self;
+    listeners = [];
+    notify = function(newValue) {
+      return listeners.each(function(listener) {
+        return listener(newValue);
+      });
     };
-})();
+    self = function(newValue) {
+      if (arguments.length > 0) {
+        if (value !== newValue) {
+          value = newValue;
+          notify(newValue);
+        }
+      }
+      return value;
+    };
+    Object.extend(self, {
+      observe: function(listener) {
+        return listeners.push(listener);
+      },
+      each: function() {
+        var args, _ref;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        if (value != null) {
+          return (_ref = [value]).each.apply(_ref, args);
+        }
+      }
+    });
+    if (Array.isArray(value)) {
+      Object.extend(self, {
+        each: function() {
+          var args;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          return value.each.apply(value, args);
+        },
+        map: function() {
+          var args;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          return value.map.apply(value, args);
+        },
+        remove: function(item) {
+          var ret;
+          ret = value.remove(item);
+          notify(value);
+          return ret;
+        },
+        push: function(item) {
+          var ret;
+          ret = value.push(item);
+          notify(value);
+          return ret;
+        },
+        pop: function() {
+          var ret;
+          ret = value.pop();
+          notify(value);
+          return ret;
+        }
+      });
+    }
+    return self;
+  };
 
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
+  Observable.lift = function(object) {
+    var dummy, value;
+    if (typeof object.observe === "function") {
+      return object;
+    } else {
+      value = object;
+      dummy = function(newValue) {
+        if (arguments.length > 0) {
+          return value = newValue;
+        } else {
+          return value;
+        }
+      };
+      dummy.observe = function() {};
+      Object.extend(dummy, {
+        each: function() {
+          var args, _ref;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          if (value != null) {
+            return (_ref = [].concat(value)).forEach.apply(_ref, args);
+          }
+        },
+        map: function() {
+          var args, _ref;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          if (value != null) {
+            return (_ref = [].concat(value)).map.apply(_ref, args);
+          }
+        }
+      });
+      return dummy;
+    }
+  };
 
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-}
+  module.exports = Observable;
 
-// TODO(shtylman)
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
+}).call(this);
 
-},{}],9:[function(require,module,exports){
-(function(process){/* parser generated by jison 0.4.6 */
+},{}],7:[function(require,module,exports){
+(function(process){/* parser generated by jison 0.4.9 */
 /*
   Returns a Parser object of the following structure:
 
@@ -1418,10 +1419,370 @@ if (typeof module !== 'undefined' && require.main === module) {
 }
 }
 })(require("__browserify_process"))
-},{"__browserify_process":11,"fs":12,"path":13}],12:[function(require,module,exports){
+},{"__browserify_process":15,"fs":11,"path":12}],8:[function(require,module,exports){
+(function() {
+  var Runtime, dataName;
+
+  dataName = "__hamlJR_data";
+
+  Runtime = function(context) {
+    var append, lastParent, observeAttribute, observeText, pop, push, render, stack, top;
+    stack = [];
+    lastParent = function() {
+      var element, i;
+      i = stack.length - 1;
+      while ((element = stack[i]) && element.nodeType === 11) {
+        i -= 1;
+      }
+      return element;
+    };
+    top = function() {
+      return stack[stack.length - 1];
+    };
+    append = function(child) {
+      var _ref;
+      if ((_ref = top()) != null) {
+        _ref.appendChild(child);
+      }
+      return child;
+    };
+    push = function(child) {
+      return stack.push(child);
+    };
+    pop = function() {
+      return append(stack.pop());
+    };
+    observeAttribute = function(element, name, value) {
+      var observable, update;
+      update = function(newValue) {
+        return element.setAttribute(name, newValue);
+      };
+      if (typeof Observable === "undefined" || Observable === null) {
+        update(value);
+        return;
+      }
+      observable = Observable.lift(value);
+      observable.observe(update);
+      return update(observable());
+    };
+    observeText = function(node, value) {
+      var observable, unobserve, update;
+      if (typeof Observable === "undefined" || Observable === null) {
+        node.nodeValue = value;
+        return;
+      }
+      observable = Observable.lift(value);
+      update = function(newValue) {
+        return node.nodeValue = newValue;
+      };
+      observable.observe(update);
+      update(observable());
+      unobserve = function() {};
+      return node.addEventListener("DOMNodeRemoved", unobserve, true);
+    };
+    render = function(object) {
+      var template;
+      template = object.template;
+      push(HAMLjr.templates[template](object));
+      return pop();
+    };
+    return {
+      __push: push,
+      __pop: pop,
+      __attribute: observeAttribute,
+      __text: observeText,
+      __each: function(items, fn) {
+        var elements, parent, replace;
+        items = Observable.lift(items);
+        elements = [];
+        parent = lastParent();
+        items.observe(function(newItems) {
+          return replace(elements, newItems);
+        });
+        replace = function(oldElements, items) {
+          var firstElement;
+          if (oldElements) {
+            firstElement = oldElements[0];
+            parent = firstElement != null ? firstElement.parentElement : void 0;
+            elements = items.map(function(item) {
+              var element;
+              element = fn.call(item);
+              element[dataName] = item;
+              parent.insertBefore(element, firstElement);
+              return element;
+            });
+            return oldElements.each(function(element) {
+              return element.remove();
+            });
+          } else {
+            return elements = items.map(function(item) {
+              var element;
+              element = fn.call(item);
+              element[dataName] = item;
+              return element;
+            });
+          }
+        };
+        return replace(null, items);
+      },
+      __with: function(item, fn) {
+        var element, replace, value;
+        element = null;
+        item = Observable.lift(item);
+        item.observe(function(newValue) {
+          return replace(element, newValue);
+        });
+        value = item();
+        replace = function(oldElement, value) {
+          var parent;
+          element = fn.call(value);
+          element[dataName] = item;
+          if (oldElement) {
+            parent = oldElement.parentElement;
+            parent.insertBefore(element, oldElement);
+            return oldElement.remove();
+          } else {
+
+          }
+        };
+        return replace(element, value);
+      },
+      __on: function(eventName, fn) {
+        var element;
+        element = lastParent();
+        if (eventName === "change") {
+          switch (element.nodeName) {
+            case "SELECT":
+              element["on" + eventName] = function() {
+                var selectedOption;
+                selectedOption = this.options[this.selectedIndex];
+                return fn(selectedOption[dataName]);
+              };
+              if (fn.observe) {
+                return fn.observe(function(newValue) {
+                  return Array.prototype.forEach.call(element.options, function(option, index) {
+                    if (option[dataName] === newValue) {
+                      return element.selectedIndex = index;
+                    }
+                  });
+                });
+              }
+              break;
+            default:
+              element["on" + eventName] = function() {
+                return fn(element.value);
+              };
+              if (fn.observe) {
+                return fn.observe(function(newValue) {
+                  return element.value = newValue;
+                });
+              }
+          }
+        } else {
+          return element["on" + eventName] = function() {
+            return fn.call(context, event);
+          };
+        }
+      }
+    };
+  };
+
+  exports.Runtime = Runtime;
+
+}).call(this);
+
+},{}],9:[function(require,module,exports){
+
+},{}],10:[function(require,module,exports){
+(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
+
+var EventEmitter = exports.EventEmitter = process.EventEmitter;
+var isArray = typeof Array.isArray === 'function'
+    ? Array.isArray
+    : function (xs) {
+        return Object.prototype.toString.call(xs) === '[object Array]'
+    }
+;
+function indexOf (xs, x) {
+    if (xs.indexOf) return xs.indexOf(x);
+    for (var i = 0; i < xs.length; i++) {
+        if (x === xs[i]) return i;
+    }
+    return -1;
+}
+
+// By default EventEmitters will print a warning if more than
+// 10 listeners are added to it. This is a useful default which
+// helps finding memory leaks.
+//
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+var defaultMaxListeners = 10;
+EventEmitter.prototype.setMaxListeners = function(n) {
+  if (!this._events) this._events = {};
+  this._events.maxListeners = n;
+};
+
+
+EventEmitter.prototype.emit = function(type) {
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events || !this._events.error ||
+        (isArray(this._events.error) && !this._events.error.length))
+    {
+      if (arguments[1] instanceof Error) {
+        throw arguments[1]; // Unhandled 'error' event
+      } else {
+        throw new Error("Uncaught, unspecified 'error' event.");
+      }
+      return false;
+    }
+  }
+
+  if (!this._events) return false;
+  var handler = this._events[type];
+  if (!handler) return false;
+
+  if (typeof handler == 'function') {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        var args = Array.prototype.slice.call(arguments, 1);
+        handler.apply(this, args);
+    }
+    return true;
+
+  } else if (isArray(handler)) {
+    var args = Array.prototype.slice.call(arguments, 1);
+
+    var listeners = handler.slice();
+    for (var i = 0, l = listeners.length; i < l; i++) {
+      listeners[i].apply(this, args);
+    }
+    return true;
+
+  } else {
+    return false;
+  }
+};
+
+// EventEmitter is defined in src/node_events.cc
+// EventEmitter.prototype.emit() is also defined there.
+EventEmitter.prototype.addListener = function(type, listener) {
+  if ('function' !== typeof listener) {
+    throw new Error('addListener only takes instances of Function');
+  }
+
+  if (!this._events) this._events = {};
+
+  // To avoid recursion in the case that type == "newListeners"! Before
+  // adding it to the listeners, first emit "newListeners".
+  this.emit('newListener', type, listener);
+
+  if (!this._events[type]) {
+    // Optimize the case of one listener. Don't need the extra array object.
+    this._events[type] = listener;
+  } else if (isArray(this._events[type])) {
+
+    // Check for listener leak
+    if (!this._events[type].warned) {
+      var m;
+      if (this._events.maxListeners !== undefined) {
+        m = this._events.maxListeners;
+      } else {
+        m = defaultMaxListeners;
+      }
+
+      if (m && m > 0 && this._events[type].length > m) {
+        this._events[type].warned = true;
+        console.error('(node) warning: possible EventEmitter memory ' +
+                      'leak detected. %d listeners added. ' +
+                      'Use emitter.setMaxListeners() to increase limit.',
+                      this._events[type].length);
+        console.trace();
+      }
+    }
+
+    // If we've already got an array, just append.
+    this._events[type].push(listener);
+  } else {
+    // Adding the second element, need to change to array.
+    this._events[type] = [this._events[type], listener];
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.once = function(type, listener) {
+  var self = this;
+  self.on(type, function g() {
+    self.removeListener(type, g);
+    listener.apply(this, arguments);
+  });
+
+  return this;
+};
+
+EventEmitter.prototype.removeListener = function(type, listener) {
+  if ('function' !== typeof listener) {
+    throw new Error('removeListener only takes instances of Function');
+  }
+
+  // does not use listeners(), so no side effect of creating _events[type]
+  if (!this._events || !this._events[type]) return this;
+
+  var list = this._events[type];
+
+  if (isArray(list)) {
+    var i = indexOf(list, listener);
+    if (i < 0) return this;
+    list.splice(i, 1);
+    if (list.length == 0)
+      delete this._events[type];
+  } else if (this._events[type] === listener) {
+    delete this._events[type];
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function(type) {
+  if (arguments.length === 0) {
+    this._events = {};
+    return this;
+  }
+
+  // does not use listeners(), so no side effect of creating _events[type]
+  if (type && this._events && this._events[type]) this._events[type] = null;
+  return this;
+};
+
+EventEmitter.prototype.listeners = function(type) {
+  if (!this._events) this._events = {};
+  if (!this._events[type]) this._events[type] = [];
+  if (!isArray(this._events[type])) {
+    this._events[type] = [this._events[type]];
+  }
+  return this._events[type];
+};
+
+})(require("__browserify_process"))
+},{"__browserify_process":15}],11:[function(require,module,exports){
 // nothing to see here... no file methods for the browser
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 (function(process){function filter (xs, fn) {
     var res = [];
     for (var i = 0; i < xs.length; i++) {
@@ -1599,459 +1960,7 @@ exports.relative = function(from, to) {
 };
 
 })(require("__browserify_process"))
-},{"__browserify_process":11}],7:[function(require,module,exports){
-(function(process){(function() {
-  var CoffeeScript, indentText, keywords, keywordsRegex, selfClosing, styl, util,
-    __slice = [].slice;
-
-  CoffeeScript = require("coffee-script");
-
-  styl = require('styl');
-
-  selfClosing = {
-    area: true,
-    base: true,
-    br: true,
-    col: true,
-    hr: true,
-    img: true,
-    input: true,
-    link: true,
-    meta: true,
-    param: true
-  };
-
-  indentText = function(text, indent) {
-    if (indent == null) {
-      indent = "  ";
-    }
-    return indent + text.replace(/\n/g, "\n" + indent);
-  };
-
-  keywords = ["on", "each", "with"];
-
-  keywordsRegex = RegExp("\\s*(" + (keywords.join('|')) + ")\\s+");
-
-  util = {
-    selfClosing: selfClosing,
-    indent: indentText,
-    filters: {
-      styl: function(content, compiler) {
-        return compiler.styleTag(styl(content, {
-          whitespace: true
-        }).toString());
-      },
-      verbatim: function(content, compiler) {
-        return compiler.buffer('"""' + content.replace(/(#)/, "\\$1") + '"""');
-      },
-      plain: function(content, compiler) {
-        return compiler.buffer(JSON.stringify(content));
-      },
-      coffeescript: function(content, compiler) {
-        if (compiler.explicitScripts) {
-          return [compiler.scriptTag(CoffeeScript.compile(content))];
-        } else {
-          return [content];
-        }
-      },
-      javascript: function(content, compiler) {
-        if (compiler.explicitScripts) {
-          return [compiler.scriptTag(content)];
-        } else {
-          return ["`", compiler.indent(content), "`"];
-        }
-      }
-    },
-    styleTag: function(content) {
-      return this.element("style", [], ["__element.innerHTML = " + (JSON.stringify("\n" + this.indent(content)))]);
-    },
-    scriptTag: function(content) {
-      return this.element("script", [], ["__element.innerHTML = " + (JSON.stringify("\n" + this.indent(content)))]);
-    },
-    element: function(tag, attributes, contents) {
-      var attributeLines, lines;
-      if (contents == null) {
-        contents = [];
-      }
-      attributeLines = attributes.map(function(_arg) {
-        var name, value;
-        name = _arg.name, value = _arg.value;
-        name = JSON.stringify(name);
-        return "__observeAttribute __element, " + name + ", " + value;
-      });
-      return lines = ["__element = document.createElement(" + (JSON.stringify(tag)) + ")", "__push(__element)"].concat(__slice.call(attributeLines), __slice.call(contents), ["__pop()"]);
-    },
-    buffer: function(value) {
-      return ["__element = document.createTextNode('')", "__observeText(__element, " + value + ")", "__push __element", "__pop()"];
-    },
-    stringJoin: function(values) {
-      var dynamic;
-      dynamic = this.dynamic;
-      values = values.map(function(value) {
-        if (value.indexOf("\"") === 0) {
-          return JSON.parse(value);
-        } else {
-          return dynamic(value);
-        }
-      });
-      return JSON.stringify(values.join(" "));
-    },
-    dynamic: function(value) {
-      return "\#{" + value + "}";
-    },
-    attributes: function(node) {
-      var attributeId, attributes, classes, dynamic, id;
-      dynamic = this.dynamic;
-      id = node.id, classes = node.classes, attributes = node.attributes;
-      classes = (classes || []).map(JSON.stringify);
-      attributeId = void 0;
-      if (attributes) {
-        attributes = attributes.filter(function(_arg) {
-          var name, value;
-          name = _arg.name, value = _arg.value;
-          if (name === "class") {
-            classes.push(value);
-            return false;
-          } else if (name === "id") {
-            attributeId = value;
-            return false;
-          } else {
-            return true;
-          }
-        });
-      } else {
-        attributes = [];
-      }
-      if (classes.length) {
-        attributes.unshift({
-          name: "class",
-          value: this.stringJoin(classes)
-        });
-      }
-      if (attributeId) {
-        attributes.unshift({
-          name: "id",
-          value: attributeId
-        });
-      } else if (id) {
-        attributes.unshift({
-          name: "id",
-          value: JSON.stringify(id)
-        });
-      }
-      return attributes;
-    },
-    render: function(node) {
-      var filter, tag, text;
-      tag = node.tag, filter = node.filter, text = node.text;
-      if (tag) {
-        return this.tag(node);
-      } else if (filter) {
-        return this.filter(node);
-      } else {
-        return this.contents(node);
-      }
-    },
-    replaceKeywords: function(codeString) {
-      return codeString.replace(keywordsRegex, "__$1 ");
-    },
-    filter: function(node) {
-      return [].concat.apply([], this.filters[node.filter](node.content, this));
-    },
-    contents: function(node) {
-      var bufferedCode, childContent, children, code, contents, indent, text, unbufferedCode;
-      children = node.children, bufferedCode = node.bufferedCode, unbufferedCode = node.unbufferedCode, text = node.text;
-      if (unbufferedCode) {
-        indent = true;
-        code = this.replaceKeywords(unbufferedCode);
-        contents = [code];
-      } else if (bufferedCode) {
-        contents = this.buffer(bufferedCode);
-      } else if (text) {
-        contents = this.buffer(JSON.stringify(text));
-      } else if (node.tag) {
-        contents = [];
-      } else if (node.comment) {
-        return [];
-      } else {
-        contents = [];
-        console.warn("No content for node:", node);
-      }
-      if (children) {
-        childContent = this.renderNodes(children);
-        if (indent) {
-          childContent = this.indent(childContent.join("\n"));
-        }
-        contents = contents.concat(childContent);
-      }
-      return contents;
-    },
-    renderNodes: function(nodes) {
-      return [].concat.apply([], nodes.map(this.render, this));
-    },
-    tag: function(node) {
-      var attributes, contents, tag;
-      tag = node.tag;
-      attributes = this.attributes(node);
-      contents = this.contents(node);
-      return this.element(tag, attributes, contents);
-    }
-  };
-
-  exports.util = util;
-
-  exports.renderJST = function(parseTree, _arg) {
-    var compiler, error, explicitScripts, items, name, options, program, programSource, source, _ref;
-    _ref = _arg != null ? _arg : {}, explicitScripts = _ref.explicitScripts, name = _ref.name, compiler = _ref.compiler;
-    if (compiler) {
-      CoffeeScript = compiler;
-    }
-    util.explicitScripts = explicitScripts;
-    items = util.renderNodes(parseTree);
-    source = "(data) ->\n  (->\n    {\n      __push\n      __pop\n      __observeAttribute\n      __observeText\n      __on\n      __each\n      __with\n    } = Runtime(this) # TODO Namespace\n\n    __push document.createDocumentFragment()\n" + (util.indent(items.join("\n"), "    ")) + "\n    __pop()\n  ).call(data)";
-    if (name) {
-      options = {};
-      programSource = "@HAMLjr ||= {}\n@HAMLjr.templates ||= {}\n@HAMLjr.templates[" + (JSON.stringify(name)) + "] = " + source;
-    } else {
-      options = {
-        bare: true
-      };
-      programSource = source;
-    }
-    try {
-      program = CoffeeScript.compile(programSource, options);
-      return program;
-    } catch (_error) {
-      error = _error;
-      process.stderr.write("COMPILE ERROR:\n  SOURCE:\n " + programSource + "\n");
-      throw error;
-    }
-  };
-
-}).call(this);
-
-})(require("__browserify_process"))
-},{"__browserify_process":11,"coffee-script":4,"styl":8}],8:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var whitespace = require('css-whitespace');
-var mixins = require('rework-mixins');
-var rework = require('rework');
-var props = rework.properties;
-
-/**
- * Expose `Style`.
- */
-
-module.exports = Style;
-
-/**
- * Initialize a new Style with the given css `str`.
- *
- * Options:
- *
- *  - `whitespace` utilize css whitespace transformations
- *  - `compress` enable output compression
- *
- * @param {String} str
- * @param {Object} options
- * @api public
- */
-
-function Style(str, options) {
-  if (!(this instanceof Style)) return new Style(str, options);
-  options = options || {};
-  if (options.whitespace) str = whitespace(str);
-  this.str = str;
-  this.compress = options.compress;
-  this.rework = rework(str);
-  this.delegate(['vendors', 'use']);
-  this.vendors(['-ms-', '-moz-', '-webkit-']);
-}
-
-/**
- * Delegate `methods` to rework.
- *
- * @param {Array} methods
- * @api private
- */
-
-Style.prototype.delegate = function(methods){
-  var self = this;
-  methods.forEach(function(method){
-    self[method] = self.rework[method].bind(self.rework);
-  });
-};
-
-/**
- * Return the compiled CSS.
- *
- * @return {String}
- * @api public
- */
-
-Style.prototype.toString = function(){
-  this.use(rework.mixin(mixins));
-  this.use(rework.keyframes());
-  this.use(rework.ease());
-  this.use(rework.prefixValue('linear-gradient'));
-  this.use(rework.prefixValue('radial-gradient'));
-  this.use(rework.prefixValue('transform'));
-  this.use(rework.prefix(props));
-  this.use(rework.colors());
-  this.use(rework.references());
-  this.use(rework.at2x());
-  this.use(rework.extend());
-  return this.rework.toString({ compress: this.compress });
-};
-
-},{"css-whitespace":14,"rework":16,"rework-mixins":15}],14:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var parse = require('./lib/parser');
-var compile = require('./lib/compiler');
-
-/**
- * Compile a whitespace significant
- * `str` of CSS to the valid CSS
- * equivalent.
- *
- * @param {String} str
- * @return {String}
- * @api public
- */
-
-module.exports = function(str){
-  return compile(parse(str));
-};
-
-},{"./lib/compiler":18,"./lib/parser":17}],15:[function(require,module,exports){
-
-exports['border-radius'] = require('./lib/border-radius');
-exports['overflow'] = require('./lib/ellipsis');
-exports['absolute'] = require('./lib/absolute');
-exports['relative'] = require('./lib/relative');
-exports['fixed'] = require('./lib/fixed');
-exports['opacity'] = require('./lib/opacity');
-exports['size'] = require('./lib/size');
-
-},{"./lib/absolute":21,"./lib/border-radius":19,"./lib/ellipsis":20,"./lib/fixed":23,"./lib/opacity":24,"./lib/relative":22,"./lib/size":25}],16:[function(require,module,exports){
-
-module.exports = require('./lib/rework');
-},{"./lib/rework":26}],19:[function(require,module,exports){
-
-/**
- * Positions.
- */
-
-var position = {
-  top: true,
-  left: true,
-  right: true,
-  bottom: true
-};
-
-/**
- * border-radius: 5px
- * border-radius: 5px 10px
- * border-radius: top 5px
- * border-radius: top 5px left 10px
- */
-
-module.exports = function(str){
-  var vals = str.split(/\s+/);
-  var pos;
-  var ret;
-
-  for (var i = 0; i < vals.length; ++i) {
-    var val = vals[i];
-    if (!position[val]) continue;
-    ret = ret || {};
-    pos = val;
-    val = vals[++i];
-    switch (pos) {
-      case 'top':
-      case 'bottom':
-        ret['border-' + pos + '-left-radius'] = val;
-        ret['border-' + pos + '-right-radius'] = val;
-        break;
-      case 'left':
-      case 'right':
-        ret['border-top-' + pos + '-radius'] = val;
-        ret['border-bottom-' + pos + '-radius'] = val;
-        break;
-    }
-  }
-
-  if (!ret) {
-    return {
-      'border-radius': str
-    }
-  }
-
-  return ret;
-};
-
-},{}],20:[function(require,module,exports){
-
-/**
- * overflow: ellipsis
- */
-
-module.exports = function(type) {
-  if ('ellipsis' == type) {
-    return {
-      'white-space': 'nowrap',
-      'overflow': 'hidden',
-      'text-overflow': 'ellipsis'
-    }
-  }
-
-  return {
-    'overflow': type
-  };
-};
-
-},{}],24:[function(require,module,exports){
-
-/**
- * opacity: 1
- */
-
-module.exports = function(str){
-  var vals = str.split(/\s+/);
-  var a = parseFloat(vals.shift());
-  var n = a * 100 | 0;
-  var tail = vals.length ? ' ' + vals.join(' '): '';
-  return {
-    'opacity': a + tail,
-    '-ms-filter': 'progid:DXImageTransform.Microsoft.Alpha(Opacity=' + n + ')' + tail,
-    'filter': 'alpha(opacity=' + n + ')' + tail
-  }
-};
-
-},{}],25:[function(require,module,exports){
-/**
- * size: 100px 50px
- */
-
-module.exports = function(sizes) {
-  sizes = sizes.split(/\s+/);
-  if ( sizes.length == 1 ) sizes[1] = sizes[0];
-
-  return {
-    width:  sizes[0],
-    height: sizes[1]
-  };
-};
-
-},{}],27:[function(require,module,exports){
+},{"__browserify_process":15}],13:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -2404,1864 +2313,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":28}],21:[function(require,module,exports){
-
-/**
- * absolute: top left
- * absolute: top 5px left 5px
- */
-
-module.exports = require('./position')('absolute');
-
-},{"./position":29}],22:[function(require,module,exports){
-
-/**
- * relative: top left
- * relative: top 5px left 5px
- */
-
-module.exports = require('./position')('relative');
-
-},{"./position":29}],23:[function(require,module,exports){
-
-/**
- * fixed: top left
- * fixed: top 5px left 5px
- */
-
-module.exports = require('./position')('fixed');
-
-},{"./position":29}],28:[function(require,module,exports){
-(function(process){if (!process.EventEmitter) process.EventEmitter = function () {};
-
-var EventEmitter = exports.EventEmitter = process.EventEmitter;
-var isArray = typeof Array.isArray === 'function'
-    ? Array.isArray
-    : function (xs) {
-        return Object.prototype.toString.call(xs) === '[object Array]'
-    }
-;
-function indexOf (xs, x) {
-    if (xs.indexOf) return xs.indexOf(x);
-    for (var i = 0; i < xs.length; i++) {
-        if (x === xs[i]) return i;
-    }
-    return -1;
-}
-
-// By default EventEmitters will print a warning if more than
-// 10 listeners are added to it. This is a useful default which
-// helps finding memory leaks.
-//
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-var defaultMaxListeners = 10;
-EventEmitter.prototype.setMaxListeners = function(n) {
-  if (!this._events) this._events = {};
-  this._events.maxListeners = n;
-};
-
-
-EventEmitter.prototype.emit = function(type) {
-  // If there is no 'error' event listener then throw.
-  if (type === 'error') {
-    if (!this._events || !this._events.error ||
-        (isArray(this._events.error) && !this._events.error.length))
-    {
-      if (arguments[1] instanceof Error) {
-        throw arguments[1]; // Unhandled 'error' event
-      } else {
-        throw new Error("Uncaught, unspecified 'error' event.");
-      }
-      return false;
-    }
-  }
-
-  if (!this._events) return false;
-  var handler = this._events[type];
-  if (!handler) return false;
-
-  if (typeof handler == 'function') {
-    switch (arguments.length) {
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-      // slower
-      default:
-        var args = Array.prototype.slice.call(arguments, 1);
-        handler.apply(this, args);
-    }
-    return true;
-
-  } else if (isArray(handler)) {
-    var args = Array.prototype.slice.call(arguments, 1);
-
-    var listeners = handler.slice();
-    for (var i = 0, l = listeners.length; i < l; i++) {
-      listeners[i].apply(this, args);
-    }
-    return true;
-
-  } else {
-    return false;
-  }
-};
-
-// EventEmitter is defined in src/node_events.cc
-// EventEmitter.prototype.emit() is also defined there.
-EventEmitter.prototype.addListener = function(type, listener) {
-  if ('function' !== typeof listener) {
-    throw new Error('addListener only takes instances of Function');
-  }
-
-  if (!this._events) this._events = {};
-
-  // To avoid recursion in the case that type == "newListeners"! Before
-  // adding it to the listeners, first emit "newListeners".
-  this.emit('newListener', type, listener);
-
-  if (!this._events[type]) {
-    // Optimize the case of one listener. Don't need the extra array object.
-    this._events[type] = listener;
-  } else if (isArray(this._events[type])) {
-
-    // Check for listener leak
-    if (!this._events[type].warned) {
-      var m;
-      if (this._events.maxListeners !== undefined) {
-        m = this._events.maxListeners;
-      } else {
-        m = defaultMaxListeners;
-      }
-
-      if (m && m > 0 && this._events[type].length > m) {
-        this._events[type].warned = true;
-        console.error('(node) warning: possible EventEmitter memory ' +
-                      'leak detected. %d listeners added. ' +
-                      'Use emitter.setMaxListeners() to increase limit.',
-                      this._events[type].length);
-        console.trace();
-      }
-    }
-
-    // If we've already got an array, just append.
-    this._events[type].push(listener);
-  } else {
-    // Adding the second element, need to change to array.
-    this._events[type] = [this._events[type], listener];
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-EventEmitter.prototype.once = function(type, listener) {
-  var self = this;
-  self.on(type, function g() {
-    self.removeListener(type, g);
-    listener.apply(this, arguments);
-  });
-
-  return this;
-};
-
-EventEmitter.prototype.removeListener = function(type, listener) {
-  if ('function' !== typeof listener) {
-    throw new Error('removeListener only takes instances of Function');
-  }
-
-  // does not use listeners(), so no side effect of creating _events[type]
-  if (!this._events || !this._events[type]) return this;
-
-  var list = this._events[type];
-
-  if (isArray(list)) {
-    var i = indexOf(list, listener);
-    if (i < 0) return this;
-    list.splice(i, 1);
-    if (list.length == 0)
-      delete this._events[type];
-  } else if (this._events[type] === listener) {
-    delete this._events[type];
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.removeAllListeners = function(type) {
-  if (arguments.length === 0) {
-    this._events = {};
-    return this;
-  }
-
-  // does not use listeners(), so no side effect of creating _events[type]
-  if (type && this._events && this._events[type]) this._events[type] = null;
-  return this;
-};
-
-EventEmitter.prototype.listeners = function(type) {
-  if (!this._events) this._events = {};
-  if (!this._events[type]) this._events[type] = [];
-  if (!isArray(this._events[type])) {
-    this._events[type] = [this._events[type]];
-  }
-  return this._events[type];
-};
-
-})(require("__browserify_process"))
-},{"__browserify_process":11}],30:[function(require,module,exports){
-
-/**
- * Pesudo selectors.
- */
-
-var pseudos = [
-  ':selection',
-  'fullscreen',
-  'nth-child',
-  'first-child',
-  'last-child',
-  'link',
-  'visited',
-  'hover',
-  'active',
-  'focus',
-  'first-letter',
-  'first-line',
-  'before',
-  'after',
-  'lang',
-  'enabled',
-  'disabled',
-  'only-child',
-  'only-of-type',
-  'first-of-type',
-  'last-of-type',
-  'nth-last-of-type',
-  'nth-of-type',
-  'root',
-  'empty',
-  'target',
-  'not',
-  '-o',
-  '-ms',
-  '-moz',
-  '-webkit'
-]
-
-/**
- * Property regexp.
- */
-
-pseudos = pseudos.join('|');
-var propre = new RegExp('^ *([-\\w]+):(?!' + pseudos + ') *([^\n]*)');
-
-/**
- * Scan the given `str` returning tokens.
- *
- * @param {String} str
- * @return {Array}
- * @api private
- */
-
-module.exports = function(str) {
-  var indents = [0];
-  var stash = [];
-
-  // strip blanks
-  str = str.replace(/\r/g, '');
-  str = str.replace(/\n\s*\n/gm, '\n');
-
-  return scan();
-
-  /**
-   * tok+
-   */
-
-  function scan() {
-    var toks = []
-      , curr;
-
-    while (str.length) {
-      curr = next();
-      curr && toks.push(curr);
-      if (str.length && !curr) {
-        throw new Error('syntax error near "' + str.slice(0, 10) + '"');
-      }
-    }
-
-    toks = toks.concat(stash);
-    while (indents.pop()) toks.push(['outdent']);
-    toks.push(['eos']);
-    return toks;
-  }
-
-  /**
-   *   eos
-   * | indentation
-   * | rule
-   */
-
-  function next() {
-    return stashed()
-      || comment()
-      || csscomment()
-      || indentation()
-      || prop()
-      || rule();
-  }
-
-  /**
-   * Deferred tokens.
-   */
-
-  function stashed() {
-    return stash.shift();
-  }
-
-  /**
-   * Comment.
-   */
-
-  function comment() {
-    var m = str.match(/^\/\/([^\n]*)/);
-    if (!m) return;
-    str = str.slice(m[0].length);
-    return next();
-  }
-
-  /**
-   * Multiline comment.
-   */
-
-  function csscomment() {
-    if ('/' != str[0] || '*' != str[1]) return;
-    str = str.slice(2);
-
-    var i = 0;
-    while ('*' != str[i] && '/' != str[i + 1]) ++i;
-
-    var buf = str.slice(0, i);
-    str = str.slice(buf.length + 2);
-
-    return ['comment', buf];
-  }
-
-  /**
-   *   INDENT
-   * | OUTDENT
-   */
-
-  function indentation() {
-    var spaces = str.match(/^\n( *)/);
-    if (!spaces) return;
-    str = str.slice(spaces[0].length);
-    spaces = spaces[1].length;
-    var prev = indents[indents.length - 1];
-
-    // INDENT
-    if (spaces > prev) return indent(spaces);
-
-    // OUTDENT
-    if (spaces < prev) return outdent(spaces);
-
-    return next();
-  }
-
-  /**
-   * Indent.
-   */
-
-  function indent(spaces) {
-    indents.push(spaces);
-    return ['indent'];
-  }
-
-  /**
-   * Outdent.
-   */
-
-  function outdent(spaces) {
-    while (indents[indents.length - 1] > spaces) {
-      indents.pop();
-      stash.push(['outdent']);
-    }
-    return stashed();
-  }
-
-  /**
-   * Property.
-   */
-
-  function prop() {
-    var m = str.match(propre);
-    if (!m) return;
-    str = str.slice(m[0].length);
-    return ['prop', m[1], m[2]];
-  }
-
-  /**
-   * Rule.
-   */
-
-  function rule() {
-    var m = str.match(/^([^\n,]+, *\n|[^\n]+)+/);
-    if (!m) return;
-    str = str.slice(m[0].length);
-    m = m[0].split(/\s*,\s*/);
-    return ['rule', m];
-  }
-}
-
-},{}],29:[function(require,module,exports){
-
-/**
- * Positions.
- */
-
-var positions = {
-  top: true,
-  left: true,
-  right: true,
-  bottom: true
-};
-
-/**
- * Return a mixin for the given position `type`.
- *
- * @param {String} type
- * @return {Function}
- * @api private
- */
-
-module.exports = function(type){
-  return function(str){
-    var val;
-    var pos;
-    var ret = {};
-    var vals = str.split(/\s+/);
-
-    ret.position = type;
-
-    for (var i = 0; i < vals.length; ++i) {
-      val = vals[i];
-      if (positions[val]) {
-        pos = val;
-        ret[pos] = '0';
-      } else {
-        ret[pos] = val;
-      }
-    }
-
-    return ret;
-  };
-}
-
-},{}],31:[function(require,module,exports){
-
-/**
- * Prefixed properties.
- */
-
-module.exports = [
-  'animation',
-  'animation-delay',
-  'animation-direction',
-  'animation-duration',
-  'animation-fill-mode',
-  'animation-iteration-count',
-  'animation-name',
-  'animation-play-state',
-  'animation-timing-function',
-  'appearance',
-  'background-visibility',
-  'background-composite',
-  'blend-mode',
-  'border-bottom-left-radius',
-  'border-bottom-right-radius',
-  'border-fit',
-  'border-image',
-  'border-vertical-spacing',
-  'box-align',
-  'box-direction',
-  'box-flex',
-  'box-flex-group',
-  'box-lines',
-  'box-ordinal-group',
-  'box-orient',
-  'box-pack',
-  'box-reflect',
-  'box-sizing',
-  'clip-path',
-  'column-count',
-  'column-width',
-  'column-min-width',
-  'column-width-policy',
-  'column-gap',
-  'column-rule',
-  'column-rule-color',
-  'column-rule-style',
-  'column-rule-width',
-  'column-span',
-  'flex',
-  'flex-basis',
-  'flex-direction',
-  'flex-flow',
-  'flex-grow',
-  'flex-shrink',
-  'flex-wrap',
-  'flex-flow-from',
-  'flex-flow-into',
-  'font-smoothing',
-  'transform',
-  'transform-origin',
-  'transform-origin-x',
-  'transform-origin-y',
-  'transform-origin-z',
-  'transform-style',
-  'transition',
-  'transition-delay',
-  'transition-duration',
-  'transition-property',
-  'transition-timing-function',
-  'user-drag',
-  'user-modify',
-  'user-select',
-  'wrap',
-  'wrap-flow',
-  'wrap-margin',
-  'wrap-padding',
-  'wrap-through',
-  'overflow-scrolling'
-];
-
-},{}],32:[function(require,module,exports){
-
-/**
- * Prefix selectors with `str`.
- *
- *    button {
- *      color: red;
- *    }
- *
- * yields:
- *
- *    #dialog button {
- *      color: red;
- *    }
- *
- */
-
-module.exports = function(str) {
-  return function(style){
-    style.rules = style.rules.map(function(rule){
-      if (!rule.selectors) return rule;
-      rule.selectors = rule.selectors.map(function(selector){
-        return str + ' ' + selector;
-      });
-      return rule;
-    });
-  }
-};
-},{}],33:[function(require,module,exports){
-
-/**
- * Prefix keyframes.
- *
- *   @keyframes animation {
- *     from {
- *       opacity: 0;
- *     }
- *
- *     to {
- *       opacity: 1;
- *     }
- *   }
- *
- * yields:
- *
- *   @keyframes animation {
- *     from {
- *       opacity: 0;
- *     }
- *
- *     to {
- *       opacity: 1;
- *     }
- *   }
- *
- *   @-webkit-keyframes animation {
- *     from {
- *       opacity: 0;
- *     }
- *
- *     to {
- *       opacity: 1;
- *     }
- *   }
- *
- */
-
-module.exports = function(vendors) {
-  return function(style, rework){
-    vendors = vendors || rework.prefixes;
-
-    style.rules.forEach(function(rule){
-      if (!rule.keyframes) return;
-
-      vendors.forEach(function(vendor){
-        if (vendor == rule.vendor) return;
-        var clone = cloneKeyframes(rule);
-        clone.vendor = vendor;
-        style.rules.push(clone);
-      });
-    });
-  }
-};
-
-/**
- * Clone keyframes.
- *
- * @param {Object} rule
- * @api private
- */
-
-function cloneKeyframes(rule) {
-  var clone = { name: rule.name };
-  clone.type = 'keyframes';
-  clone.vendor = rule.vendor;
-  clone.keyframes = [];
-  rule.keyframes.forEach(function(keyframe){
-    clone.keyframes.push(cloneKeyframe(keyframe));
-  });
-  return clone;
-}
-
-/**
- * Clone `keyframe`.
- *
- * @param {Object} keyframe
- * @api private
- */
-
-function cloneKeyframe(keyframe) {
-  var clone = {};
-  clone.type = 'keyframe';
-  clone.values = keyframe.values.slice();
-  clone.declarations = keyframe.declarations.map(function(decl){
-    if ('comment' == decl.type) {
-      return decl;
-    }
-
-    return {
-      type: 'declaration',
-      property: decl.property,
-      value: decl.value
-    }
-  });
-  return clone;
-}
-
-},{}],34:[function(require,module,exports){
-
-module.exports = function(){
-  console.warn('Warning: vars() has been removed, please use: https://github.com/visionmedia/rework-vars');
-  return function(){}
-};
-
-},{}],35:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var utils = require('../utils');
-var visit = require('../visit');
-
-/**
- * Define custom mixins.
- */
-
-module.exports = function(mixins) {
-  if (!mixins) throw new Error('mixins object required');
-  return function(style, rework){
-    visit.declarations(style, function(declarations){
-      mixin(rework, declarations, mixins);
-    });
-  }
-};
-
-/**
- * Visit declarations and apply mixins.
- *
- * @param {Rework} rework
- * @param {Array} declarations
- * @param {Object} mixins
- * @api private
- */
-
-function mixin(rework, declarations, mixins) {
-  for (var i = 0; i < declarations.length; ++i) {
-    var decl = declarations[i];
-    if ('comment' == decl.type) continue;
-
-    var key = decl.property;
-    var val = decl.value;
-    var fn = mixins[key];
-    if (!fn) continue;
-
-    // invoke mixin
-    var ret = fn.call(rework, val);
-
-    // apply properties
-    for (var key in ret) {
-      var val = ret[key];
-      if (Array.isArray(val)) {
-        val.forEach(function(val){
-          declarations.splice(i++, 0, {
-            type: 'declaration',
-            property: key,
-            value: val
-          });
-        });
-      } else {
-        declarations.splice(i++, 0, {
-          type: 'declaration',
-          property: key,
-          value: val
-        });
-      }
-    }
-
-    // remove original
-    declarations.splice(i--, 1);
-  }
-}
-
-},{"../utils":36,"../visit":37}],38:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var visit = require('../visit');
-var utils = require('../utils');
-var strip = utils.stripQuotes;
-
-/**
- * Define custom function.
- */
-
-module.exports = function(functions, args) {
-  if (!functions) throw new Error('functions object required');
-  return function(style, rework){
-    visit.declarations(style, function(declarations){
-      for (var name in functions) {
-        func(declarations, name, functions[name], args);
-      }
-    });
-  }
-};
-
-/**
- * Escape regexp codes in string.
- *
- * @param {String} s
- * @api private
- */
-
-function escape(s) {
-  return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-}
-
-/**
- * Visit declarations and apply functions.
- *
- * @param {Array} declarations
- * @param {Object} functions
- * @param {Boolean} [parseArgs]
- * @api private
- */
-
-function func(declarations, name, func, parseArgs) {
-  if (false !== parseArgs) parseArgs = true;
-  var regexp = new RegExp(escape(name) + '\\(([^\)]+)\\)', 'g');
-  declarations.forEach(function(decl){
-    if ('comment' == decl.type) return;
-    if (!~decl.value.indexOf(name + '(')) return;
-    decl.value = decl.value.replace(regexp, function(_, args){
-      if (!parseArgs) return func.call(decl, strip(args));
-      args = args.split(/,\s*/).map(strip);
-      return func.apply(decl, args);
-    });
-  });
-}
-
-},{"../utils":36,"../visit":37}],39:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var visit = require('../visit');
-
-/**
- * Prefix `prop`.
- *
- *   .button {
- *     border-radius: 5px;
- *   }
- *
- * yields:
- *
- *   .button {
- *     -webkit-border-radius: 5px;
- *     -moz-border-radius: 5px;
- *     border-radius: 5px;
- *   }
- *
- */
-
-module.exports = function(prop, vendors) {
-  var props = Array.isArray(prop)
-    ? prop
-    : [prop];
-
-  return function(style, rework){
-    vendors = vendors || rework.prefixes;
-    visit.declarations(style, function(declarations, node){
-      var only = node.vendor;
-      var isKeyframes = !! node.keyframes;
-
-      for (var i = 0; i < props.length; ++i) {
-        var prop = props[i];
-
-        for (var j = 0, len = declarations.length; j < len; ++j) {
-          var decl = declarations[j];
-          if ('comment' == decl.type) continue;
-          if (prop != decl.property) continue;
-
-          // vendor prefixed props
-          for (var k = 0; k < vendors.length; ++k) {
-            if (!only && isKeyframes) continue;
-            if (only && only != vendors[k]) continue;
-            declarations.push({
-              type: 'declaration',
-              property: vendors[k] + decl.property,
-              value: decl.value
-            });
-          }
-
-          // original prop
-          declarations.push(decl);
-          declarations.splice(j, 1);
-        }
-      }
-    });
-  }
-};
-
-},{"../visit":37}],26:[function(require,module,exports){
-(function(){
-/**
- * Module dependencies.
- */
-
-var css = require('css');
-
-/**
- * Expose `rework`.
- */
-
-exports = module.exports = rework;
-
-/**
- * Expose `visit` helpers.
- */
-
-exports.visit = require('./visit');
-
-/**
- * Expose prefix properties.
- */
-
-exports.properties = require('./properties');
-
-/**
- * Initialize a new stylesheet `Rework` with `str`.
- *
- * @param {String} str
- * @return {Rework}
- * @api public
- */
-
-function rework(str) {
-  return new Rework(css.parse(str));
-}
-
-/**
- * Initialize a new stylesheet `Rework` with `obj`.
- *
- * @param {Object} obj
- * @api private
- */
-
-function Rework(obj) {
-  this.obj = obj;
-}
-
-/**
- * Use the given plugin `fn(style, rework)`.
- *
- * @param {Function} fn
- * @return {Rework}
- * @api public
- */
-
-Rework.prototype.use = function(fn){
-  fn(this.obj.stylesheet, this);
-  return this;
-};
-
-/**
- * Specify global vendor `prefixes`,
- * explicit ones may still be passed
- * to most plugins.
- *
- * @param {Array} prefixes
- * @return {Rework}
- * @api public
- */
-
-Rework.prototype.vendors = function(prefixes){
-  this.prefixes = prefixes;
-  return this;
-};
-
-/**
- * Stringify the stylesheet.
- *
- * @param {Object} options
- * @return {String}
- * @api public
- */
-
-Rework.prototype.toString = function(options){
-  return css.stringify(this.obj, options);
-};
-
-/**
- * Expose plugins.
- */
-
-exports.mixin = exports.mixins = require('./plugins/mixin');
-exports.function = exports.functions = require('./plugins/function');
-exports.prefix = require('./plugins/prefix');
-exports.colors = require('./plugins/colors');
-exports.extend = require('rework-inherit');
-exports.references = require('./plugins/references');
-exports.prefixValue = require('./plugins/prefix-value');
-exports.prefixSelectors = require('./plugins/prefix-selectors');
-exports.keyframes = require('./plugins/keyframes');
-exports.at2x = require('./plugins/at2x');
-exports.url = require('./plugins/url');
-exports.ease = require('./plugins/ease');
-exports.vars = require('./plugins/vars');
-
-/**
- * Try/catch plugins unavailable in component.
- */
-
- try {
-  exports.inline = require('./plugins/inline');
-} catch (err) {};
-
-
-})()
-},{"./plugins/at2x":43,"./plugins/colors":40,"./plugins/ease":45,"./plugins/function":38,"./plugins/inline":46,"./plugins/keyframes":33,"./plugins/mixin":35,"./plugins/prefix":39,"./plugins/prefix-selectors":32,"./plugins/prefix-value":42,"./plugins/references":41,"./plugins/url":44,"./plugins/vars":34,"./properties":31,"./visit":37,"css":47,"rework-inherit":48}],41:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var visit = require('../visit');
-
-/**
- * Provide property reference support.
- *
- *    button {
- *      width: 50px;
- *      height: @width;
- *      line-height: @height;
- *    }
- *
- * yields:
- *
- *    button {
- *      width: 50px;
-*       height: 50px;
-*       line-height: 50px;
- *    }
- *
- */
-
-module.exports = function() {
-  return function(style, rework){
-    visit.declarations(style, substitute);
-  }
-};
-
-/**
- * Substitute easing functions.
- *
- * @api private
- */
-
-function substitute(declarations) {
-  var map = {};
-
-  for (var i = 0, len = declarations.length; i < len; ++i) {
-    var decl = declarations[i];
-    var key = decl.property;
-    var val = decl.value;
-
-    if ('comment' == decl.type) continue;
-
-    decl.value = val.replace(/@([-\w]+)/g, function(_, name){
-      // TODO: fix this problem for real with visionmedia/css-value
-      if ('2x' == name) return '@' + name;
-      if (null == map[name]) throw new Error('@' + name + ' is not defined in this scope');
-      return map[name];
-    });
-
-    map[key] = decl.value;
-  }
-}
-
-},{"../visit":37}],42:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var visit = require('../visit');
-
-/**
- * Prefix `value`.
- *
- *    button {
- *      transition: height, transform 2s, width 0.3s linear;
- *    }
- *
- * yields:
- *
- *    button {
- *      -webkit-transition: height, -webkit-transform 2s, width 0.3s linear;
- *      -moz-transition: height, -moz-transform 2s, width 0.3s linear;
- *      transition: height, transform 2s, width 0.3s linear
- *    }
- *
- */
-
-module.exports = function(value, vendors) {
-  return function(style, rework){
-    vendors = vendors || rework.prefixes;
-
-    visit.declarations(style, function(declarations){
-      for (var i = 0; i < declarations.length; ++i) {
-        var decl = declarations[i];
-        if ('comment' == decl.type) continue;
-        if (!~decl.value.indexOf(value)) continue;
-
-        // ignore vendor-prefixed properties
-        if ('-' == decl.property[0]) continue;
-
-        // ignore vendor-prefixed values
-        if (~decl.value.indexOf('-' + value)) continue;
-
-        // vendor prefixed props
-        vendors.forEach(function(vendor){
-          var prop = 'transition' == decl.property
-            ? vendor + decl.property
-            : decl.property;
-
-          declarations.splice(i++, 0, {
-            type: 'declaration',
-            property: prop,
-            value: decl.value.replace(value, vendor + value)
-          });
-        });
-      }
-    });
-  }
-};
-
-},{"../visit":37}],43:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var utils = require('../utils');
-var path = require('path');
-var stripQuotes = utils.stripQuotes;
-
-/**
- * Translate
- *
- *   .logo {
- *     background-image: url('/public/images/logo.png')
- *   }
- *
- * yields:
- *
- *   .logo {
- *     background-image: url('/public/images/logo.png')
- *   }
- *
- *   @media all and (-webkit-min-device-pixel-ratio : 1.5) {
- *     .logo {
- *       background-image: url("/public/images/logo@2x.png");
- *       background-size: contain
- *     }
- *   }
- *
- */
-
-module.exports = function(vendors) {
-  return function(style, rework){
-    vendors = vendors || rework.prefixes;
-
-    style.rules.forEach(function(rule){
-      if (!rule.declarations) return;
-
-      var backgroundSize = rule.declarations.filter(backgroundWithSize).map(value)[0] || 'contain';
-
-      rule.declarations.filter(backgroundWithURL).forEach(function(decl){
-        if ('comment' == decl.type) return;
-
-        // parse url
-        var i = decl.value.indexOf('url(');
-        var url = stripQuotes(decl.value.slice(i + 4, decl.value.indexOf(')', i)));
-        var ext = path.extname(url);
-
-        // ignore .svg
-        if ('.svg' == ext) return;
-
-        // @2x value
-        url = path.join(path.dirname(url), path.basename(url, ext) + '@2x' + ext);
-
-        // wrap in @media
-        style.rules.push({
-          type: 'media',
-          media: 'all and (-webkit-min-device-pixel-ratio: 1.5)',
-          rules: [
-            {
-              type: 'rule',
-              selectors: rule.selectors,
-              declarations: [
-                {
-                  type: 'declaration',
-                  property: 'background-image',
-                  value: 'url("' + url + '")'
-                },
-                {
-                  type: 'declaration',
-                  property: 'background-size',
-                  value: backgroundSize
-                }
-              ]
-            }
-          ]
-        });
-      });
-    });
-  };
-
-  return function(style, rework) {
-    vendors = vendors || rework.prefixes;
-    visit(style.rules, style);
-  };
-};
-
-/**
- * Filter background[-image] with url().
- */
-
-function backgroundWithURL(decl) {
-  return ('background' == decl.property
-    || 'background-image' == decl.property)
-    && ~decl.value.indexOf('url(');
-}
-
-/**
- * Predicate on background-size property.
- */
-
-function backgroundWithSize(decl) {
-  return 'background-size' == decl.property;
-}
-
-/**
- * Return value atribute of a declaration.
- */
-
-function value(decl) {
-  return decl.value;
-}
-
-},{"../utils":36,"path":13}],44:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var utils = require('../utils');
-var func = require('./function');
-
-/**
- * Map `url()` calls.
- *
- *   body {
- *     background: url(/images/bg.png);
- *   }
- *
- * yields:
- *
- *   body {
- *     background: url(http://example.com/images/bg.png);
- *   }
- *
- */
-
-module.exports = function(fn) {
-  return func({
-    url: function(path){
-      return 'url("' + fn(path) + '")';
-    }
-  }, false);
-};
-
-},{"../utils":36,"./function":38}],45:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var visit = require('../visit');
-
-/**
- * Easing functions.
- */
-
-var ease = {
-  'ease-in-out-back': 'cubic-bezier(0.680, -0.550, 0.265, 1.550)',
-  'ease-in-out-circ': 'cubic-bezier(0.785, 0.135, 0.150, 0.860)',
-  'ease-in-out-expo': 'cubic-bezier(1.000, 0.000, 0.000, 1.000)',
-  'ease-in-out-sine': 'cubic-bezier(0.445, 0.050, 0.550, 0.950)',
-  'ease-in-out-quint': 'cubic-bezier(0.860, 0.000, 0.070, 1.000)',
-  'ease-in-out-quart': 'cubic-bezier(0.770, 0.000, 0.175, 1.000)',
-  'ease-in-out-cubic': 'cubic-bezier(0.645, 0.045, 0.355, 1.000)',
-  'ease-in-out-quad': 'cubic-bezier(0.455, 0.030, 0.515, 0.955)',
-  'ease-out-back': 'cubic-bezier(0.175, 0.885, 0.320, 1.275)',
-  'ease-out-circ': 'cubic-bezier(0.075, 0.820, 0.165, 1.000)',
-  'ease-out-expo': 'cubic-bezier(0.190, 1.000, 0.220, 1.000)',
-  'ease-out-sine': 'cubic-bezier(0.390, 0.575, 0.565, 1.000)',
-  'ease-out-quint': 'cubic-bezier(0.230, 1.000, 0.320, 1.000)',
-  'ease-out-quart': 'cubic-bezier(0.165, 0.840, 0.440, 1.000)',
-  'ease-out-cubic': 'cubic-bezier(0.215, 0.610, 0.355, 1.000)',
-  'ease-out-quad': 'cubic-bezier(0.250, 0.460, 0.450, 0.940)',
-  'ease-in-back': 'cubic-bezier(0.600, -0.280, 0.735, 0.045)',
-  'ease-in-circ': 'cubic-bezier(0.600, 0.040, 0.980, 0.335)',
-  'ease-in-expo': 'cubic-bezier(0.950, 0.050, 0.795, 0.035)',
-  'ease-in-sine': 'cubic-bezier(0.470, 0.000, 0.745, 0.715)',
-  'ease-in-quint': 'cubic-bezier(0.755, 0.050, 0.855, 0.060)',
-  'ease-in-quart': 'cubic-bezier(0.895, 0.030, 0.685, 0.220)',
-  'ease-in-cubic': 'cubic-bezier(0.550, 0.055, 0.675, 0.190)',
-  'ease-in-quad': 'cubic-bezier(0.550, 0.085, 0.680, 0.530)'
-};
-
-/**
- * Keys.
- */
-
-var keys = Object.keys(ease);
-
-/**
- * Provide additional easing functions:
- *
- *    #logo {
- *      transition: all 500ms ease-out-back;
- *    }
- *
- * yields:
- *
- *    #logo {
- *      transition: all 500ms cubic-bezier(0.175, 0.885, 0.320, 1.275)
- *    }
- *
- */
-
-module.exports = function() {
-  return function(style, rework){
-    visit.declarations(style, substitute);
-  }
-};
-
-/**
- * Substitute easing functions.
- *
- * @api private
- */
-
-function substitute(declarations) {
-  for (var i = 0, len = declarations.length; i < len; ++i) {
-    var decl = declarations[i];
-    if ('comment' == decl.type) continue;
-    if (!decl.property.match(/transition|animation|timing/)) continue;
-    for (var k = 0; k < keys.length; ++k) {
-      var key = keys[k];
-      if (~decl.value.indexOf(key)) {
-        decl.value = decl.value.replace(key, ease[key]);
-        break;
-      }
-    }
-  }
-}
-
-},{"../visit":37}],17:[function(require,module,exports){
-/**
- * Module dependencies.
- */
-
-var debug = require('debug')('css-whitespace:lexer');
-var scan = require('./lexer');
-
-/**
- * Parse the given `str`, returning an AST.
- *
- * @param {String} str
- * @return {Array}
- * @api private
- */
-
-module.exports = function(str) {
-  var toks = scan(str);
-
-  if (debug.enabled) {
-    var util = require('util');
-    console.log(util.inspect(toks, false, 12, true));
-  }
-
-  return stmts();
-
-  /**
-   * Grab the next token.
-   */
-
-  function next() {
-    return toks.shift();
-  }
-
-  /**
-   * Check if the next token is `type`.
-   */
-
-  function is(type) {
-    if (type == toks[0][0]) return true;
-  }
-
-  /**
-   * Expect `type` or throw.
-   */
-
-  function expect(type) {
-    if (is(type)) return next();
-    throw new Error('expected "' + type + '", but got "' + toks[0][0] + '"');
-  }
-
-  /**
-   * stmt+
-   */
-
-  function stmts() {
-    var stmts = [];
-    while (!is('eos')) stmts.push(stmt());
-    return ['root', stmts];
-  }
-
-  /**
-   * INDENT stmt+ OUTDENT
-   */
-
-  function block() {
-    var props = [];
-    expect('indent');
-    while (!is('outdent')) props.push(stmt());
-    expect('outdent');
-    return ['block', props];
-  }
-
-  /**
-   *   rule
-   * | prop
-   */
-
-  function stmt() {
-    if (is('rule')) return rule();
-    if (is('prop')) return prop();
-    return next();
-  }
-
-  /**
-   *   prop
-   * | prop INDENT rule* OUTDENT
-   */
-
-  function prop() {
-    var prop = next();
-    if (is('indent')) {
-      next();
-      while (!is('outdent')) {
-        var tok = next();
-        prop[2] += ' ' + tok[1].join(', ');
-      }
-      expect('outdent');
-    }
-    return prop;
-  }
-
-  /**
-   * rule block?
-   */
-
-  function rule() {
-    var rule = next();
-    if (is('indent')) rule.push(block());
-    return rule;
-  }
-}
-
-},{"./lexer":30,"debug":49,"util":27}],18:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var debug = require('debug')('css-whitespace:parser');
-
-/**
- * Compile the given `node`.
- *
- * @param {Array} node
- * @return {String}
- * @api private
- */
-
-module.exports = function(node){
-  var indents = 0;
-  var rules = [];
-  var stash = [];
-  var level = 0;
-  var nest = 0;
-
-  if (debug.enabled) {
-    var util = require('util');
-    console.log(util.inspect(node, false, 12, true));
-  }
-
-  return visit(node);
-
-  /**
-   * Visit `node`.
-   */
-
-  function visit(node) {
-    switch (node[0]) {
-      case 'root':
-        return root(node);
-      case 'rule':
-        if ('@' == node[1][0][0]) ++nest;
-        var ret = rule(node);
-        if ('@' == node[1][0][0]) --nest;
-        return ret;
-      case 'block':
-        ++level;
-        var ret = block(node);
-        --level;
-        return ret;
-      case 'prop':
-        return prop(node);
-      case 'comment':
-        return comment(node);
-      default:
-        throw new Error('invalid node "' + node[0] + '"');
-    }
-  }
-
-  /**
-   * Visit block.
-   */
-
-  function block(node) {
-    var buf = [];
-    var nodes = node[1];
-
-    for (var i = 0; i < nodes.length; ++i) {
-      buf.push(visit(nodes[i]));
-    }
-
-    return buf.join('');
-  }
-
-  /**
-   * Visit comment.
-   */
-
-  function comment(node) {
-    return indent() + '/*' + node[1] + '*/\n';
-  }
-
-  /**
-   * Visit prop.
-   */
-
-  function prop(node) {
-    var prop = node[1];
-    var val = node[2];
-    return indent() + prop + ': ' + val + ';\n';
-  }
-
-  /**
-   * Visit rule.
-   */
-
-  function rule(node) {
-    var font = '@font-face' == node[1][0].trim();
-    var rule = node[1];
-    var block = node[2];
-    var buf = '';
-
-    if (!block) return rule.join('') + ';';
-
-    rules.push(node);
-
-    if ('@' == rule[0][0] && !font) {
-      buf = join(rules) + ' {\n';
-      visit(block);
-      buf += stash.join('\n');
-      buf += '\n}';
-      stash = [];
-    } else if (nest && !font) {
-      indents = 1;
-      buf = join(rules, 1) + ' {\n';
-      indents = 2;
-      buf += visit(block);
-      buf += '  }';
-      indents = 1;
-    } else {
-      indents = 0;
-      buf = join(rules) + ' {\n'
-      indents = 1;
-      buf += visit(block);
-      indents = 0;
-      buf += '}';
-      if (!hasProperties(block)) buf = '';
-    }
-
-    if (rules.length > 1) {
-      if (hasProperties(block)) stash.push(buf);
-      buf = '';
-    }
-
-    rules.pop();
-
-    return buf;
-  }
-
-  /**
-   * Visit root.
-   */
-
-  function root(node) {
-    var buf = [];
-    for (var i = 0; i < node[1].length; ++i) {
-      buf.push(visit(node[1][i]));
-      if (stash.length) {
-        buf = buf.concat(stash);
-        stash = [];
-      }
-    }
-    return buf.join('\n\n');
-  }
-
-  /**
-   * Join the given rules.
-   *
-   * @param {Array} rules
-   * @param {Number} [offset]
-   * @return {String}
-   * @api private
-   */
-
-  function join(rules, offset) {
-    offset = offset || 0;
-    var selectors = [];
-    var buf = [];
-    var curr;
-    var next;
-
-    function compile(rules, i) {
-      if (offset != i) {
-        rules[i][1].forEach(function(selector){
-          var parent = ~selector.indexOf('&');
-          selector = selector.replace('&', '');
-          buf.unshift(parent ? selector : ' ' + selector);
-          compile(rules, i - 1);
-          buf.shift();
-        });
-      } else {
-        rules[i][1].forEach(function(selector){
-          var tail = buf.join('');
-          selectors.push(indent() + selector + tail);
-        });
-      }
-    }
-
-    compile(rules, rules.length - 1);
-
-    return selectors.join(',\n');
-  }
-
-  /**
-   * Return indent.
-   */
-
-  function indent() {
-    return Array(indents + 1).join('  ');
-  }
-};
-
-/**
- * Check if `block` has properties.
- *
- * @param {Array} block
- * @return {Boolean}
- * @api private
- */
-
-function hasProperties(block) {
-  var nodes = block[1];
-  for (var i = 0; i < nodes.length; ++i) {
-    if ('prop' == nodes[i][0]) return true;
-  }
-  return false;
-}
-
-/**
- * Blank string filter.
- *
- * @api private
- */
-
-function blank(str) {
-  return '' != str;
-}
-
-},{"debug":49,"util":27}],36:[function(require,module,exports){
-
-/**
- * Strip `str` quotes.
- *
- * @param {String} str
- * @return {String}
- * @api private
- */
-
-exports.stripQuotes = function(str) {
-  if ('"' == str[0] || "'" == str[0]) return str.slice(1, -1);
-  return str;
-};
-},{}],49:[function(require,module,exports){
-
-/**
- * Expose `debug()` as the module.
- */
-
-module.exports = debug;
-
-/**
- * Create a debugger with the given `name`.
- *
- * @param {String} name
- * @return {Type}
- * @api public
- */
-
-function debug(name) {
-  if (!debug.enabled(name)) return function(){};
-
-  return function(fmt){
-    var curr = new Date;
-    var ms = curr - (debug[name] || curr);
-    debug[name] = curr;
-
-    fmt = name
-      + ' '
-      + fmt
-      + ' +' + debug.humanize(ms);
-
-    // This hackery is required for IE8
-    // where `console.log` doesn't have 'apply'
-    window.console
-      && console.log
-      && Function.prototype.apply.call(console.log, console, arguments);
-  }
-}
-
-/**
- * The currently active debug mode names.
- */
-
-debug.names = [];
-debug.skips = [];
-
-/**
- * Enables a debug mode by name. This can include modes
- * separated by a colon and wildcards.
- *
- * @param {String} name
- * @api public
- */
-
-debug.enable = function(name) {
-  try {
-    localStorage.debug = name;
-  } catch(e){}
-
-  var split = (name || '').split(/[\s,]+/)
-    , len = split.length;
-
-  for (var i = 0; i < len; i++) {
-    name = split[i].replace('*', '.*?');
-    if (name[0] === '-') {
-      debug.skips.push(new RegExp('^' + name.substr(1) + '$'));
-    }
-    else {
-      debug.names.push(new RegExp('^' + name + '$'));
-    }
-  }
-};
-
-/**
- * Disable debug output.
- *
- * @api public
- */
-
-debug.disable = function(){
-  debug.enable('');
-};
-
-/**
- * Humanize the given `ms`.
- *
- * @param {Number} m
- * @return {String}
- * @api private
- */
-
-debug.humanize = function(ms) {
-  var sec = 1000
-    , min = 60 * 1000
-    , hour = 60 * min;
-
-  if (ms >= hour) return (ms / hour).toFixed(1) + 'h';
-  if (ms >= min) return (ms / min).toFixed(1) + 'm';
-  if (ms >= sec) return (ms / sec | 0) + 's';
-  return ms + 'ms';
-};
-
-/**
- * Returns true if the given mode name is enabled, false otherwise.
- *
- * @param {String} name
- * @return {Boolean}
- * @api public
- */
-
-debug.enabled = function(name) {
-  for (var i = 0, len = debug.skips.length; i < len; i++) {
-    if (debug.skips[i].test(name)) {
-      return false;
-    }
-  }
-  for (var i = 0, len = debug.names.length; i < len; i++) {
-    if (debug.names[i].test(name)) {
-      return true;
-    }
-  }
-  return false;
-};
-
-// persist
-
-if (window.localStorage) debug.enable(localStorage.debug);
-
-},{}],37:[function(require,module,exports){
-
-// TODO: require() directly in plugins...
-exports.declarations = require('rework-visit');
-
-},{"rework-visit":50}],50:[function(require,module,exports){
-
-/**
- * Expose `visit()`.
- */
-
-module.exports = visit;
-
-/**
- * Visit `node`'s declarations recursively and
- * invoke `fn(declarations, node)`.
- *
- * @param {Object} node
- * @param {Function} fn
- * @api private
- */
-
-function visit(node, fn){
-  node.rules.forEach(function(rule){
-    // @media etc
-    if (rule.rules) {
-      visit(rule, fn);
-      return;
-    }
-
-    // keyframes
-    if (rule.keyframes) {
-      rule.keyframes.forEach(function(keyframe){
-        fn(keyframe.declarations, rule);
-      });
-      return;
-    }
-
-    // @charset, @import etc
-    if (!rule.declarations) return;
-
-    fn(rule.declarations, node);
-  });
-};
-
-},{}],51:[function(require,module,exports){
+},{"events":10}],14:[function(require,module,exports){
 require=(function(e,t,n,r){function i(r){if(!n[r]){if(!t[r]){if(e)return e(r);throw new Error("Cannot find module '"+r+"'")}var s=n[r]={exports:{}};t[r][0](function(e){var n=t[r][1][e];return i(n?n:e)},s,s.exports)}return n[r].exports}for(var s=0;s<r.length;s++)i(r[s]);return i})(typeof require!=="undefined"&&require,{1:[function(require,module,exports){
 // UTILITY
 var util = require('util');
@@ -8123,7 +6175,1320 @@ SlowBuffer.prototype.writeDoubleBE = Buffer.prototype.writeDoubleBE;
 },{}]},{},[])
 ;;module.exports=require("buffer-browserify")
 
-},{}],46:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+
+process.nextTick = (function () {
+    var canSetImmediate = typeof window !== 'undefined'
+    && window.setImmediate;
+    var canPost = typeof window !== 'undefined'
+    && window.postMessage && window.addEventListener
+    ;
+
+    if (canSetImmediate) {
+        return function (f) { return window.setImmediate(f) };
+    }
+
+    if (canPost) {
+        var queue = [];
+        window.addEventListener('message', function (ev) {
+            if (ev.source === window && ev.data === 'process-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
+                }
+            }
+        }, true);
+
+        return function nextTick(fn) {
+            queue.push(fn);
+            window.postMessage('process-tick', '*');
+        };
+    }
+
+    return function nextTick(fn) {
+        setTimeout(fn, 0);
+    };
+})();
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+}
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+
+},{}],16:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var whitespace = require('css-whitespace');
+var mixins = require('rework-mixins');
+var rework = require('rework');
+var props = rework.properties;
+
+/**
+ * Expose `Style`.
+ */
+
+module.exports = Style;
+
+/**
+ * Initialize a new Style with the given css `str`.
+ *
+ * Options:
+ *
+ *  - `whitespace` utilize css whitespace transformations
+ *  - `compress` enable output compression
+ *
+ * @param {String} str
+ * @param {Object} options
+ * @api public
+ */
+
+function Style(str, options) {
+  if (!(this instanceof Style)) return new Style(str, options);
+  options = options || {};
+  if (options.whitespace) str = whitespace(str);
+  this.str = str;
+  this.compress = options.compress;
+  this.rework = rework(str);
+  this.delegate(['vendors', 'use']);
+  this.vendors(['-ms-', '-moz-', '-webkit-']);
+}
+
+/**
+ * Delegate `methods` to rework.
+ *
+ * @param {Array} methods
+ * @api private
+ */
+
+Style.prototype.delegate = function(methods){
+  var self = this;
+  methods.forEach(function(method){
+    self[method] = self.rework[method].bind(self.rework);
+  });
+};
+
+/**
+ * Return the compiled CSS.
+ *
+ * @return {String}
+ * @api public
+ */
+
+Style.prototype.toString = function(){
+  this.use(rework.mixin(mixins));
+  this.use(rework.keyframes());
+  this.use(rework.ease());
+  this.use(rework.prefixValue('linear-gradient'));
+  this.use(rework.prefixValue('radial-gradient'));
+  this.use(rework.prefixValue('transform'));
+  this.use(rework.prefix(props));
+  this.use(rework.colors());
+  this.use(rework.references());
+  this.use(rework.at2x());
+  this.use(rework.extend());
+  return this.rework.toString({ compress: this.compress });
+};
+
+},{"css-whitespace":17,"rework":31,"rework-mixins":22}],17:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var parse = require('./lib/parser');
+var compile = require('./lib/compiler');
+
+/**
+ * Compile a whitespace significant
+ * `str` of CSS to the valid CSS
+ * equivalent.
+ *
+ * @param {String} str
+ * @return {String}
+ * @api public
+ */
+
+module.exports = function(str){
+  return compile(parse(str));
+};
+
+},{"./lib/compiler":18,"./lib/parser":20}],18:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var debug = require('debug')('css-whitespace:parser');
+
+/**
+ * Compile the given `node`.
+ *
+ * @param {Array} node
+ * @return {String}
+ * @api private
+ */
+
+module.exports = function(node){
+  var indents = 0;
+  var rules = [];
+  var stash = [];
+  var level = 0;
+  var nest = 0;
+
+  if (debug.enabled) {
+    var util = require('util');
+    console.log(util.inspect(node, false, 12, true));
+  }
+
+  return visit(node);
+
+  /**
+   * Visit `node`.
+   */
+
+  function visit(node) {
+    switch (node[0]) {
+      case 'root':
+        return root(node);
+      case 'rule':
+        if ('@' == node[1][0][0]) ++nest;
+        var ret = rule(node);
+        if ('@' == node[1][0][0]) --nest;
+        return ret;
+      case 'block':
+        ++level;
+        var ret = block(node);
+        --level;
+        return ret;
+      case 'prop':
+        return prop(node);
+      case 'comment':
+        return comment(node);
+      default:
+        throw new Error('invalid node "' + node[0] + '"');
+    }
+  }
+
+  /**
+   * Visit block.
+   */
+
+  function block(node) {
+    var buf = [];
+    var nodes = node[1];
+
+    for (var i = 0; i < nodes.length; ++i) {
+      buf.push(visit(nodes[i]));
+    }
+
+    return buf.join('');
+  }
+
+  /**
+   * Visit comment.
+   */
+
+  function comment(node) {
+    return indent() + '/*' + node[1] + '*/\n';
+  }
+
+  /**
+   * Visit prop.
+   */
+
+  function prop(node) {
+    var prop = node[1];
+    var val = node[2];
+    return indent() + prop + ': ' + val + ';\n';
+  }
+
+  /**
+   * Visit rule.
+   */
+
+  function rule(node) {
+    var font = '@font-face' == node[1][0].trim();
+    var rule = node[1];
+    var block = node[2];
+    var buf = '';
+
+    if (!block) return rule.join('') + ';';
+
+    rules.push(node);
+
+    if ('@' == rule[0][0] && !font) {
+      buf = join(rules) + ' {\n';
+      visit(block);
+      buf += stash.join('\n');
+      buf += '\n}';
+      stash = [];
+    } else if (nest && !font) {
+      indents = 1;
+      buf = join(rules, 1) + ' {\n';
+      indents = 2;
+      buf += visit(block);
+      buf += '  }';
+      indents = 1;
+    } else {
+      indents = 0;
+      buf = join(rules) + ' {\n'
+      indents = 1;
+      buf += visit(block);
+      indents = 0;
+      buf += '}';
+      if (!hasProperties(block)) buf = '';
+    }
+
+    if (rules.length > 1) {
+      if (hasProperties(block)) stash.push(buf);
+      buf = '';
+    }
+
+    rules.pop();
+
+    return buf;
+  }
+
+  /**
+   * Visit root.
+   */
+
+  function root(node) {
+    var buf = [];
+    for (var i = 0; i < node[1].length; ++i) {
+      buf.push(visit(node[1][i]));
+      if (stash.length) {
+        buf = buf.concat(stash);
+        stash = [];
+      }
+    }
+    return buf.join('\n\n');
+  }
+
+  /**
+   * Join the given rules.
+   *
+   * @param {Array} rules
+   * @param {Number} [offset]
+   * @return {String}
+   * @api private
+   */
+
+  function join(rules, offset) {
+    offset = offset || 0;
+    var selectors = [];
+    var buf = [];
+    var curr;
+    var next;
+
+    function compile(rules, i) {
+      if (offset != i) {
+        rules[i][1].forEach(function(selector){
+          var parent = ~selector.indexOf('&');
+          selector = selector.replace('&', '');
+          buf.unshift(parent ? selector : ' ' + selector);
+          compile(rules, i - 1);
+          buf.shift();
+        });
+      } else {
+        rules[i][1].forEach(function(selector){
+          var tail = buf.join('');
+          selectors.push(indent() + selector + tail);
+        });
+      }
+    }
+
+    compile(rules, rules.length - 1);
+
+    return selectors.join(',\n');
+  }
+
+  /**
+   * Return indent.
+   */
+
+  function indent() {
+    return Array(indents + 1).join('  ');
+  }
+};
+
+/**
+ * Check if `block` has properties.
+ *
+ * @param {Array} block
+ * @return {Boolean}
+ * @api private
+ */
+
+function hasProperties(block) {
+  var nodes = block[1];
+  for (var i = 0; i < nodes.length; ++i) {
+    if ('prop' == nodes[i][0]) return true;
+  }
+  return false;
+}
+
+/**
+ * Blank string filter.
+ *
+ * @api private
+ */
+
+function blank(str) {
+  return '' != str;
+}
+
+},{"debug":21,"util":13}],19:[function(require,module,exports){
+
+/**
+ * Pesudo selectors.
+ */
+
+var pseudos = [
+  ':selection',
+  'fullscreen',
+  'nth-child',
+  'first-child',
+  'last-child',
+  'link',
+  'visited',
+  'hover',
+  'active',
+  'focus',
+  'first-letter',
+  'first-line',
+  'before',
+  'after',
+  'lang',
+  'enabled',
+  'disabled',
+  'only-child',
+  'only-of-type',
+  'first-of-type',
+  'last-of-type',
+  'nth-last-of-type',
+  'nth-of-type',
+  'root',
+  'empty',
+  'target',
+  'not',
+  '-o',
+  '-ms',
+  '-moz',
+  '-webkit'
+]
+
+/**
+ * Property regexp.
+ */
+
+pseudos = pseudos.join('|');
+var propre = new RegExp('^ *([-\\w]+):(?!' + pseudos + ') *([^\n]*)');
+
+/**
+ * Scan the given `str` returning tokens.
+ *
+ * @param {String} str
+ * @return {Array}
+ * @api private
+ */
+
+module.exports = function(str) {
+  var indents = [0];
+  var stash = [];
+
+  // strip blanks
+  str = str.replace(/\r/g, '');
+  str = str.replace(/\n\s*\n/gm, '\n');
+
+  return scan();
+
+  /**
+   * tok+
+   */
+
+  function scan() {
+    var toks = []
+      , curr;
+
+    while (str.length) {
+      curr = next();
+      curr && toks.push(curr);
+      if (str.length && !curr) {
+        throw new Error('syntax error near "' + str.slice(0, 10) + '"');
+      }
+    }
+
+    toks = toks.concat(stash);
+    while (indents.pop()) toks.push(['outdent']);
+    toks.push(['eos']);
+    return toks;
+  }
+
+  /**
+   *   eos
+   * | indentation
+   * | rule
+   */
+
+  function next() {
+    return stashed()
+      || comment()
+      || csscomment()
+      || indentation()
+      || prop()
+      || rule();
+  }
+
+  /**
+   * Deferred tokens.
+   */
+
+  function stashed() {
+    return stash.shift();
+  }
+
+  /**
+   * Comment.
+   */
+
+  function comment() {
+    var m = str.match(/^\/\/([^\n]*)/);
+    if (!m) return;
+    str = str.slice(m[0].length);
+    return next();
+  }
+
+  /**
+   * Multiline comment.
+   */
+
+  function csscomment() {
+    if ('/' != str[0] || '*' != str[1]) return;
+    str = str.slice(2);
+
+    var i = 0;
+    while ('*' != str[i] && '/' != str[i + 1]) ++i;
+
+    var buf = str.slice(0, i);
+    str = str.slice(buf.length + 2);
+
+    return ['comment', buf];
+  }
+
+  /**
+   *   INDENT
+   * | OUTDENT
+   */
+
+  function indentation() {
+    var spaces = str.match(/^\n( *)/);
+    if (!spaces) return;
+    str = str.slice(spaces[0].length);
+    spaces = spaces[1].length;
+    var prev = indents[indents.length - 1];
+
+    // INDENT
+    if (spaces > prev) return indent(spaces);
+
+    // OUTDENT
+    if (spaces < prev) return outdent(spaces);
+
+    return next();
+  }
+
+  /**
+   * Indent.
+   */
+
+  function indent(spaces) {
+    indents.push(spaces);
+    return ['indent'];
+  }
+
+  /**
+   * Outdent.
+   */
+
+  function outdent(spaces) {
+    while (indents[indents.length - 1] > spaces) {
+      indents.pop();
+      stash.push(['outdent']);
+    }
+    return stashed();
+  }
+
+  /**
+   * Property.
+   */
+
+  function prop() {
+    var m = str.match(propre);
+    if (!m) return;
+    str = str.slice(m[0].length);
+    return ['prop', m[1], m[2]];
+  }
+
+  /**
+   * Rule.
+   */
+
+  function rule() {
+    var m = str.match(/^([^\n,]+, *\n|[^\n]+)+/);
+    if (!m) return;
+    str = str.slice(m[0].length);
+    m = m[0].split(/\s*,\s*/);
+    return ['rule', m];
+  }
+}
+
+},{}],20:[function(require,module,exports){
+/**
+ * Module dependencies.
+ */
+
+var debug = require('debug')('css-whitespace:lexer');
+var scan = require('./lexer');
+
+/**
+ * Parse the given `str`, returning an AST.
+ *
+ * @param {String} str
+ * @return {Array}
+ * @api private
+ */
+
+module.exports = function(str) {
+  var toks = scan(str);
+
+  if (debug.enabled) {
+    var util = require('util');
+    console.log(util.inspect(toks, false, 12, true));
+  }
+
+  return stmts();
+
+  /**
+   * Grab the next token.
+   */
+
+  function next() {
+    return toks.shift();
+  }
+
+  /**
+   * Check if the next token is `type`.
+   */
+
+  function is(type) {
+    if (type == toks[0][0]) return true;
+  }
+
+  /**
+   * Expect `type` or throw.
+   */
+
+  function expect(type) {
+    if (is(type)) return next();
+    throw new Error('expected "' + type + '", but got "' + toks[0][0] + '"');
+  }
+
+  /**
+   * stmt+
+   */
+
+  function stmts() {
+    var stmts = [];
+    while (!is('eos')) stmts.push(stmt());
+    return ['root', stmts];
+  }
+
+  /**
+   * INDENT stmt+ OUTDENT
+   */
+
+  function block() {
+    var props = [];
+    expect('indent');
+    while (!is('outdent')) props.push(stmt());
+    expect('outdent');
+    return ['block', props];
+  }
+
+  /**
+   *   rule
+   * | prop
+   */
+
+  function stmt() {
+    if (is('rule')) return rule();
+    if (is('prop')) return prop();
+    return next();
+  }
+
+  /**
+   *   prop
+   * | prop INDENT rule* OUTDENT
+   */
+
+  function prop() {
+    var prop = next();
+    if (is('indent')) {
+      next();
+      while (!is('outdent')) {
+        var tok = next();
+        prop[2] += ' ' + tok[1].join(', ');
+      }
+      expect('outdent');
+    }
+    return prop;
+  }
+
+  /**
+   * rule block?
+   */
+
+  function rule() {
+    var rule = next();
+    if (is('indent')) rule.push(block());
+    return rule;
+  }
+}
+
+},{"./lexer":19,"debug":21,"util":13}],21:[function(require,module,exports){
+
+/**
+ * Expose `debug()` as the module.
+ */
+
+module.exports = debug;
+
+/**
+ * Create a debugger with the given `name`.
+ *
+ * @param {String} name
+ * @return {Type}
+ * @api public
+ */
+
+function debug(name) {
+  if (!debug.enabled(name)) return function(){};
+
+  return function(fmt){
+    var curr = new Date;
+    var ms = curr - (debug[name] || curr);
+    debug[name] = curr;
+
+    fmt = name
+      + ' '
+      + fmt
+      + ' +' + debug.humanize(ms);
+
+    // This hackery is required for IE8
+    // where `console.log` doesn't have 'apply'
+    window.console
+      && console.log
+      && Function.prototype.apply.call(console.log, console, arguments);
+  }
+}
+
+/**
+ * The currently active debug mode names.
+ */
+
+debug.names = [];
+debug.skips = [];
+
+/**
+ * Enables a debug mode by name. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} name
+ * @api public
+ */
+
+debug.enable = function(name) {
+  try {
+    localStorage.debug = name;
+  } catch(e){}
+
+  var split = (name || '').split(/[\s,]+/)
+    , len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    name = split[i].replace('*', '.*?');
+    if (name[0] === '-') {
+      debug.skips.push(new RegExp('^' + name.substr(1) + '$'));
+    }
+    else {
+      debug.names.push(new RegExp('^' + name + '$'));
+    }
+  }
+};
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+debug.disable = function(){
+  debug.enable('');
+};
+
+/**
+ * Humanize the given `ms`.
+ *
+ * @param {Number} m
+ * @return {String}
+ * @api private
+ */
+
+debug.humanize = function(ms) {
+  var sec = 1000
+    , min = 60 * 1000
+    , hour = 60 * min;
+
+  if (ms >= hour) return (ms / hour).toFixed(1) + 'h';
+  if (ms >= min) return (ms / min).toFixed(1) + 'm';
+  if (ms >= sec) return (ms / sec | 0) + 's';
+  return ms + 'ms';
+};
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+debug.enabled = function(name) {
+  for (var i = 0, len = debug.skips.length; i < len; i++) {
+    if (debug.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (var i = 0, len = debug.names.length; i < len; i++) {
+    if (debug.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+// persist
+
+if (window.localStorage) debug.enable(localStorage.debug);
+
+},{}],22:[function(require,module,exports){
+
+exports['border-radius'] = require('./lib/border-radius');
+exports['overflow'] = require('./lib/ellipsis');
+exports['absolute'] = require('./lib/absolute');
+exports['relative'] = require('./lib/relative');
+exports['fixed'] = require('./lib/fixed');
+exports['opacity'] = require('./lib/opacity');
+exports['size'] = require('./lib/size');
+
+},{"./lib/absolute":23,"./lib/border-radius":24,"./lib/ellipsis":25,"./lib/fixed":26,"./lib/opacity":27,"./lib/relative":29,"./lib/size":30}],23:[function(require,module,exports){
+
+/**
+ * absolute: top left
+ * absolute: top 5px left 5px
+ */
+
+module.exports = require('./position')('absolute');
+
+},{"./position":28}],24:[function(require,module,exports){
+
+/**
+ * Positions.
+ */
+
+var position = {
+  top: true,
+  left: true,
+  right: true,
+  bottom: true
+};
+
+/**
+ * border-radius: 5px
+ * border-radius: 5px 10px
+ * border-radius: top 5px
+ * border-radius: top 5px left 10px
+ */
+
+module.exports = function(str){
+  var vals = str.split(/\s+/);
+  var pos;
+  var ret;
+
+  for (var i = 0; i < vals.length; ++i) {
+    var val = vals[i];
+    if (!position[val]) continue;
+    ret = ret || {};
+    pos = val;
+    val = vals[++i];
+    switch (pos) {
+      case 'top':
+      case 'bottom':
+        ret['border-' + pos + '-left-radius'] = val;
+        ret['border-' + pos + '-right-radius'] = val;
+        break;
+      case 'left':
+      case 'right':
+        ret['border-top-' + pos + '-radius'] = val;
+        ret['border-bottom-' + pos + '-radius'] = val;
+        break;
+    }
+  }
+
+  if (!ret) {
+    return {
+      'border-radius': str
+    }
+  }
+
+  return ret;
+};
+
+},{}],25:[function(require,module,exports){
+
+/**
+ * overflow: ellipsis
+ */
+
+module.exports = function(type) {
+  if ('ellipsis' == type) {
+    return {
+      'white-space': 'nowrap',
+      'overflow': 'hidden',
+      'text-overflow': 'ellipsis'
+    }
+  }
+
+  return {
+    'overflow': type
+  };
+};
+
+},{}],26:[function(require,module,exports){
+
+/**
+ * fixed: top left
+ * fixed: top 5px left 5px
+ */
+
+module.exports = require('./position')('fixed');
+
+},{"./position":28}],27:[function(require,module,exports){
+
+/**
+ * opacity: 1
+ */
+
+module.exports = function(str){
+  var vals = str.split(/\s+/);
+  var a = parseFloat(vals.shift());
+  var n = a * 100 | 0;
+  var tail = vals.length ? ' ' + vals.join(' '): '';
+  return {
+    'opacity': a + tail,
+    '-ms-filter': 'progid:DXImageTransform.Microsoft.Alpha(Opacity=' + n + ')' + tail,
+    'filter': 'alpha(opacity=' + n + ')' + tail
+  }
+};
+
+},{}],28:[function(require,module,exports){
+
+/**
+ * Positions.
+ */
+
+var positions = {
+  top: true,
+  left: true,
+  right: true,
+  bottom: true
+};
+
+/**
+ * Return a mixin for the given position `type`.
+ *
+ * @param {String} type
+ * @return {Function}
+ * @api private
+ */
+
+module.exports = function(type){
+  return function(str){
+    var val;
+    var pos;
+    var ret = {};
+    var vals = str.split(/\s+/);
+
+    ret.position = type;
+
+    for (var i = 0; i < vals.length; ++i) {
+      val = vals[i];
+      if (positions[val]) {
+        pos = val;
+        ret[pos] = '0';
+      } else {
+        ret[pos] = val;
+      }
+    }
+
+    return ret;
+  };
+}
+
+},{}],29:[function(require,module,exports){
+
+/**
+ * relative: top left
+ * relative: top 5px left 5px
+ */
+
+module.exports = require('./position')('relative');
+
+},{"./position":28}],30:[function(require,module,exports){
+/**
+ * size: 100px 50px
+ */
+
+module.exports = function(sizes) {
+  sizes = sizes.split(/\s+/);
+  if ( sizes.length == 1 ) sizes[1] = sizes[0];
+
+  return {
+    width:  sizes[0],
+    height: sizes[1]
+  };
+};
+
+},{}],31:[function(require,module,exports){
+
+module.exports = require('./lib/rework');
+},{"./lib/rework":46}],32:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var utils = require('../utils');
+var path = require('path');
+var stripQuotes = utils.stripQuotes;
+
+/**
+ * Translate
+ *
+ *   .logo {
+ *     background-image: url('/public/images/logo.png')
+ *   }
+ *
+ * yields:
+ *
+ *   .logo {
+ *     background-image: url('/public/images/logo.png')
+ *   }
+ *
+ *   @media all and (-webkit-min-device-pixel-ratio : 1.5) {
+ *     .logo {
+ *       background-image: url("/public/images/logo@2x.png");
+ *       background-size: contain
+ *     }
+ *   }
+ *
+ */
+
+module.exports = function(vendors) {
+  return function(style, rework){
+    vendors = vendors || rework.prefixes;
+
+    style.rules.forEach(function(rule){
+      if (!rule.declarations) return;
+
+      var backgroundSize = rule.declarations.filter(backgroundWithSize).map(value)[0] || 'contain';
+
+      rule.declarations.filter(backgroundWithURL).forEach(function(decl){
+        if ('comment' == decl.type) return;
+
+        // parse url
+        var i = decl.value.indexOf('url(');
+        var url = stripQuotes(decl.value.slice(i + 4, decl.value.indexOf(')', i)));
+        var ext = path.extname(url);
+
+        // ignore .svg
+        if ('.svg' == ext) return;
+
+        // @2x value
+        url = path.join(path.dirname(url), path.basename(url, ext) + '@2x' + ext);
+
+        // wrap in @media
+        style.rules.push({
+          type: 'media',
+          media: 'all and (-webkit-min-device-pixel-ratio: 1.5)',
+          rules: [
+            {
+              type: 'rule',
+              selectors: rule.selectors,
+              declarations: [
+                {
+                  type: 'declaration',
+                  property: 'background-image',
+                  value: 'url("' + url + '")'
+                },
+                {
+                  type: 'declaration',
+                  property: 'background-size',
+                  value: backgroundSize
+                }
+              ]
+            }
+          ]
+        });
+      });
+    });
+  };
+
+  return function(style, rework) {
+    vendors = vendors || rework.prefixes;
+    visit(style.rules, style);
+  };
+};
+
+/**
+ * Filter background[-image] with url().
+ */
+
+function backgroundWithURL(decl) {
+  return ('background' == decl.property
+    || 'background-image' == decl.property)
+    && ~decl.value.indexOf('url(');
+}
+
+/**
+ * Predicate on background-size property.
+ */
+
+function backgroundWithSize(decl) {
+  return 'background-size' == decl.property;
+}
+
+/**
+ * Return value atribute of a declaration.
+ */
+
+function value(decl) {
+  return decl.value;
+}
+
+},{"../utils":47,"path":12}],33:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var parse = require('color-parser');
+var functions = require('./function');
+
+/**
+ * Provide color manipulation helpers:
+ *
+ *    button {
+ *      background: rgba(#eee, .5)
+ *    }
+ *
+ * yields:
+ *
+ *    button {
+ *      background: rgba(238, 238, 238, .5)
+ *    }
+ *
+ */
+
+module.exports = function() {
+  return functions({
+    rgba: function(color, alpha){
+      if (2 == arguments.length) {
+        var c = parse(color.trim());
+        var args = [c.r, c.g, c.b, alpha];
+      } else {
+        var args = [].slice.call(arguments);
+      }
+
+      return 'rgba(' + args.join(', ') + ')';
+    }
+  });
+};
+
+},{"./function":35,"color-parser":50}],34:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var visit = require('../visit');
+
+/**
+ * Easing functions.
+ */
+
+var ease = {
+  'ease-in-out-back': 'cubic-bezier(0.680, -0.550, 0.265, 1.550)',
+  'ease-in-out-circ': 'cubic-bezier(0.785, 0.135, 0.150, 0.860)',
+  'ease-in-out-expo': 'cubic-bezier(1.000, 0.000, 0.000, 1.000)',
+  'ease-in-out-sine': 'cubic-bezier(0.445, 0.050, 0.550, 0.950)',
+  'ease-in-out-quint': 'cubic-bezier(0.860, 0.000, 0.070, 1.000)',
+  'ease-in-out-quart': 'cubic-bezier(0.770, 0.000, 0.175, 1.000)',
+  'ease-in-out-cubic': 'cubic-bezier(0.645, 0.045, 0.355, 1.000)',
+  'ease-in-out-quad': 'cubic-bezier(0.455, 0.030, 0.515, 0.955)',
+  'ease-out-back': 'cubic-bezier(0.175, 0.885, 0.320, 1.275)',
+  'ease-out-circ': 'cubic-bezier(0.075, 0.820, 0.165, 1.000)',
+  'ease-out-expo': 'cubic-bezier(0.190, 1.000, 0.220, 1.000)',
+  'ease-out-sine': 'cubic-bezier(0.390, 0.575, 0.565, 1.000)',
+  'ease-out-quint': 'cubic-bezier(0.230, 1.000, 0.320, 1.000)',
+  'ease-out-quart': 'cubic-bezier(0.165, 0.840, 0.440, 1.000)',
+  'ease-out-cubic': 'cubic-bezier(0.215, 0.610, 0.355, 1.000)',
+  'ease-out-quad': 'cubic-bezier(0.250, 0.460, 0.450, 0.940)',
+  'ease-in-back': 'cubic-bezier(0.600, -0.280, 0.735, 0.045)',
+  'ease-in-circ': 'cubic-bezier(0.600, 0.040, 0.980, 0.335)',
+  'ease-in-expo': 'cubic-bezier(0.950, 0.050, 0.795, 0.035)',
+  'ease-in-sine': 'cubic-bezier(0.470, 0.000, 0.745, 0.715)',
+  'ease-in-quint': 'cubic-bezier(0.755, 0.050, 0.855, 0.060)',
+  'ease-in-quart': 'cubic-bezier(0.895, 0.030, 0.685, 0.220)',
+  'ease-in-cubic': 'cubic-bezier(0.550, 0.055, 0.675, 0.190)',
+  'ease-in-quad': 'cubic-bezier(0.550, 0.085, 0.680, 0.530)'
+};
+
+/**
+ * Keys.
+ */
+
+var keys = Object.keys(ease);
+
+/**
+ * Provide additional easing functions:
+ *
+ *    #logo {
+ *      transition: all 500ms ease-out-back;
+ *    }
+ *
+ * yields:
+ *
+ *    #logo {
+ *      transition: all 500ms cubic-bezier(0.175, 0.885, 0.320, 1.275)
+ *    }
+ *
+ */
+
+module.exports = function() {
+  return function(style, rework){
+    visit.declarations(style, substitute);
+  }
+};
+
+/**
+ * Substitute easing functions.
+ *
+ * @api private
+ */
+
+function substitute(declarations) {
+  for (var i = 0, len = declarations.length; i < len; ++i) {
+    var decl = declarations[i];
+    if ('comment' == decl.type) continue;
+    if (!decl.property.match(/transition|animation|timing/)) continue;
+    for (var k = 0; k < keys.length; ++k) {
+      var key = keys[k];
+      if (~decl.value.indexOf(key)) {
+        decl.value = decl.value.replace(key, ease[key]);
+        break;
+      }
+    }
+  }
+}
+
+},{"../visit":48}],35:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var visit = require('../visit');
+var utils = require('../utils');
+var strip = utils.stripQuotes;
+
+/**
+ * Define custom function.
+ */
+
+module.exports = function(functions, args) {
+  if (!functions) throw new Error('functions object required');
+  return function(style, rework){
+    visit.declarations(style, function(declarations){
+      for (var name in functions) {
+        func(declarations, name, functions[name], args);
+      }
+    });
+  }
+};
+
+/**
+ * Escape regexp codes in string.
+ *
+ * @param {String} s
+ * @api private
+ */
+
+function escape(s) {
+  return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
+/**
+ * Visit declarations and apply functions.
+ *
+ * @param {Array} declarations
+ * @param {Object} functions
+ * @param {Boolean} [parseArgs]
+ * @api private
+ */
+
+function func(declarations, name, func, parseArgs) {
+  if (false !== parseArgs) parseArgs = true;
+  var regexp = new RegExp(escape(name) + '\\(([^\)]+)\\)', 'g');
+  declarations.forEach(function(decl){
+    if ('comment' == decl.type) return;
+    if (!~decl.value.indexOf(name + '(')) return;
+    decl.value = decl.value.replace(regexp, function(_, args){
+      if (!parseArgs) return func.call(decl, strip(args));
+      args = args.split(/,\s*/).map(strip);
+      return func.apply(decl, args);
+    });
+  });
+}
+
+},{"../utils":47,"../visit":48}],36:[function(require,module,exports){
 (function(Buffer){
 /**
  * Module dependencies.
@@ -8172,51 +7537,923 @@ module.exports = function(dirs) {
 };
 
 })(require("__browserify_Buffer").Buffer)
-},{"./function":38,"__browserify_Buffer":51,"fs":12,"mime":52,"path":13}],47:[function(require,module,exports){
+},{"./function":35,"__browserify_Buffer":14,"fs":11,"mime":56,"path":12}],37:[function(require,module,exports){
 
-exports.parse = require('css-parse');
-exports.stringify = require('css-stringify');
+/**
+ * Prefix keyframes.
+ *
+ *   @keyframes animation {
+ *     from {
+ *       opacity: 0;
+ *     }
+ *
+ *     to {
+ *       opacity: 1;
+ *     }
+ *   }
+ *
+ * yields:
+ *
+ *   @keyframes animation {
+ *     from {
+ *       opacity: 0;
+ *     }
+ *
+ *     to {
+ *       opacity: 1;
+ *     }
+ *   }
+ *
+ *   @-webkit-keyframes animation {
+ *     from {
+ *       opacity: 0;
+ *     }
+ *
+ *     to {
+ *       opacity: 1;
+ *     }
+ *   }
+ *
+ */
 
-},{"css-parse":53,"css-stringify":54}],40:[function(require,module,exports){
+module.exports = function(vendors) {
+  return function(style, rework){
+    vendors = vendors || rework.prefixes;
+
+    style.rules.forEach(function(rule){
+      if (!rule.keyframes) return;
+
+      vendors.forEach(function(vendor){
+        if (vendor == rule.vendor) return;
+        var clone = cloneKeyframes(rule);
+        clone.vendor = vendor;
+        style.rules.push(clone);
+      });
+    });
+  }
+};
+
+/**
+ * Clone keyframes.
+ *
+ * @param {Object} rule
+ * @api private
+ */
+
+function cloneKeyframes(rule) {
+  var clone = { name: rule.name };
+  clone.type = 'keyframes';
+  clone.vendor = rule.vendor;
+  clone.keyframes = [];
+  rule.keyframes.forEach(function(keyframe){
+    clone.keyframes.push(cloneKeyframe(keyframe));
+  });
+  return clone;
+}
+
+/**
+ * Clone `keyframe`.
+ *
+ * @param {Object} keyframe
+ * @api private
+ */
+
+function cloneKeyframe(keyframe) {
+  var clone = {};
+  clone.type = 'keyframe';
+  clone.values = keyframe.values.slice();
+  clone.declarations = keyframe.declarations.map(function(decl){
+    if ('comment' == decl.type) {
+      return decl;
+    }
+
+    return {
+      type: 'declaration',
+      property: decl.property,
+      value: decl.value
+    }
+  });
+  return clone;
+}
+
+},{}],38:[function(require,module,exports){
 
 /**
  * Module dependencies.
  */
 
-var parse = require('color-parser');
-var functions = require('./function');
+var utils = require('../utils');
+var visit = require('../visit');
 
 /**
- * Provide color manipulation helpers:
+ * Define custom mixins.
+ */
+
+module.exports = function(mixins) {
+  if (!mixins) throw new Error('mixins object required');
+  return function(style, rework){
+    visit.declarations(style, function(declarations){
+      mixin(rework, declarations, mixins);
+    });
+  }
+};
+
+/**
+ * Visit declarations and apply mixins.
+ *
+ * @param {Rework} rework
+ * @param {Array} declarations
+ * @param {Object} mixins
+ * @api private
+ */
+
+function mixin(rework, declarations, mixins) {
+  for (var i = 0; i < declarations.length; ++i) {
+    var decl = declarations[i];
+    if ('comment' == decl.type) continue;
+
+    var key = decl.property;
+    var val = decl.value;
+    var fn = mixins[key];
+    if (!fn) continue;
+
+    // invoke mixin
+    var ret = fn.call(rework, val);
+
+    // apply properties
+    for (var key in ret) {
+      var val = ret[key];
+      if (Array.isArray(val)) {
+        val.forEach(function(val){
+          declarations.splice(i++, 0, {
+            type: 'declaration',
+            property: key,
+            value: val
+          });
+        });
+      } else {
+        declarations.splice(i++, 0, {
+          type: 'declaration',
+          property: key,
+          value: val
+        });
+      }
+    }
+
+    // remove original
+    declarations.splice(i--, 1);
+  }
+}
+
+},{"../utils":47,"../visit":48}],39:[function(require,module,exports){
+
+/**
+ * Prefix selectors with `str`.
  *
  *    button {
- *      background: rgba(#eee, .5)
+ *      color: red;
+ *    }
+ *
+ * yields:
+ *
+ *    #dialog button {
+ *      color: red;
+ *    }
+ *
+ */
+
+module.exports = function(str) {
+  return function(style){
+    style.rules = style.rules.map(function(rule){
+      if (!rule.selectors) return rule;
+      rule.selectors = rule.selectors.map(function(selector){
+        return str + ' ' + selector;
+      });
+      return rule;
+    });
+  }
+};
+},{}],40:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var visit = require('../visit');
+
+/**
+ * Prefix `value`.
+ *
+ *    button {
+ *      transition: height, transform 2s, width 0.3s linear;
  *    }
  *
  * yields:
  *
  *    button {
- *      background: rgba(238, 238, 238, .5)
+ *      -webkit-transition: height, -webkit-transform 2s, width 0.3s linear;
+ *      -moz-transition: height, -moz-transform 2s, width 0.3s linear;
+ *      transition: height, transform 2s, width 0.3s linear
+ *    }
+ *
+ */
+
+module.exports = function(value, vendors) {
+  return function(style, rework){
+    vendors = vendors || rework.prefixes;
+
+    visit.declarations(style, function(declarations){
+      for (var i = 0; i < declarations.length; ++i) {
+        var decl = declarations[i];
+        if ('comment' == decl.type) continue;
+        if (!~decl.value.indexOf(value)) continue;
+
+        // ignore vendor-prefixed properties
+        if ('-' == decl.property[0]) continue;
+
+        // ignore vendor-prefixed values
+        if (~decl.value.indexOf('-' + value)) continue;
+
+        // vendor prefixed props
+        vendors.forEach(function(vendor){
+          var prop = 'transition' == decl.property
+            ? vendor + decl.property
+            : decl.property;
+
+          declarations.splice(i++, 0, {
+            type: 'declaration',
+            property: prop,
+            value: decl.value.replace(value, vendor + value)
+          });
+        });
+      }
+    });
+  }
+};
+
+},{"../visit":48}],41:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var visit = require('../visit');
+
+/**
+ * Prefix `prop`.
+ *
+ *   .button {
+ *     border-radius: 5px;
+ *   }
+ *
+ * yields:
+ *
+ *   .button {
+ *     -webkit-border-radius: 5px;
+ *     -moz-border-radius: 5px;
+ *     border-radius: 5px;
+ *   }
+ *
+ */
+
+module.exports = function(prop, vendors) {
+  var props = Array.isArray(prop)
+    ? prop
+    : [prop];
+
+  return function(style, rework){
+    vendors = vendors || rework.prefixes;
+    visit.declarations(style, function(declarations, node){
+      var only = node.vendor;
+      var isKeyframes = !! node.keyframes;
+
+      for (var i = 0; i < props.length; ++i) {
+        var prop = props[i];
+
+        for (var j = 0, len = declarations.length; j < len; ++j) {
+          var decl = declarations[j];
+          if ('comment' == decl.type) continue;
+          if (prop != decl.property) continue;
+
+          // vendor prefixed props
+          for (var k = 0; k < vendors.length; ++k) {
+            if (!only && isKeyframes) continue;
+            if (only && only != vendors[k]) continue;
+            declarations.push({
+              type: 'declaration',
+              property: vendors[k] + decl.property,
+              value: decl.value
+            });
+          }
+
+          // original prop
+          declarations.push(decl);
+          declarations.splice(j, 1);
+        }
+      }
+    });
+  }
+};
+
+},{"../visit":48}],42:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var visit = require('../visit');
+
+/**
+ * Provide property reference support.
+ *
+ *    button {
+ *      width: 50px;
+ *      height: @width;
+ *      line-height: @height;
+ *    }
+ *
+ * yields:
+ *
+ *    button {
+ *      width: 50px;
+*       height: 50px;
+*       line-height: 50px;
  *    }
  *
  */
 
 module.exports = function() {
-  return functions({
-    rgba: function(color, alpha){
-      if (2 == arguments.length) {
-        var c = parse(color.trim());
-        var args = [c.r, c.g, c.b, alpha];
-      } else {
-        var args = [].slice.call(arguments);
-      }
-
-      return 'rgba(' + args.join(', ') + ')';
-    }
-  });
+  return function(style, rework){
+    visit.declarations(style, substitute);
+  }
 };
 
-},{"./function":38,"color-parser":55}],53:[function(require,module,exports){
+/**
+ * Substitute easing functions.
+ *
+ * @api private
+ */
+
+function substitute(declarations) {
+  var map = {};
+
+  for (var i = 0, len = declarations.length; i < len; ++i) {
+    var decl = declarations[i];
+    var key = decl.property;
+    var val = decl.value;
+
+    if ('comment' == decl.type) continue;
+
+    decl.value = val.replace(/@([-\w]+)/g, function(_, name){
+      // TODO: fix this problem for real with visionmedia/css-value
+      if ('2x' == name) return '@' + name;
+      if (null == map[name]) throw new Error('@' + name + ' is not defined in this scope');
+      return map[name];
+    });
+
+    map[key] = decl.value;
+  }
+}
+
+},{"../visit":48}],43:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var utils = require('../utils');
+var func = require('./function');
+
+/**
+ * Map `url()` calls.
+ *
+ *   body {
+ *     background: url(/images/bg.png);
+ *   }
+ *
+ * yields:
+ *
+ *   body {
+ *     background: url(http://example.com/images/bg.png);
+ *   }
+ *
+ */
+
+module.exports = function(fn) {
+  return func({
+    url: function(path){
+      return 'url("' + fn(path) + '")';
+    }
+  }, false);
+};
+
+},{"../utils":47,"./function":35}],44:[function(require,module,exports){
+
+module.exports = function(){
+  console.warn('Warning: vars() has been removed, please use: https://github.com/visionmedia/rework-vars');
+  return function(){}
+};
+
+},{}],45:[function(require,module,exports){
+
+/**
+ * Prefixed properties.
+ */
+
+module.exports = [
+  'animation',
+  'animation-delay',
+  'animation-direction',
+  'animation-duration',
+  'animation-fill-mode',
+  'animation-iteration-count',
+  'animation-name',
+  'animation-play-state',
+  'animation-timing-function',
+  'appearance',
+  'background-visibility',
+  'background-composite',
+  'blend-mode',
+  'border-bottom-left-radius',
+  'border-bottom-right-radius',
+  'border-fit',
+  'border-image',
+  'border-vertical-spacing',
+  'box-align',
+  'box-direction',
+  'box-flex',
+  'box-flex-group',
+  'box-lines',
+  'box-ordinal-group',
+  'box-orient',
+  'box-pack',
+  'box-reflect',
+  'box-sizing',
+  'clip-path',
+  'column-count',
+  'column-width',
+  'column-min-width',
+  'column-width-policy',
+  'column-gap',
+  'column-rule',
+  'column-rule-color',
+  'column-rule-style',
+  'column-rule-width',
+  'column-span',
+  'flex',
+  'flex-basis',
+  'flex-direction',
+  'flex-flow',
+  'flex-grow',
+  'flex-shrink',
+  'flex-wrap',
+  'flex-flow-from',
+  'flex-flow-into',
+  'font-smoothing',
+  'transform',
+  'transform-origin',
+  'transform-origin-x',
+  'transform-origin-y',
+  'transform-origin-z',
+  'transform-style',
+  'transition',
+  'transition-delay',
+  'transition-duration',
+  'transition-property',
+  'transition-timing-function',
+  'user-drag',
+  'user-modify',
+  'user-select',
+  'wrap',
+  'wrap-flow',
+  'wrap-margin',
+  'wrap-padding',
+  'wrap-through',
+  'overflow-scrolling'
+];
+
+},{}],46:[function(require,module,exports){
+(function(){
+/**
+ * Module dependencies.
+ */
+
+var css = require('css');
+
+/**
+ * Expose `rework`.
+ */
+
+exports = module.exports = rework;
+
+/**
+ * Expose `visit` helpers.
+ */
+
+exports.visit = require('./visit');
+
+/**
+ * Expose prefix properties.
+ */
+
+exports.properties = require('./properties');
+
+/**
+ * Initialize a new stylesheet `Rework` with `str`.
+ *
+ * @param {String} str
+ * @return {Rework}
+ * @api public
+ */
+
+function rework(str) {
+  return new Rework(css.parse(str));
+}
+
+/**
+ * Initialize a new stylesheet `Rework` with `obj`.
+ *
+ * @param {Object} obj
+ * @api private
+ */
+
+function Rework(obj) {
+  this.obj = obj;
+}
+
+/**
+ * Use the given plugin `fn(style, rework)`.
+ *
+ * @param {Function} fn
+ * @return {Rework}
+ * @api public
+ */
+
+Rework.prototype.use = function(fn){
+  fn(this.obj.stylesheet, this);
+  return this;
+};
+
+/**
+ * Specify global vendor `prefixes`,
+ * explicit ones may still be passed
+ * to most plugins.
+ *
+ * @param {Array} prefixes
+ * @return {Rework}
+ * @api public
+ */
+
+Rework.prototype.vendors = function(prefixes){
+  this.prefixes = prefixes;
+  return this;
+};
+
+/**
+ * Stringify the stylesheet.
+ *
+ * @param {Object} options
+ * @return {String}
+ * @api public
+ */
+
+Rework.prototype.toString = function(options){
+  return css.stringify(this.obj, options);
+};
+
+/**
+ * Expose plugins.
+ */
+
+exports.mixin = exports.mixins = require('./plugins/mixin');
+exports.function = exports.functions = require('./plugins/function');
+exports.prefix = require('./plugins/prefix');
+exports.colors = require('./plugins/colors');
+exports.extend = require('rework-inherit');
+exports.references = require('./plugins/references');
+exports.prefixValue = require('./plugins/prefix-value');
+exports.prefixSelectors = require('./plugins/prefix-selectors');
+exports.keyframes = require('./plugins/keyframes');
+exports.at2x = require('./plugins/at2x');
+exports.url = require('./plugins/url');
+exports.ease = require('./plugins/ease');
+exports.vars = require('./plugins/vars');
+
+/**
+ * Try/catch plugins unavailable in component.
+ */
+
+ try {
+  exports.inline = require('./plugins/inline');
+} catch (err) {};
+
+
+})()
+},{"./plugins/at2x":32,"./plugins/colors":33,"./plugins/ease":34,"./plugins/function":35,"./plugins/inline":36,"./plugins/keyframes":37,"./plugins/mixin":38,"./plugins/prefix":41,"./plugins/prefix-selectors":39,"./plugins/prefix-value":40,"./plugins/references":42,"./plugins/url":43,"./plugins/vars":44,"./properties":45,"./visit":48,"css":51,"rework-inherit":57}],47:[function(require,module,exports){
+
+/**
+ * Strip `str` quotes.
+ *
+ * @param {String} str
+ * @return {String}
+ * @api private
+ */
+
+exports.stripQuotes = function(str) {
+  if ('"' == str[0] || "'" == str[0]) return str.slice(1, -1);
+  return str;
+};
+},{}],48:[function(require,module,exports){
+
+// TODO: require() directly in plugins...
+exports.declarations = require('rework-visit');
+
+},{"rework-visit":58}],49:[function(require,module,exports){
+
+module.exports = {
+    aliceblue: [240, 248, 255]
+  , antiquewhite: [250, 235, 215]
+  , aqua: [0, 255, 255]
+  , aquamarine: [127, 255, 212]
+  , azure: [240, 255, 255]
+  , beige: [245, 245, 220]
+  , bisque: [255, 228, 196]
+  , black: [0, 0, 0]
+  , blanchedalmond: [255, 235, 205]
+  , blue: [0, 0, 255]
+  , blueviolet: [138, 43, 226]
+  , brown: [165, 42, 42]
+  , burlywood: [222, 184, 135]
+  , cadetblue: [95, 158, 160]
+  , chartreuse: [127, 255, 0]
+  , chocolate: [210, 105, 30]
+  , coral: [255, 127, 80]
+  , cornflowerblue: [100, 149, 237]
+  , cornsilk: [255, 248, 220]
+  , crimson: [220, 20, 60]
+  , cyan: [0, 255, 255]
+  , darkblue: [0, 0, 139]
+  , darkcyan: [0, 139, 139]
+  , darkgoldenrod: [184, 132, 11]
+  , darkgray: [169, 169, 169]
+  , darkgreen: [0, 100, 0]
+  , darkgrey: [169, 169, 169]
+  , darkkhaki: [189, 183, 107]
+  , darkmagenta: [139, 0, 139]
+  , darkolivegreen: [85, 107, 47]
+  , darkorange: [255, 140, 0]
+  , darkorchid: [153, 50, 204]
+  , darkred: [139, 0, 0]
+  , darksalmon: [233, 150, 122]
+  , darkseagreen: [143, 188, 143]
+  , darkslateblue: [72, 61, 139]
+  , darkslategray: [47, 79, 79]
+  , darkslategrey: [47, 79, 79]
+  , darkturquoise: [0, 206, 209]
+  , darkviolet: [148, 0, 211]
+  , deeppink: [255, 20, 147]
+  , deepskyblue: [0, 191, 255]
+  , dimgray: [105, 105, 105]
+  , dimgrey: [105, 105, 105]
+  , dodgerblue: [30, 144, 255]
+  , firebrick: [178, 34, 34]
+  , floralwhite: [255, 255, 240]
+  , forestgreen: [34, 139, 34]
+  , fuchsia: [255, 0, 255]
+  , gainsboro: [220, 220, 220]
+  , ghostwhite: [248, 248, 255]
+  , gold: [255, 215, 0]
+  , goldenrod: [218, 165, 32]
+  , gray: [128, 128, 128]
+  , green: [0, 128, 0]
+  , greenyellow: [173, 255, 47]
+  , grey: [128, 128, 128]
+  , honeydew: [240, 255, 240]
+  , hotpink: [255, 105, 180]
+  , indianred: [205, 92, 92]
+  , indigo: [75, 0, 130]
+  , ivory: [255, 255, 240]
+  , khaki: [240, 230, 140]
+  , lavender: [230, 230, 250]
+  , lavenderblush: [255, 240, 245]
+  , lawngreen: [124, 252, 0]
+  , lemonchiffon: [255, 250, 205]
+  , lightblue: [173, 216, 230]
+  , lightcoral: [240, 128, 128]
+  , lightcyan: [224, 255, 255]
+  , lightgoldenrodyellow: [250, 250, 210]
+  , lightgray: [211, 211, 211]
+  , lightgreen: [144, 238, 144]
+  , lightgrey: [211, 211, 211]
+  , lightpink: [255, 182, 193]
+  , lightsalmon: [255, 160, 122]
+  , lightseagreen: [32, 178, 170]
+  , lightskyblue: [135, 206, 250]
+  , lightslategray: [119, 136, 153]
+  , lightslategrey: [119, 136, 153]
+  , lightsteelblue: [176, 196, 222]
+  , lightyellow: [255, 255, 224]
+  , lime: [0, 255, 0]
+  , limegreen: [50, 205, 50]
+  , linen: [250, 240, 230]
+  , magenta: [255, 0, 255]
+  , maroon: [128, 0, 0]
+  , mediumaquamarine: [102, 205, 170]
+  , mediumblue: [0, 0, 205]
+  , mediumorchid: [186, 85, 211]
+  , mediumpurple: [147, 112, 219]
+  , mediumseagreen: [60, 179, 113]
+  , mediumslateblue: [123, 104, 238]
+  , mediumspringgreen: [0, 250, 154]
+  , mediumturquoise: [72, 209, 204]
+  , mediumvioletred: [199, 21, 133]
+  , midnightblue: [25, 25, 112]
+  , mintcream: [245, 255, 250]
+  , mistyrose: [255, 228, 225]
+  , moccasin: [255, 228, 181]
+  , navajowhite: [255, 222, 173]
+  , navy: [0, 0, 128]
+  , oldlace: [253, 245, 230]
+  , olive: [128, 128, 0]
+  , olivedrab: [107, 142, 35]
+  , orange: [255, 165, 0]
+  , orangered: [255, 69, 0]
+  , orchid: [218, 112, 214]
+  , palegoldenrod: [238, 232, 170]
+  , palegreen: [152, 251, 152]
+  , paleturquoise: [175, 238, 238]
+  , palevioletred: [219, 112, 147]
+  , papayawhip: [255, 239, 213]
+  , peachpuff: [255, 218, 185]
+  , peru: [205, 133, 63]
+  , pink: [255, 192, 203]
+  , plum: [221, 160, 203]
+  , powderblue: [176, 224, 230]
+  , purple: [128, 0, 128]
+  , red: [255, 0, 0]
+  , rosybrown: [188, 143, 143]
+  , royalblue: [65, 105, 225]
+  , saddlebrown: [139, 69, 19]
+  , salmon: [250, 128, 114]
+  , sandybrown: [244, 164, 96]
+  , seagreen: [46, 139, 87]
+  , seashell: [255, 245, 238]
+  , sienna: [160, 82, 45]
+  , silver: [192, 192, 192]
+  , skyblue: [135, 206, 235]
+  , slateblue: [106, 90, 205]
+  , slategray: [119, 128, 144]
+  , slategrey: [119, 128, 144]
+  , snow: [255, 255, 250]
+  , springgreen: [0, 255, 127]
+  , steelblue: [70, 130, 180]
+  , tan: [210, 180, 140]
+  , teal: [0, 128, 128]
+  , thistle: [216, 191, 216]
+  , tomato: [255, 99, 71]
+  , turquoise: [64, 224, 208]
+  , violet: [238, 130, 238]
+  , wheat: [245, 222, 179]
+  , white: [255, 255, 255]
+  , whitesmoke: [245, 245, 245]
+  , yellow: [255, 255, 0]
+  , yellowgreen: [154, 205, 5]
+};
+},{}],50:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var colors = require('./colors');
+
+/**
+ * Expose `parse`.
+ */
+
+module.exports = parse;
+
+/**
+ * Parse `str`.
+ *
+ * @param {String} str
+ * @return {Object}
+ * @api public
+ */
+
+function parse(str) {
+  return named(str)
+    || hex3(str)
+    || hex6(str)
+    || rgb(str)
+    || rgba(str);
+}
+
+/**
+ * Parse named css color `str`.
+ *
+ * @param {String} str
+ * @return {Object}
+ * @api private
+ */
+
+function named(str) {
+  var c = colors[str.toLowerCase()];
+  if (!c) return;
+  return {
+    r: c[0],
+    g: c[1],
+    b: c[2]
+  }
+}
+
+/**
+ * Parse rgb(n, n, n)
+ *
+ * @param {String} str
+ * @return {Object}
+ * @api private
+ */
+
+function rgb(str) {
+  if (0 == str.indexOf('rgb(')) {
+    str = str.match(/rgb\(([^)]+)\)/)[1];
+    var parts = str.split(/ *, */).map(Number);
+    return {
+      r: parts[0],
+      g: parts[1],
+      b: parts[2],
+      a: 1
+    }
+  }
+}
+
+/**
+ * Parse rgba(n, n, n, n)
+ *
+ * @param {String} str
+ * @return {Object}
+ * @api private
+ */
+
+function rgba(str) {
+  if (0 == str.indexOf('rgba(')) {
+    str = str.match(/rgba\(([^)]+)\)/)[1];
+    var parts = str.split(/ *, */).map(Number);
+    return {
+      r: parts[0],
+      g: parts[1],
+      b: parts[2],
+      a: parts[3]
+    }
+  }
+}
+
+/**
+ * Parse #nnnnnn
+ *
+ * @param {String} str
+ * @return {Object}
+ * @api private
+ */
+
+function hex6(str) {
+  if ('#' == str[0] && 7 == str.length) {
+    return {
+      r: parseInt(str.slice(1, 3), 16),
+      g: parseInt(str.slice(3, 5), 16),
+      b: parseInt(str.slice(5, 7), 16),
+      a: 1
+    }
+  }
+}
+
+/**
+ * Parse #nnn
+ *
+ * @param {String} str
+ * @return {Object}
+ * @api private
+ */
+
+function hex3(str) {
+  if ('#' == str[0] && 4 == str.length) {
+    return {
+      r: parseInt(str[1] + str[1], 16),
+      g: parseInt(str[2] + str[2], 16),
+      b: parseInt(str[3] + str[3], 16),
+      a: 1
+    }
+  }
+}
+
+
+},{"./colors":49}],51:[function(require,module,exports){
+
+exports.parse = require('css-parse');
+exports.stringify = require('css-stringify');
+
+},{"css-parse":52,"css-stringify":53}],52:[function(require,module,exports){
 
 module.exports = function(css, options){
   options = options || {};
@@ -8683,7 +8920,391 @@ module.exports = function(css, options){
 };
 
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var Compressed = require('./lib/compress');
+var Identity = require('./lib/identity');
+
+/**
+ * Stringfy the given AST `node`.
+ *
+ * @param {Object} node
+ * @param {Object} [options]
+ * @return {String}
+ * @api public
+ */
+
+module.exports = function(node, options){
+  options = options || {};
+
+  var compiler = options.compress
+    ? new Compressed(options)
+    : new Identity(options);
+
+  return compiler.compile(node);
+};
+
+
+},{"./lib/compress":54,"./lib/identity":55}],54:[function(require,module,exports){
+
+/**
+ * Expose compiler.
+ */
+
+module.exports = Compiler;
+
+/**
+ * Initialize a new `Compiler`.
+ */
+
+function Compiler(options) {
+  options = options || {};
+}
+
+/**
+ * Compile `node`.
+ */
+
+Compiler.prototype.compile = function(node){
+  return node.stylesheet
+    .rules.map(this.visit, this)
+    .join('');
+};
+
+/**
+ * Visit `node`.
+ */
+
+Compiler.prototype.visit = function(node){
+  return this[node.type](node);
+};
+
+/**
+ * Visit comment node.
+ */
+
+Compiler.prototype.comment = function(node){
+  if (this.compress) return '';
+};
+
+/**
+ * Visit import node.
+ */
+
+Compiler.prototype.import = function(node){
+  return '@import ' + node.import + ';';
+};
+
+/**
+ * Visit media node.
+ */
+
+Compiler.prototype.media = function(node){
+  return '@media '
+    + node.media
+    + '{'
+    + node.rules.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit document node.
+ */
+
+Compiler.prototype.document = function(node){
+  var doc = '@' + (node.vendor || '') + 'document ' + node.document;
+
+  return doc
+    + '{'
+    + node.rules.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit charset node.
+ */
+
+Compiler.prototype.charset = function(node){
+  return '@charset ' + node.charset + ';';
+};
+
+/**
+ * Visit supports node.
+ */
+
+Compiler.prototype.supports = function(node){
+  return '@supports '
+    + node.supports
+    + ' {\n'
+    + this.indent(1)
+    + node.rules.map(this.visit, this).join('\n\n')
+    + this.indent(-1)
+    + '\n}';
+};
+
+/**
+ * Visit keyframes node.
+ */
+
+Compiler.prototype.keyframes = function(node){
+  return '@'
+    + (node.vendor || '')
+    + 'keyframes '
+    + node.name
+    + '{'
+    + node.keyframes.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit keyframe node.
+ */
+
+Compiler.prototype.keyframe = function(node){
+  var decls = node.declarations;
+
+  return node.values.join(',')
+    + '{'
+    + decls.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit page node.
+ */
+
+Compiler.prototype.page = function(node){
+  var sel = node.selectors.length
+    ? node.selectors.join(', ') + ' '
+    : '';
+
+  return '@page ' + sel
+    + '{\n'
+    + this.indent(1)
+    + node.declarations.map(this.visit, this).join('\n')
+    + this.indent(-1)
+    + '\n}';
+};
+
+/**
+ * Visit rule node.
+ */
+
+Compiler.prototype.rule = function(node){
+  var decls = node.declarations;
+  if (!decls.length) return '';
+
+  return node.selectors.join(',')
+    + '{'
+    + decls.map(this.visit, this).join('')
+    + '}';
+};
+
+/**
+ * Visit declaration node.
+ */
+
+Compiler.prototype.declaration = function(node){
+  return node.property + ':' + node.value + ';';
+};
+
+
+},{}],55:[function(require,module,exports){
+
+/**
+ * Expose compiler.
+ */
+
+module.exports = Compiler;
+
+/**
+ * Initialize a new `Compiler`.
+ */
+
+function Compiler(options) {
+  options = options || {};
+  this.indentation = options.indent;
+}
+
+/**
+ * Compile `node`.
+ */
+
+Compiler.prototype.compile = function(node){
+  return node.stylesheet
+    .rules.map(this.visit, this)
+    .join('\n\n');
+};
+
+/**
+ * Visit `node`.
+ */
+
+Compiler.prototype.visit = function(node){
+  return this[node.type](node);
+};
+
+/**
+ * Visit comment node.
+ */
+
+Compiler.prototype.comment = function(node){
+  return this.indent() + '/*' + node.comment + '*/';
+};
+
+/**
+ * Visit import node.
+ */
+
+Compiler.prototype.import = function(node){
+  return '@import ' + node.import + ';';
+};
+
+/**
+ * Visit media node.
+ */
+
+Compiler.prototype.media = function(node){
+  return '@media '
+    + node.media
+    + ' {\n'
+    + this.indent(1)
+    + node.rules.map(this.visit, this).join('\n\n')
+    + this.indent(-1)
+    + '\n}';
+};
+
+/**
+ * Visit document node.
+ */
+
+Compiler.prototype.document = function(node){
+  var doc = '@' + (node.vendor || '') + 'document ' + node.document;
+
+  return doc + ' '
+    + ' {\n'
+    + this.indent(1)
+    + node.rules.map(this.visit, this).join('\n\n')
+    + this.indent(-1)
+    + '\n}';
+};
+
+/**
+ * Visit charset node.
+ */
+
+Compiler.prototype.charset = function(node){
+  return '@charset ' + node.charset + ';\n';
+};
+
+/**
+ * Visit supports node.
+ */
+
+Compiler.prototype.supports = function(node){
+  return '@supports '
+    + node.supports
+    + ' {\n'
+    + this.indent(1)
+    + node.rules.map(this.visit, this).join('\n\n')
+    + this.indent(-1)
+    + '\n}';
+};
+
+/**
+ * Visit keyframes node.
+ */
+
+Compiler.prototype.keyframes = function(node){
+  return '@'
+    + (node.vendor || '')
+    + 'keyframes '
+    + node.name
+    + ' {\n'
+    + this.indent(1)
+    + node.keyframes.map(this.visit, this).join('\n')
+    + this.indent(-1)
+    + '}';
+};
+
+/**
+ * Visit keyframe node.
+ */
+
+Compiler.prototype.keyframe = function(node){
+  var decls = node.declarations;
+
+  return this.indent()
+    + node.values.join(', ')
+    + ' {\n'
+    + this.indent(1)
+    + decls.map(this.visit, this).join('\n')
+    + this.indent(-1)
+    + '\n' + this.indent() + '}\n';
+};
+
+/**
+ * Visit page node.
+ */
+
+Compiler.prototype.page = function(node){
+  var sel = node.selectors.length
+    ? node.selectors.join(', ') + ' '
+    : '';
+
+  return '@page ' + sel
+    + '{\n'
+    + this.indent(1)
+    + node.declarations.map(this.visit, this).join('\n')
+    + this.indent(-1)
+    + '\n}';
+};
+
+/**
+ * Visit rule node.
+ */
+
+Compiler.prototype.rule = function(node){
+  var indent = this.indent();
+  var decls = node.declarations;
+  if (!decls.length) return '';
+
+  return node.selectors.map(function(s){ return indent + s }).join(',\n')
+    + ' {\n'
+    + this.indent(1)
+    + decls.map(this.visit, this).join('\n')
+    + this.indent(-1)
+    + '\n' + this.indent() + '}';
+};
+
+/**
+ * Visit declaration node.
+ */
+
+Compiler.prototype.declaration = function(node){
+  return this.indent() + node.property + ': ' + node.value + ';';
+};
+
+/**
+ * Increase, decrease or return current indentation.
+ */
+
+Compiler.prototype.indent = function(level) {
+  this.level = this.level || 1;
+
+  if (null != level) {
+    this.level += level;
+    return '';
+  }
+
+  return Array(this.level).join(this.indentation || '  ');
+};
+
+},{}],56:[function(require,module,exports){
 (function(process,__dirname){var path = require('path');
 var fs = require('fs');
 
@@ -8799,7 +9420,7 @@ mime.charsets = {
 module.exports = mime;
 
 })(require("__browserify_process"),"/../node_modules/styl/node_modules/rework/node_modules/mime")
-},{"__browserify_process":11,"fs":12,"path":13}],48:[function(require,module,exports){
+},{"__browserify_process":15,"fs":11,"path":12}],57:[function(require,module,exports){
 exports = module.exports = function (options) {
   return function inherit(style) {
     return new Inherit(style, options || {})
@@ -9025,669 +9646,45 @@ function getRule(x) {
   return x.rule
 }
 
-},{"debug":49}],54:[function(require,module,exports){
+},{"debug":21}],58:[function(require,module,exports){
 
 /**
- * Module dependencies.
+ * Expose `visit()`.
  */
 
-var Compressed = require('./lib/compress');
-var Identity = require('./lib/identity');
+module.exports = visit;
 
 /**
- * Stringfy the given AST `node`.
+ * Visit `node`'s declarations recursively and
+ * invoke `fn(declarations, node)`.
  *
  * @param {Object} node
- * @param {Object} [options]
- * @return {String}
- * @api public
- */
-
-module.exports = function(node, options){
-  options = options || {};
-
-  var compiler = options.compress
-    ? new Compressed(options)
-    : new Identity(options);
-
-  return compiler.compile(node);
-};
-
-
-},{"./lib/compress":56,"./lib/identity":57}],55:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var colors = require('./colors');
-
-/**
- * Expose `parse`.
- */
-
-module.exports = parse;
-
-/**
- * Parse `str`.
- *
- * @param {String} str
- * @return {Object}
- * @api public
- */
-
-function parse(str) {
-  return named(str)
-    || hex3(str)
-    || hex6(str)
-    || rgb(str)
-    || rgba(str);
-}
-
-/**
- * Parse named css color `str`.
- *
- * @param {String} str
- * @return {Object}
+ * @param {Function} fn
  * @api private
  */
 
-function named(str) {
-  var c = colors[str.toLowerCase()];
-  if (!c) return;
-  return {
-    r: c[0],
-    g: c[1],
-    b: c[2]
-  }
-}
-
-/**
- * Parse rgb(n, n, n)
- *
- * @param {String} str
- * @return {Object}
- * @api private
- */
-
-function rgb(str) {
-  if (0 == str.indexOf('rgb(')) {
-    str = str.match(/rgb\(([^)]+)\)/)[1];
-    var parts = str.split(/ *, */).map(Number);
-    return {
-      r: parts[0],
-      g: parts[1],
-      b: parts[2],
-      a: 1
+function visit(node, fn){
+  node.rules.forEach(function(rule){
+    // @media etc
+    if (rule.rules) {
+      visit(rule, fn);
+      return;
     }
-  }
-}
 
-/**
- * Parse rgba(n, n, n, n)
- *
- * @param {String} str
- * @return {Object}
- * @api private
- */
-
-function rgba(str) {
-  if (0 == str.indexOf('rgba(')) {
-    str = str.match(/rgba\(([^)]+)\)/)[1];
-    var parts = str.split(/ *, */).map(Number);
-    return {
-      r: parts[0],
-      g: parts[1],
-      b: parts[2],
-      a: parts[3]
+    // keyframes
+    if (rule.keyframes) {
+      rule.keyframes.forEach(function(keyframe){
+        fn(keyframe.declarations, rule);
+      });
+      return;
     }
-  }
-}
 
-/**
- * Parse #nnnnnn
- *
- * @param {String} str
- * @return {Object}
- * @api private
- */
+    // @charset, @import etc
+    if (!rule.declarations) return;
 
-function hex6(str) {
-  if ('#' == str[0] && 7 == str.length) {
-    return {
-      r: parseInt(str.slice(1, 3), 16),
-      g: parseInt(str.slice(3, 5), 16),
-      b: parseInt(str.slice(5, 7), 16),
-      a: 1
-    }
-  }
-}
-
-/**
- * Parse #nnn
- *
- * @param {String} str
- * @return {Object}
- * @api private
- */
-
-function hex3(str) {
-  if ('#' == str[0] && 4 == str.length) {
-    return {
-      r: parseInt(str[1] + str[1], 16),
-      g: parseInt(str[2] + str[2], 16),
-      b: parseInt(str[3] + str[3], 16),
-      a: 1
-    }
-  }
-}
-
-
-},{"./colors":58}],56:[function(require,module,exports){
-
-/**
- * Expose compiler.
- */
-
-module.exports = Compiler;
-
-/**
- * Initialize a new `Compiler`.
- */
-
-function Compiler(options) {
-  options = options || {};
-}
-
-/**
- * Compile `node`.
- */
-
-Compiler.prototype.compile = function(node){
-  return node.stylesheet
-    .rules.map(this.visit, this)
-    .join('');
+    fn(rule.declarations, node);
+  });
 };
 
-/**
- * Visit `node`.
- */
-
-Compiler.prototype.visit = function(node){
-  return this[node.type](node);
-};
-
-/**
- * Visit comment node.
- */
-
-Compiler.prototype.comment = function(node){
-  if (this.compress) return '';
-};
-
-/**
- * Visit import node.
- */
-
-Compiler.prototype.import = function(node){
-  return '@import ' + node.import + ';';
-};
-
-/**
- * Visit media node.
- */
-
-Compiler.prototype.media = function(node){
-  return '@media '
-    + node.media
-    + '{'
-    + node.rules.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit document node.
- */
-
-Compiler.prototype.document = function(node){
-  var doc = '@' + (node.vendor || '') + 'document ' + node.document;
-
-  return doc
-    + '{'
-    + node.rules.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit charset node.
- */
-
-Compiler.prototype.charset = function(node){
-  return '@charset ' + node.charset + ';';
-};
-
-/**
- * Visit supports node.
- */
-
-Compiler.prototype.supports = function(node){
-  return '@supports '
-    + node.supports
-    + ' {\n'
-    + this.indent(1)
-    + node.rules.map(this.visit, this).join('\n\n')
-    + this.indent(-1)
-    + '\n}';
-};
-
-/**
- * Visit keyframes node.
- */
-
-Compiler.prototype.keyframes = function(node){
-  return '@'
-    + (node.vendor || '')
-    + 'keyframes '
-    + node.name
-    + '{'
-    + node.keyframes.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit keyframe node.
- */
-
-Compiler.prototype.keyframe = function(node){
-  var decls = node.declarations;
-
-  return node.values.join(',')
-    + '{'
-    + decls.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit page node.
- */
-
-Compiler.prototype.page = function(node){
-  var sel = node.selectors.length
-    ? node.selectors.join(', ') + ' '
-    : '';
-
-  return '@page ' + sel
-    + '{\n'
-    + this.indent(1)
-    + node.declarations.map(this.visit, this).join('\n')
-    + this.indent(-1)
-    + '\n}';
-};
-
-/**
- * Visit rule node.
- */
-
-Compiler.prototype.rule = function(node){
-  var decls = node.declarations;
-  if (!decls.length) return '';
-
-  return node.selectors.join(',')
-    + '{'
-    + decls.map(this.visit, this).join('')
-    + '}';
-};
-
-/**
- * Visit declaration node.
- */
-
-Compiler.prototype.declaration = function(node){
-  return node.property + ':' + node.value + ';';
-};
-
-
-},{}],57:[function(require,module,exports){
-
-/**
- * Expose compiler.
- */
-
-module.exports = Compiler;
-
-/**
- * Initialize a new `Compiler`.
- */
-
-function Compiler(options) {
-  options = options || {};
-  this.indentation = options.indent;
-}
-
-/**
- * Compile `node`.
- */
-
-Compiler.prototype.compile = function(node){
-  return node.stylesheet
-    .rules.map(this.visit, this)
-    .join('\n\n');
-};
-
-/**
- * Visit `node`.
- */
-
-Compiler.prototype.visit = function(node){
-  return this[node.type](node);
-};
-
-/**
- * Visit comment node.
- */
-
-Compiler.prototype.comment = function(node){
-  return this.indent() + '/*' + node.comment + '*/';
-};
-
-/**
- * Visit import node.
- */
-
-Compiler.prototype.import = function(node){
-  return '@import ' + node.import + ';';
-};
-
-/**
- * Visit media node.
- */
-
-Compiler.prototype.media = function(node){
-  return '@media '
-    + node.media
-    + ' {\n'
-    + this.indent(1)
-    + node.rules.map(this.visit, this).join('\n\n')
-    + this.indent(-1)
-    + '\n}';
-};
-
-/**
- * Visit document node.
- */
-
-Compiler.prototype.document = function(node){
-  var doc = '@' + (node.vendor || '') + 'document ' + node.document;
-
-  return doc + ' '
-    + ' {\n'
-    + this.indent(1)
-    + node.rules.map(this.visit, this).join('\n\n')
-    + this.indent(-1)
-    + '\n}';
-};
-
-/**
- * Visit charset node.
- */
-
-Compiler.prototype.charset = function(node){
-  return '@charset ' + node.charset + ';\n';
-};
-
-/**
- * Visit supports node.
- */
-
-Compiler.prototype.supports = function(node){
-  return '@supports '
-    + node.supports
-    + ' {\n'
-    + this.indent(1)
-    + node.rules.map(this.visit, this).join('\n\n')
-    + this.indent(-1)
-    + '\n}';
-};
-
-/**
- * Visit keyframes node.
- */
-
-Compiler.prototype.keyframes = function(node){
-  return '@'
-    + (node.vendor || '')
-    + 'keyframes '
-    + node.name
-    + ' {\n'
-    + this.indent(1)
-    + node.keyframes.map(this.visit, this).join('\n')
-    + this.indent(-1)
-    + '}';
-};
-
-/**
- * Visit keyframe node.
- */
-
-Compiler.prototype.keyframe = function(node){
-  var decls = node.declarations;
-
-  return this.indent()
-    + node.values.join(', ')
-    + ' {\n'
-    + this.indent(1)
-    + decls.map(this.visit, this).join('\n')
-    + this.indent(-1)
-    + '\n' + this.indent() + '}\n';
-};
-
-/**
- * Visit page node.
- */
-
-Compiler.prototype.page = function(node){
-  var sel = node.selectors.length
-    ? node.selectors.join(', ') + ' '
-    : '';
-
-  return '@page ' + sel
-    + '{\n'
-    + this.indent(1)
-    + node.declarations.map(this.visit, this).join('\n')
-    + this.indent(-1)
-    + '\n}';
-};
-
-/**
- * Visit rule node.
- */
-
-Compiler.prototype.rule = function(node){
-  var indent = this.indent();
-  var decls = node.declarations;
-  if (!decls.length) return '';
-
-  return node.selectors.map(function(s){ return indent + s }).join(',\n')
-    + ' {\n'
-    + this.indent(1)
-    + decls.map(this.visit, this).join('\n')
-    + this.indent(-1)
-    + '\n' + this.indent() + '}';
-};
-
-/**
- * Visit declaration node.
- */
-
-Compiler.prototype.declaration = function(node){
-  return this.indent() + node.property + ': ' + node.value + ';';
-};
-
-/**
- * Increase, decrease or return current indentation.
- */
-
-Compiler.prototype.indent = function(level) {
-  this.level = this.level || 1;
-
-  if (null != level) {
-    this.level += level;
-    return '';
-  }
-
-  return Array(this.level).join(this.indentation || '  ');
-};
-
-},{}],58:[function(require,module,exports){
-
-module.exports = {
-    aliceblue: [240, 248, 255]
-  , antiquewhite: [250, 235, 215]
-  , aqua: [0, 255, 255]
-  , aquamarine: [127, 255, 212]
-  , azure: [240, 255, 255]
-  , beige: [245, 245, 220]
-  , bisque: [255, 228, 196]
-  , black: [0, 0, 0]
-  , blanchedalmond: [255, 235, 205]
-  , blue: [0, 0, 255]
-  , blueviolet: [138, 43, 226]
-  , brown: [165, 42, 42]
-  , burlywood: [222, 184, 135]
-  , cadetblue: [95, 158, 160]
-  , chartreuse: [127, 255, 0]
-  , chocolate: [210, 105, 30]
-  , coral: [255, 127, 80]
-  , cornflowerblue: [100, 149, 237]
-  , cornsilk: [255, 248, 220]
-  , crimson: [220, 20, 60]
-  , cyan: [0, 255, 255]
-  , darkblue: [0, 0, 139]
-  , darkcyan: [0, 139, 139]
-  , darkgoldenrod: [184, 132, 11]
-  , darkgray: [169, 169, 169]
-  , darkgreen: [0, 100, 0]
-  , darkgrey: [169, 169, 169]
-  , darkkhaki: [189, 183, 107]
-  , darkmagenta: [139, 0, 139]
-  , darkolivegreen: [85, 107, 47]
-  , darkorange: [255, 140, 0]
-  , darkorchid: [153, 50, 204]
-  , darkred: [139, 0, 0]
-  , darksalmon: [233, 150, 122]
-  , darkseagreen: [143, 188, 143]
-  , darkslateblue: [72, 61, 139]
-  , darkslategray: [47, 79, 79]
-  , darkslategrey: [47, 79, 79]
-  , darkturquoise: [0, 206, 209]
-  , darkviolet: [148, 0, 211]
-  , deeppink: [255, 20, 147]
-  , deepskyblue: [0, 191, 255]
-  , dimgray: [105, 105, 105]
-  , dimgrey: [105, 105, 105]
-  , dodgerblue: [30, 144, 255]
-  , firebrick: [178, 34, 34]
-  , floralwhite: [255, 255, 240]
-  , forestgreen: [34, 139, 34]
-  , fuchsia: [255, 0, 255]
-  , gainsboro: [220, 220, 220]
-  , ghostwhite: [248, 248, 255]
-  , gold: [255, 215, 0]
-  , goldenrod: [218, 165, 32]
-  , gray: [128, 128, 128]
-  , green: [0, 128, 0]
-  , greenyellow: [173, 255, 47]
-  , grey: [128, 128, 128]
-  , honeydew: [240, 255, 240]
-  , hotpink: [255, 105, 180]
-  , indianred: [205, 92, 92]
-  , indigo: [75, 0, 130]
-  , ivory: [255, 255, 240]
-  , khaki: [240, 230, 140]
-  , lavender: [230, 230, 250]
-  , lavenderblush: [255, 240, 245]
-  , lawngreen: [124, 252, 0]
-  , lemonchiffon: [255, 250, 205]
-  , lightblue: [173, 216, 230]
-  , lightcoral: [240, 128, 128]
-  , lightcyan: [224, 255, 255]
-  , lightgoldenrodyellow: [250, 250, 210]
-  , lightgray: [211, 211, 211]
-  , lightgreen: [144, 238, 144]
-  , lightgrey: [211, 211, 211]
-  , lightpink: [255, 182, 193]
-  , lightsalmon: [255, 160, 122]
-  , lightseagreen: [32, 178, 170]
-  , lightskyblue: [135, 206, 250]
-  , lightslategray: [119, 136, 153]
-  , lightslategrey: [119, 136, 153]
-  , lightsteelblue: [176, 196, 222]
-  , lightyellow: [255, 255, 224]
-  , lime: [0, 255, 0]
-  , limegreen: [50, 205, 50]
-  , linen: [250, 240, 230]
-  , magenta: [255, 0, 255]
-  , maroon: [128, 0, 0]
-  , mediumaquamarine: [102, 205, 170]
-  , mediumblue: [0, 0, 205]
-  , mediumorchid: [186, 85, 211]
-  , mediumpurple: [147, 112, 219]
-  , mediumseagreen: [60, 179, 113]
-  , mediumslateblue: [123, 104, 238]
-  , mediumspringgreen: [0, 250, 154]
-  , mediumturquoise: [72, 209, 204]
-  , mediumvioletred: [199, 21, 133]
-  , midnightblue: [25, 25, 112]
-  , mintcream: [245, 255, 250]
-  , mistyrose: [255, 228, 225]
-  , moccasin: [255, 228, 181]
-  , navajowhite: [255, 222, 173]
-  , navy: [0, 0, 128]
-  , oldlace: [253, 245, 230]
-  , olive: [128, 128, 0]
-  , olivedrab: [107, 142, 35]
-  , orange: [255, 165, 0]
-  , orangered: [255, 69, 0]
-  , orchid: [218, 112, 214]
-  , palegoldenrod: [238, 232, 170]
-  , palegreen: [152, 251, 152]
-  , paleturquoise: [175, 238, 238]
-  , palevioletred: [219, 112, 147]
-  , papayawhip: [255, 239, 213]
-  , peachpuff: [255, 218, 185]
-  , peru: [205, 133, 63]
-  , pink: [255, 192, 203]
-  , plum: [221, 160, 203]
-  , powderblue: [176, 224, 230]
-  , purple: [128, 0, 128]
-  , red: [255, 0, 0]
-  , rosybrown: [188, 143, 143]
-  , royalblue: [65, 105, 225]
-  , saddlebrown: [139, 69, 19]
-  , salmon: [250, 128, 114]
-  , sandybrown: [244, 164, 96]
-  , seagreen: [46, 139, 87]
-  , seashell: [255, 245, 238]
-  , sienna: [160, 82, 45]
-  , silver: [192, 192, 192]
-  , skyblue: [135, 206, 235]
-  , slateblue: [106, 90, 205]
-  , slategray: [119, 128, 144]
-  , slategrey: [119, 128, 144]
-  , snow: [255, 255, 250]
-  , springgreen: [0, 255, 127]
-  , steelblue: [70, 130, 180]
-  , tan: [210, 180, 140]
-  , teal: [0, 128, 128]
-  , thistle: [216, 191, 216]
-  , tomato: [255, 99, 71]
-  , turquoise: [64, 224, 208]
-  , violet: [238, 130, 238]
-  , wheat: [245, 222, 179]
-  , white: [255, 255, 255]
-  , whitesmoke: [245, 245, 245]
-  , yellow: [255, 255, 0]
-  , yellowgreen: [154, 205, 5]
-};
-},{}]},{},[5])
+},{}]},{},[1])
 ;

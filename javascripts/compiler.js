@@ -1,23 +1,10 @@
 (function() {
-  var CoffeeScript, indentText, keywords, keywordsRegex, selfClosing, styl, util,
+  var CoffeeScript, indentText, keywords, keywordsRegex, styl, util,
     __slice = [].slice;
 
   CoffeeScript = require("coffee-script");
 
   styl = require('styl');
-
-  selfClosing = {
-    area: true,
-    base: true,
-    br: true,
-    col: true,
-    hr: true,
-    img: true,
-    input: true,
-    link: true,
-    meta: true,
-    param: true
-  };
 
   indentText = function(text, indent) {
     if (indent == null) {
@@ -26,12 +13,11 @@
     return indent + text.replace(/\n/g, "\n" + indent);
   };
 
-  keywords = ["on", "each", "with"];
+  keywords = ["on", "each", "with", "render"];
 
   keywordsRegex = RegExp("\\s*(" + (keywords.join('|')) + ")\\s+");
 
   util = {
-    selfClosing: selfClosing,
     indent: indentText,
     filters: {
       styl: function(content, compiler) {
@@ -75,12 +61,12 @@
         var name, value;
         name = _arg.name, value = _arg.value;
         name = JSON.stringify(name);
-        return "__observeAttribute __element, " + name + ", " + value;
+        return "__attribute __element, " + name + ", " + value;
       });
       return lines = ["__element = document.createElement(" + (JSON.stringify(tag)) + ")", "__push(__element)"].concat(__slice.call(attributeLines), __slice.call(contents), ["__pop()"]);
     },
     buffer: function(value) {
-      return ["__element = document.createTextNode('')", "__observeText(__element, " + value + ")", "__push __element", "__pop()"];
+      return ["__element = document.createTextNode('')", "__text(__element, " + value + ")", "__push __element", "__pop()"];
     },
     stringJoin: function(values) {
       var dynamic;
@@ -198,7 +184,7 @@
 
   exports.util = util;
 
-  exports.renderJST = function(parseTree, _arg) {
+  exports.compile = function(parseTree, _arg) {
     var compiler, error, explicitScripts, items, name, options, program, programSource, source, _ref;
     _ref = _arg != null ? _arg : {}, explicitScripts = _ref.explicitScripts, name = _ref.name, compiler = _ref.compiler;
     if (compiler) {
@@ -206,7 +192,7 @@
     }
     util.explicitScripts = explicitScripts;
     items = util.renderNodes(parseTree);
-    source = "(data) ->\n  (->\n    {\n      __push\n      __pop\n      __observeAttribute\n      __observeText\n      __on\n      __each\n      __with\n    } = Runtime(this) # TODO Namespace\n\n    __push document.createDocumentFragment()\n" + (util.indent(items.join("\n"), "    ")) + "\n    __pop()\n  ).call(data)";
+    source = "(data) ->\n  (->\n    {\n      __push\n      __pop\n      __attribute\n      __text\n      __on\n      __each\n      __with\n      __render\n    } = HAMLjr.Runtime(this)\n\n    __push document.createDocumentFragment()\n" + (util.indent(items.join("\n"), "    ")) + "\n    __pop()\n  ).call(data)";
     if (name) {
       options = {};
       programSource = "@HAMLjr ||= {}\n@HAMLjr.templates ||= {}\n@HAMLjr.templates[" + (JSON.stringify(name)) + "] = " + source;

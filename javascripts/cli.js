@@ -1,15 +1,11 @@
 (function() {
-  var document, file, fs, jsdom, parser, renderHaml, renderJST, runFile, _ref;
+  var HAMLjr, compile, document, file, fs, jsdom, parser, runFile, _ref;
 
   fs = require('fs');
 
   jsdom = require("jsdom").jsdom;
 
-  parser = require('./haml-jr').parser;
-
-  _ref = require('./renderer'), renderJST = _ref.renderJST, renderHaml = _ref.renderHaml;
-
-  global.Runtime = require('./runtime').Runtime;
+  _ref = HAMLjr = require('./haml-jr'), parser = _ref.parser, compile = _ref.compile;
 
   file = process.argv[2];
 
@@ -19,7 +15,7 @@
     var ast, data, fn, fragment, output, program;
     data = fs.readFileSync(name, "UTF-8");
     ast = parser.parse(data);
-    program = renderJST(ast, {
+    program = compile(ast, {
       explicitScripts: true
     });
     fn = eval(program);

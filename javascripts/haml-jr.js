@@ -1,10 +1,14 @@
 (function() {
-  var extend, lexer, oldParse, parser,
+  var Runtime, compile, extend, lexer, oldParse, parser, util, _ref,
     __slice = [].slice;
+
+  _ref = require("./compiler"), compile = _ref.compile, util = _ref.util;
+
+  lexer = require("./lexer").lexer;
 
   parser = require("./parser").parser;
 
-  lexer = require("./lexer").lexer;
+  Runtime = require("./runtime").Runtime;
 
   extend = function() {
     var name, source, sources, target, _i, _len;
@@ -76,6 +80,11 @@
     }
   });
 
-  exports.parser = parser;
+  extend(exports, {
+    compile: compile,
+    parser: parser,
+    Runtime: Runtime,
+    util: util
+  });
 
 }).call(this);

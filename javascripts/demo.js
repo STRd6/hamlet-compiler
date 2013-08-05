@@ -1,11 +1,9 @@
 (function() {
-  var fs, parser, renderHaml, renderJST, runFile, sampleDir, samples, testFile, _ref;
+  var HAMLjr, compile, fs, parser, runFile, sampleDir, samples, testFile, _ref;
 
   fs = require('fs');
 
-  parser = require('./haml-jr').parser;
-
-  _ref = require('./renderer'), renderJST = _ref.renderJST, renderHaml = _ref.renderHaml;
+  _ref = HAMLjr = require('./haml-jr'), parser = _ref.parser, compile = _ref.compile;
 
   sampleDir = "test/samples/haml";
 
@@ -13,17 +11,11 @@
 
   samples = {};
 
-  global.parser = parser;
-
   fs.readdirSync(sampleDir).forEach(function(file) {
     var data;
     data = fs.readFileSync("" + sampleDir + "/" + file, "UTF-8");
     return samples[file] = data;
   });
-
-  exports.samples = samples;
-
-  exports.parser = parser;
 
   runFile = function(name) {
     var file, result, sample;
@@ -33,7 +25,7 @@
     fs.writeFile(file, JSON.stringify(result, null, 2));
     console.log("Writing to file: " + file);
     file = "results/" + name + ".js";
-    fs.writeFile(file, renderJST(result, {
+    fs.writeFile(file, compile(result, {
       name: name
     }));
     return console.log("Writing to file: " + file);

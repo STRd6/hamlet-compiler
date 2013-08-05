@@ -1,21 +1,17 @@
 (function() {
-  var Gistquire, auth, load, parser, postData, renderJST, rerender, save, styl, update, util, _ref;
+  var Gistquire, HAMLjr, auth, compile, load, parser, postData, rerender, save, styl, update, util, _ref;
 
-  parser = require('./haml-jr').parser;
-
-  _ref = require('./renderer'), renderJST = _ref.renderJST, util = _ref.util;
+  _ref = HAMLjr = require('./haml-jr'), parser = _ref.parser, compile = _ref.compile, util = _ref.util;
 
   Gistquire = require('./gistquire');
 
   styl = require('styl');
 
+  window.HAMLjr = HAMLjr;
+
   window.Observable = require('./observable');
 
-  require('./runtime');
-
   window.parser = parser;
-
-  window.render = renderJST;
 
   rerender = (function() {
     var ast, coffee, data, error, fragment, haml, selector, style, template, _ref1;
@@ -41,7 +37,7 @@
     }
     try {
       ast = parser.parse(haml + "\n");
-      template = Function("return " + render(ast, {
+      template = Function("return " + compile(ast, {
         compiler: CoffeeScript
       }))();
       $("#errors p").eq(1).empty();

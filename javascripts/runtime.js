@@ -4,7 +4,7 @@
   dataName = "__hamlJR_data";
 
   Runtime = function(context) {
-    var append, lastParent, observeAttribute, observeText, pop, push, stack, top;
+    var append, lastParent, observeAttribute, observeText, pop, push, render, stack, top;
     stack = [];
     lastParent = function() {
       var element, i;
@@ -58,11 +58,17 @@
       unobserve = function() {};
       return node.addEventListener("DOMNodeRemoved", unobserve, true);
     };
+    render = function(object) {
+      var template;
+      template = object.template;
+      push(HAMLjr.templates[template](object));
+      return pop();
+    };
     return {
       __push: push,
       __pop: pop,
-      __observeAttribute: observeAttribute,
-      __observeText: observeText,
+      __attribute: observeAttribute,
+      __text: observeText,
       __each: function(items, fn) {
         var elements, parent, replace;
         items = Observable.lift(items);
@@ -159,6 +165,6 @@
     };
   };
 
-  (typeof window !== "undefined" && window !== null ? window : exports).Runtime = Runtime;
+  exports.Runtime = Runtime;
 
 }).call(this);
