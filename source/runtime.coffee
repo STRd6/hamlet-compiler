@@ -73,8 +73,8 @@ Runtime = (context) ->
     __push: push
     __pop: pop
 
-    __observeAttribute: observeAttribute
-    __observeText: observeText
+    __attribute: observeAttribute
+    __text: observeText
 
     __each: (items, fn) ->
       items = Observable.lift(items)

@@ -7,8 +7,8 @@
 
   this.HAMLjr.templates["filters2"] = function(data) {
     return (function() {
-      var __each, __element, __observeAttribute, __observeText, __on, __pop, __push, __with, _ref;
-      _ref = Runtime(this), __push = _ref.__push, __pop = _ref.__pop, __observeAttribute = _ref.__observeAttribute, __observeText = _ref.__observeText, __on = _ref.__on, __each = _ref.__each, __with = _ref.__with;
+      var __attribute, __each, __element, __on, __pop, __push, __render, __text, __with, _ref;
+      _ref = HAMLjr.Runtime(this), __push = _ref.__push, __pop = _ref.__pop, __attribute = _ref.__attribute, __text = _ref.__text, __on = _ref.__on, __each = _ref.__each, __with = _ref.__with, __render = _ref.__render;
       __push(document.createDocumentFragment());
       
       alert('yolo');
@@ -18,21 +18,21 @@
       alert("yolo");
       __element = document.createElement("div");
       __push(__element);
-      __observeAttribute(__element, "class", "duder");
+      __attribute(__element, "class", "duder");
       __element = document.createTextNode('');
-      __observeText(__element, "col\n");
+      __text(__element, "col\n");
       __push(__element);
       __pop();
       __element = document.createTextNode('');
-      __observeText(__element, "sweets\n\n");
+      __text(__element, "sweets\n\n");
       __push(__element);
       __pop();
       __pop();
       __element = document.createElement("div");
       __push(__element);
-      __observeAttribute(__element, "class", "duder2");
+      __attribute(__element, "class", "duder2");
       __element = document.createTextNode('');
-      __observeText(__element, "cool\n");
+      __text(__element, "cool\n");
       __push(__element);
       __pop();
       __pop();

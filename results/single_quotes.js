@@ -7,13 +7,13 @@
 
   this.HAMLjr.templates["single_quotes"] = function(data) {
     return (function() {
-      var __each, __element, __observeAttribute, __observeText, __on, __pop, __push, __with, _ref;
-      _ref = Runtime(this), __push = _ref.__push, __pop = _ref.__pop, __observeAttribute = _ref.__observeAttribute, __observeText = _ref.__observeText, __on = _ref.__on, __each = _ref.__each, __with = _ref.__with;
+      var __attribute, __each, __element, __on, __pop, __push, __render, __text, __with, _ref;
+      _ref = HAMLjr.Runtime(this), __push = _ref.__push, __pop = _ref.__pop, __attribute = _ref.__attribute, __text = _ref.__text, __on = _ref.__on, __each = _ref.__each, __with = _ref.__with, __render = _ref.__render;
       __push(document.createDocumentFragment());
       __element = document.createElement("img");
       __push(__element);
-      __observeAttribute(__element, "src", 'http://duderman.info/#{yolocountyusa}');
-      __observeAttribute(__element, "data-rad", 'what the duder?');
+      __attribute(__element, "src", 'http://duderman.info/#{yolocountyusa}');
+      __attribute(__element, "data-rad", 'what the duder?');
       __pop();
       return __pop();
     }).call(data);

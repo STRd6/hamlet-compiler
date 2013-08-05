@@ -1,21 +1,16 @@
 fs = require('fs')
-{parser} = require('./haml-jr')
-{renderJST, renderHaml} = require('./renderer')
+{parser, compile} = HAMLjr = require('./haml-jr')
 
 sampleDir = "test/samples/haml"
 
 testFile = process.argv[2]
 
 samples = {}
-global.parser = parser
 
 fs.readdirSync(sampleDir).forEach (file) ->
   data = fs.readFileSync "#{sampleDir}/#{file}", "UTF-8"
 
   samples[file] = data
-
-exports.samples = samples
-exports.parser = parser
 
 runFile = (name) ->
   sample = samples["#{name}.haml"]
@@ -26,7 +21,7 @@ runFile = (name) ->
   console.log "Writing to file: #{file}"
 
   file = "results/#{name}.js"
-  fs.writeFile(file, renderJST(result, name: name))
+  fs.writeFile(file, compile(result, name: name))
   console.log "Writing to file: #{file}"
 
 if testFile
@@ -36,4 +31,3 @@ else
     name = sample.split(".")[0]
 
     runFile(name)
-

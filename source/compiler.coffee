@@ -62,7 +62,7 @@ util =
       name = JSON.stringify(name)
 
       """
-        __observeAttribute __element, #{name}, #{value}
+        __attribute __element, #{name}, #{value}
       """
 
     lines = [
@@ -76,7 +76,7 @@ util =
   buffer: (value) ->
     [
       "__element = document.createTextNode('')"
-      "__observeText(__element, #{value})"
+      "__text(__element, #{value})"
       "__push __element"
       "__pop()"
     ]
@@ -203,8 +203,8 @@ exports.compile = (parseTree, {explicitScripts, name, compiler}={}) ->
         {
           __push
           __pop
-          __observeAttribute
-          __observeText
+          __attribute
+          __text
           __on
           __each
           __with

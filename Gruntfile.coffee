@@ -52,7 +52,10 @@ module.exports = (grunt) ->
           "node build/cli.js demo.haml > gh-pages/index.html"
         ].join(' && ')
       test:
-        command: "mocha --compilers coffee:coffee-script --reporter spec"
+        command: [
+          "mocha --compilers coffee:coffee-script --reporter spec"
+          "node build/demo.js"
+        ].join(' && ')
       setup:
         command: [
           "if [ ! -d gh-pages ]; then git clone -b gh-pages `git config --get remote.origin.url` gh-pages; fi"
