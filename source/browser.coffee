@@ -3,7 +3,10 @@ Gistquire = require './gistquire'
 styl = require('styl')
 
 window.HAMLjr = HAMLjr
-window.Observable = require('./observable')
+# We depend on cornerstone, but let tempest require it so as not to
+# double up
+window.Observable = require('tempest-js').Observable
+window.r = require
 
 window.parser = parser
 

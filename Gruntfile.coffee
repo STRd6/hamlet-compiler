@@ -9,7 +9,6 @@ module.exports = (grunt) ->
     "gistquire"
     "grammar_dsl"
     "haml-jr"
-    "observable"
     "runtime"
   ].forEach (name) ->
     destination = "build/#{name}.js"
