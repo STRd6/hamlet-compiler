@@ -9,7 +9,9 @@
 
   window.HAMLjr = HAMLjr;
 
-  window.Observable = require('./observable');
+  window.Observable = require('tempest-js').Observable;
+
+  window.r = require;
 
   window.parser = parser;
 
