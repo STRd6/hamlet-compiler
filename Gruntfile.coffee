@@ -37,15 +37,6 @@ module.exports = (grunt) ->
           "npm install -g coffee-script jison jison-lex simple-http-server mocha"
         ].join(' && ')
 
-      "gh-pages":
-        command: [
-          "rm -r gh-pages/*"
-          "mkdir -p gh-pages/javascripts"
-          "cp -r lib gh-pages/javascripts/"
-          "cp build/*.js gh-pages/javascripts"
-          "node build/cli.js demo.haml > gh-pages/index.html"
-        ].join(' && ')
-
       "gh-pages-push":
         command: [
           "cd gh-pages"
@@ -72,8 +63,8 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'gh-pages', [
     'build'
-    'shell:gh-pages'
+    'shell:demo'
     'shell:gh-pages-push'
   ]
 
-  grunt.registerTask 'default', ['build', 'shell:gh-pages']
+  grunt.registerTask 'default', ['build']

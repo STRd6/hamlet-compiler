@@ -2,6 +2,9 @@ TODO
 ----
 Whitespace between text elements
 
+Move demo to tempest
 Move move optional filters into runtime, (styl, markdown)
 
 Remove local __element references and always only operate on top of stack
+
+Allow inline html (lines beginning with <)?
