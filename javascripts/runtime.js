@@ -70,6 +70,7 @@
       __pop: pop,
       __attribute: observeAttribute,
       __text: observeText,
+      __filter: function(name, content) {},
       __each: function(items, fn) {
         var elements, parent, replace;
         items = Observable.lift(items);
