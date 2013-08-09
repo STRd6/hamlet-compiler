@@ -63,7 +63,6 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'gh-pages', [
     'build'
-    'shell:demo'
     'shell:gh-pages-push'
   ]
 
