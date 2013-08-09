@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 rm -r gh-pages/*
 mkdir -p gh-pages/javascripts
