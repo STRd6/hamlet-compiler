@@ -113,7 +113,7 @@ $ ->
     return editor
 
   if code = window.location.href.match(/\?code=(.*)/)?[1]
-    $.getJSON 'https://hamljr-auth.herokuapp.com/authenticate/#{code}', (data) ->
+    $.getJSON "https://hamljr-auth.herokuapp.com/authenticate/#{code}", (data) ->
       if token = data.token
         Gistquire.authToken = token
         localStorage.authToken = token
