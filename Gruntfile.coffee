@@ -23,18 +23,10 @@ module.exports = (grunt) ->
         ].join(' && ')
       parser:
         command: "./script/generate.coffee"
-      demo:
-        command: "script/demo"
       test:
         command: [
           "script/test"
           "node build/demo.js"
-        ].join(' && ')
-      setup:
-        command: [
-          "if [ ! -d gh-pages ]; then git clone -b gh-pages `git config --get remote.origin.url` gh-pages; fi"
-          "mkdir -p build"
-          "npm install -g coffee-script jison jison-lex simple-http-server mocha"
         ].join(' && ')
 
       "gh-pages-push":
@@ -45,20 +37,12 @@ module.exports = (grunt) ->
           "git push"
         ].join(' && ')
 
-  grunt.loadNpmTasks('grunt-browserify')
-  grunt.loadNpmTasks('grunt-shell')
 
   grunt.registerTask 'test', ['build', 'shell:test']
   grunt.registerTask 'build', [
     'shell:lexer'
     'shell:coffee'
     'shell:parser'
-    'browserify'
-    'shell:demo'
-  ]
-
-  grunt.registerTask 'setup', [
-    'shell:setup'
   ]
 
   grunt.registerTask 'gh-pages', [

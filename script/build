@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+# normal files
+./node_modules/.bin/coffee -co build/ source/
+
+# lexer
+node_modules/.bin/jison-lex -o build/lexer.js source/haml.jisonlex
+echo 'exports.lexer = lexer;' >> build/lexer.js
+
+# parser
+script/generate_parser.coffee

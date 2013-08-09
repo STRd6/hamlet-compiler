@@ -2,16 +2,11 @@
   "name": "hamljr",
   "version": "0.1.0",
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-browserify": "~1.2.0",
-    "grunt-shell": "~0.3.0",
     "jison": "~0.4.6",
-    "mocha": "~1.12.0",
-    "styl": "~0.2.3"
+    "jison-lex": "~0.2.1",
+    "mocha": "~1.12.0"
   },
   "dependencies": {
-    "coffee-script": "~1.6.3",
-    "jsdom": "~0.7.0",
-    "tempest-js": "~0.1.0"
+    "coffee-script": "~1.6.3"
   }
 }
