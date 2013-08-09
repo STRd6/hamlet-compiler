@@ -3,63 +3,12 @@
     %title HamlJr
     %meta(charset="utf-8")
 
+    %link(rel="stylesheet" type="text/css" href="style.css")
+
     %script(src="javascripts/lib/coffee-script.js")
     %script(src="javascripts/lib/zepto.min.js")
     %script(src="//d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js")
     %script(src="javascripts/web.js")
-
-    :styl
-      .editor-wrapper
-        display: inline-block
-        position: relative
-        height: 400px
-        width: 33%
-
-        & > div
-          position: absolute
-          top: 0
-          right: 0
-          bottom: 0
-          left: 0
-
-      #actions
-        position: fixed
-        top: 20px
-        right: 20px
-
-      #errors
-        color: red
-
-      body
-        background-color: #ECFBFF
-        color: #2B231C
-        padding-top: 1em
-        font-family: helvetica
-        margin: auto
-        width: 1100px
-
-      .titles
-        h2
-          display: inline-block
-          width: 33%
-          margin: 0.25em 0
-
-      #errors
-        p
-          display: inline-block
-          width: 33%
-          color: red
-
-          &:empty
-            margin: 0
-
-      #debug
-        display: none
-
-        code
-          display: inline-block
-          white-space: pre
-          width: 33%
 
   %body
     %h1 Tempest - Alpha

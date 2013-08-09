@@ -1,5 +1,4 @@
 CoffeeScript = require "coffee-script"
-styl = require 'styl'
 
 indentText = (text, indent="  ") ->
   indent + text.replace(/\n/g, "\n#{indent}")
@@ -17,9 +16,6 @@ util =
   indent: indentText
 
   filters:
-    styl: (content, compiler) ->
-      compiler.styleTag styl(content, whitespace: true).toString()
-
     verbatim: (content, compiler) ->
       # TODO: Allow """ in content to stand
       compiler.buffer '"""' + content.replace(/(#)/, "\\$1") + '"""'
@@ -142,7 +138,14 @@ util =
     codeString.replace(keywordsRegex, "__$1 ")
 
   filter: (node) ->
-    [].concat.apply([], @filters[node.filter](node.content, this))
+    filterName = node.filter
+
+    if filter = @filters[filterName]
+      [].concat.apply([], @filters[filterName](node.content, this))
+    else
+      [
+        "__filter(#{JSON.stringify(filterName)}, #{JSON.stringify(node.content)})"
+      ]
 
   contents: (node) ->
     {children, bufferedCode, unbufferedCode, text} = node
@@ -204,6 +207,7 @@ exports.compile = (parseTree, {explicitScripts, name, compiler}={}) ->
           __push
           __pop
           __attribute
+          __filter
           __text
           __on
           __each

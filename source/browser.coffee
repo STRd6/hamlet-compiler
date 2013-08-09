@@ -1,6 +1,6 @@
 {parser, compile, util} = HAMLjr = require('./haml-jr')
 window.Gistquire = require './gistquire'
-styl = require('styl')
+# styl = require('styl')
 
 # We depend on cornerstone, but let tempest require it so as not to
 # double up

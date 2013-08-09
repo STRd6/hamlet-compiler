@@ -76,6 +76,9 @@ Runtime = (context) ->
     __attribute: observeAttribute
     __text: observeText
 
+    __filter: (name, content) ->
+      ; # TODO self.filters[name](content)
+
     __each: (items, fn) ->
       items = Observable.lift(items)
       elements = []

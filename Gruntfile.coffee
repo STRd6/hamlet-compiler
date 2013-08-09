@@ -4,11 +4,6 @@ module.exports = (grunt) ->
   grunt.initConfig
     pkg: grunt.file.readJSON('package.json')
 
-    uglify:
-      web:
-        files:
-          'build/web.min.js': ['build/web.js']
-
     browserify:
       options:
         ignore: "coffee-script"
@@ -29,13 +24,10 @@ module.exports = (grunt) ->
       parser:
         command: "./script/generate.coffee"
       demo:
-        command: [
-          "mkdir -p gh-pages"
-          "node build/cli.js demo.haml > gh-pages/index.html"
-        ].join(' && ')
+        command: "script/demo"
       test:
         command: [
-          "mocha --compilers coffee:coffee-script --reporter spec"
+          "script/test"
           "node build/demo.js"
         ].join(' && ')
       setup:
@@ -63,16 +55,14 @@ module.exports = (grunt) ->
         ].join(' && ')
 
   grunt.loadNpmTasks('grunt-browserify')
-  grunt.loadNpmTasks('grunt-contrib-uglify')
   grunt.loadNpmTasks('grunt-shell')
 
   grunt.registerTask 'test', ['build', 'shell:test']
   grunt.registerTask 'build', [
     'shell:lexer'
-    'shell:parser'
     'shell:coffee'
+    'shell:parser'
     'browserify'
-    'uglify'
     'shell:demo'
   ]
 
