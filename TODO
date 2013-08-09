@@ -1,10 +1,7 @@
 TODO
 ----
-
-Handle Array Data
-Handle Nullable Data
-
 Whitespace between text elements
 
-Move Runtime under HAMLjr namespace
 Move move optional filters into runtime, (styl, markdown)
+
+Remove local __element references and always only operate on top of stack

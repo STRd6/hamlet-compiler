@@ -2,12 +2,13 @@
 Gistquire = require './gistquire'
 styl = require('styl')
 
-window.HAMLjr = HAMLjr
 # We depend on cornerstone, but let tempest require it so as not to
 # double up
-window.Observable = require('tempest-js').Observable
-window.r = require
+TextEditor = require('./text_editor')
+Tempest = require('tempest-js')
+Object.extend window, Tempest
 
+window.HAMLjr = HAMLjr
 window.parser = parser
 
 rerender = (->
@@ -19,7 +20,7 @@ rerender = (->
   # HACK for embedded
   return unless $("#template").length
 
-  [coffee, haml, style] = editors.map (editor) -> editor.getValue()
+  [coffee, haml, style] = editors.map (editor) -> editor.text()
 
   try
     data = Function("return " + CoffeeScript.compile("do ->\n" + util.indent(coffee), bare: true))()
@@ -58,7 +59,7 @@ rerender = (->
 
 postData = ->
   [data, template, style] = editors.map (editor) ->
-    editor.getValue()
+    editor.text()
 
   JSON.stringify(
     public: true
@@ -84,11 +85,9 @@ auth = ->
 load = (id) ->
   Gistquire.get id, (data) ->
     ["data", "template", "style"].each (file, i) ->
-      content = data.files[file]?.content || ""
+      content = data.files[file]?.content
       editor = editors[i]
-      editor.setValue(content)
-      editor.moveCursorTo(0, 0)
-      editor.session.selection.clearSelection()
+      editor.reset(content)
 
     rerender()
 
@@ -102,14 +101,16 @@ $ ->
     ["template", "haml"]
     ["style", "stylus"]
   ].map ([id, mode]) ->
-    editor = ace.edit(id)
-    editor.setTheme("ace/theme/tomorrow");
-    editor.getSession().setMode("ace/mode/#{mode}")
-    editor.getSession().on 'change', rerender
-    editor.getSession().setUseSoftTabs(true)
-    editor.getSession().setTabSize(2)
+    $el = $("##{id}")
 
-    editor
+    editor = TextEditor
+      mode: mode
+      el: $el.get(0) # Dislike having to pass in an element here
+      text: $el.text()
+
+    editor.text.observe rerender
+
+    return editor
 
   if code = window.location.href.match(/\?code=(.*)/)?[1]
     $.getJSON 'https://hamljr-auth.herokuapp.com/authenticate/#{code}', (data) ->
