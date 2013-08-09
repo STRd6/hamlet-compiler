@@ -1,5 +1,5 @@
 {parser, compile, util} = HAMLjr = require('./haml-jr')
-Gistquire = require './gistquire'
+window.Gistquire = require './gistquire'
 styl = require('styl')
 
 # We depend on cornerstone, but let tempest require it so as not to
@@ -77,11 +77,6 @@ save = ->
   Gistquire.create postData(), (data) ->
     location.hash = data.id
 
-auth = ->
-  url = 'https://github.com/login/oauth/authorize?client_id=bc46af967c926ba4ff87&scope=gist,user:email'
-
-  window.location = url
-
 load = (id) ->
   Gistquire.get id, (data) ->
     ["data", "template", "style"].each (file, i) ->
@@ -112,20 +107,13 @@ $ ->
 
     return editor
 
-  if code = window.location.href.match(/\?code=(.*)/)?[1]
-    $.getJSON "https://hamljr-auth.herokuapp.com/authenticate/#{code}", (data) ->
-      if token = data.token
-        Gistquire.authToken = token
-        localStorage.authToken = token
+  Gistquire.onload()
 
   if id = location.hash?.substring(1)
     load(id)
   else
     rerender()
 
-  if localStorage.authToken
-    Gistquire.accessToken = localStorage.authToken
-
   $("#actions .save").on "click", save
-  $("#actions .auth").on "click", auth
+  $("#actions .auth").on "click", Gistquire.auth
   $("#actions .update").on "click", update
