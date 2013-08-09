@@ -1,27 +1,8 @@
 module.exports = (grunt) ->
 
-  coffeeFiles = {}
-  [
-    "browser"
-    "cli"
-    "compiler"
-    "demo"
-    "gistquire"
-    "grammar_dsl"
-    "haml-jr"
-    "runtime"
-  ].forEach (name) ->
-    destination = "build/#{name}.js"
-    source = "source/#{name}.coffee"
-    coffeeFiles[destination] = source
-
   # Project configuration.
   grunt.initConfig
     pkg: grunt.file.readJSON('package.json')
-
-    coffee:
-      compile:
-        files: coffeeFiles
 
     uglify:
       web:
@@ -38,6 +19,8 @@ module.exports = (grunt) ->
         stdout: true
         stderr: true
         failOnError: true
+      coffee:
+        command: "./node_modules/.bin/coffee -co build/ source/"
       lexer:
         command: [
           "jison-lex -o build/lexer.js source/haml.jisonlex"
@@ -80,7 +63,6 @@ module.exports = (grunt) ->
         ].join(' && ')
 
   grunt.loadNpmTasks('grunt-browserify')
-  grunt.loadNpmTasks('grunt-contrib-coffee')
   grunt.loadNpmTasks('grunt-contrib-uglify')
   grunt.loadNpmTasks('grunt-shell')
 
@@ -88,7 +70,7 @@ module.exports = (grunt) ->
   grunt.registerTask 'build', [
     'shell:lexer'
     'shell:parser'
-    'coffee'
+    'shell:coffee'
     'browserify'
     'uglify'
     'shell:demo'
