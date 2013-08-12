@@ -1,12 +1,24 @@
 {
-  "name": "hamljr",
+  "name": "haml-jr",
   "version": "0.1.0",
   "devDependencies": {
     "jison": "~0.4.6",
     "jison-lex": "~0.2.1",
-    "mocha": "~1.12.0"
+    "mocha": "~1.12.0",
+    "uglify-js": "~2.3.6"
   },
   "dependencies": {
     "coffee-script": "~1.6.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/STRd6/haml-jr.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepublish": "script/prepublish"
+  },
+  "main": "dist/haml-jr.js"
 }

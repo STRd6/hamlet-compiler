@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+# normal files
+./node_modules/.bin/coffee -co dist/ source/
+
+# lexer
+node_modules/.bin/jison-lex -o dist/lexer.js source/haml.jisonlex
+echo 'exports.lexer = lexer;' >> dist/lexer.js
+
+# parser
+script/generate_parser.coffee
+
+for file in dist/*.js
+do
+  ./node_modules/.bin/uglifyjs $file > tmp.js
+  mv tmp.js $file
+done

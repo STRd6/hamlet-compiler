@@ -5,4 +5,4 @@ path = require('path')
 
 parserSource = require('../source/parser').parser.generate()
 
-fs.writeFile path.join(__dirname, "..", "build", "parser.js"), parserSource, ->
+fs.writeFile path.join(__dirname, "..", "dist", "parser.js"), parserSource, ->
