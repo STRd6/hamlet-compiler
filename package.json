@@ -17,8 +17,9 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "prepublish": "script/prepublish"
+"scripts": {
+    "prepublish": "script/prepublish",
+    "test": "script/test"
   },
   "main": "dist/haml-jr.js"
 }

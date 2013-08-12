@@ -1,7 +1,7 @@
 assert = require('assert')
 fs = require('fs')
 
-{parser, compile} = require('../build/haml-jr')
+{parser, compile} = require('../dist/haml-jr')
 
 describe 'HAMLjr', ->
   describe 'parser', ->
