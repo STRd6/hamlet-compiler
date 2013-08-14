@@ -35,7 +35,7 @@ Runtime = (context) ->
       update(value)
       return
 
-    observable = Observable.lift(value)
+    observable = Observable.(value)
 
     observable.observe update
 
@@ -49,7 +49,7 @@ Runtime = (context) ->
       node.nodeValue = value
       return
 
-    observable = Observable.lift(value)
+    observable = Observable.(value)
 
     update = (newValue) ->
       node.nodeValue = newValue
@@ -80,7 +80,7 @@ Runtime = (context) ->
       ; # TODO self.filters[name](content)
 
     __each: (items, fn) ->
-      items = Observable.lift(items)
+      items = Observable.(items)
       elements = []
       parent = lastParent()
 
@@ -121,7 +121,7 @@ Runtime = (context) ->
     __with: (item, fn) ->
       element = null
 
-      item = Observable.lift(item)
+      item = Observable.(item)
 
       item.observe (newValue) ->
         replace element, newValue
