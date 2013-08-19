@@ -43,7 +43,6 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
 
 \n                    yy.indent = 0; return 'NEWLINE';
 <<EOF>>               return 'EOF';
-"!!!"                 return 'DOCTYPE';
 "  "                  yy.indent += 1; if(yy.indent > yy.filterIndent){this.begin('filter'); }; return 'INDENT';
 "("                   this.begin("parentheses_attributes"); return 'LEFT_PARENTHESIS';
 "{"                   this.begin("brace_attributes"); return 'LEFT_BRACE';

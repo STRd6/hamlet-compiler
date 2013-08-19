@@ -24,7 +24,6 @@ grammar =
   ]
 
   line: [
-    o "DOCTYPE end",                                 -> "doctype"
     o "indentation lineMain end",                    -> yy.append($lineMain, $indentation)
     o "end",                                         -> yy.newline() if $end.newline
   ]
