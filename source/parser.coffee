@@ -86,18 +86,9 @@ grammar =
   ]
 
   rest: [
-    o "EQUAL CODE",                                  -> { bufferedCode: $CODE }
-    o "HYPHEN CODE",                                 -> { unbufferedCode: $CODE }
-    o "text",                                        -> { text: $text + "\n" }
-  ]
-
-  text: [
-    o "beginText TEXT",                              -> $2
-    o "TEXT"
-  ]
-
-  beginText: [
-    o "WHITESPACE",                                  -> yy.lexer.begin('text')
+    o "BUFFERED_CODE",                               -> { bufferedCode: $BUFFERED_CODE }
+    o "UNBUFFERED_CODE",                             -> { unbufferedCode: $UNBUFFERED_CODE }
+    o "TEXT",                                        -> { text: $TEXT + "\n" }
   ]
 
 operators = []
