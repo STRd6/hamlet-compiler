@@ -3,8 +3,6 @@ NameStartChar               ":" | [A-Z] | "_" | [a-z] //| [\u00C0-\u00D6] | [\u0
 NameChar                    {NameStartChar} | "-" | [0-9] //| \u00B7 | [\u0300-\u036F] | [\u203F-\u2040]
 Name                        {NameStartChar}{NameChar}*(?!\-)
 
-%x code
-%x text
 %x brace_attributes
 %x brace_value
 %x parentheses_attributes
@@ -12,13 +10,6 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
 %x filter
 
 %%
-
-<code>\n                          this.popState(); return 'NEWLINE';
-<code>.*                          yytext = yytext.trim(); return 'CODE';
-
-<text>\n                          this.popState(); return 'NEWLINE';
-<text>.*                          return 'TEXT';
-
 <brace_attributes>"}"             this.popState(); return 'RIGHT_BRACE';
 <brace_attributes>\:{id}          yytext = yytext.substring(1); return 'ATTRIBUTE';
 <brace_attributes>[ \t]*"=>"[ \t] this.begin('brace_value'); return 'EQUAL';
@@ -51,7 +42,6 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
 \#{Name}              yytext = yytext.substring(1); return 'ID';
 \.{Name}              yytext = yytext.substring(1); return 'CLASS';
 \%{Name}              yytext = yytext.substring(1); return 'TAG';
-"="                   this.begin("code"); return 'EQUAL';
-"-"                   this.begin("code"); return 'HYPHEN';
-[ \t]+                return 'WHITESPACE';
-.*                    return 'TEXT';
+"=".*                 yytext = yytext.substring(1).trim(); return 'BUFFERED_CODE';
+"-".*                 yytext = yytext.substring(1).trim(); return 'UNBUFFERED_CODE';
+.*                    yytext = yytext.trimLeft(); return 'TEXT';
