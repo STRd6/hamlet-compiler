@@ -99,8 +99,8 @@ Runtime = (context) ->
           firstElement = oldElements[0]
           parent = firstElement?.parentElement
 
-          elements = items.map (item) ->
-            element = fn.call(item)
+          elements = items.map (args...) ->
+            element = fn.apply(item, args)
             element[dataName] = item
 
             parent.insertBefore element, firstElement
@@ -110,8 +110,8 @@ Runtime = (context) ->
           oldElements.each (element) ->
             element.remove()
         else
-          elements = items.map (item) ->
-            element = fn.call(item)
+          elements = items.map (args...) ->
+            element = fn.apply(item, args)
             element[dataName] = item
 
             return element
