@@ -3,5 +3,6 @@ TODO
 Whitespace between text elements
 
 Remove local __element references and always only operate on top of stack
+Replace all __<method> references with __rt.method
 
 Allow inline html (lines beginning with <)?
