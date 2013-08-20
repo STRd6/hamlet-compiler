@@ -13,6 +13,6 @@ script/generate_parser.coffee
 
 for file in dist/*.js
 do
-  ./node_modules/.bin/uglifyjs $file > tmp.js
+  ./node_modules/.bin/uglifyjs $file > tmp.js 2>/dev/null
   mv tmp.js $file
 done
