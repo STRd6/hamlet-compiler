@@ -24,24 +24,14 @@ util =
       compiler.buffer JSON.stringify(content)
 
     coffeescript: (content, compiler) ->
-      if compiler.explicitScripts
-        [
-          compiler.scriptTag(CoffeeScript.compile(content))
-        ]
-      else
-        [content]
+      [content]
 
     javascript: (content, compiler) ->
-      if compiler.explicitScripts
-        [
-          compiler.scriptTag(content)
-        ]
-      else
-        [
-          "`"
-          compiler.indent(content)
-          "`"
-        ]
+      [
+        "`"
+        compiler.indent(content)
+        "`"
+      ]
 
   styleTag: (content) ->
     @element "style", [], [
@@ -191,12 +181,10 @@ util =
 
 exports.util = util
 
-exports.compile = (parseTree, {explicitScripts, name, compiler}={}) ->
+exports.compile = (parseTree, {name, compiler}={}) ->
   # HAX: Browserify can't put CoffeeScript into the web...
   if compiler
     CoffeeScript = compiler
-
-  util.explicitScripts = explicitScripts
 
   items = util.renderNodes(parseTree)
 
