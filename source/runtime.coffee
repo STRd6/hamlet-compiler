@@ -44,6 +44,14 @@ Runtime = (context) ->
     # TODO Unsubscribe
 
   observeText = (node, value) ->
+    # Kind of a hack for handling sub renders
+    # TODO: Expand to all html nodes
+    # TODO: Observables?
+    if value.nodeType is 11
+      push(value)
+      pop()
+      return
+
     # CLI short-circuits here because it doesn't do observables
     unless Observable?
       node.nodeValue = value
