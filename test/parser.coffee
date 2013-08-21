@@ -24,3 +24,15 @@ describe 'HAMLjr', ->
 
       it "should compile #{file}", ->
         assert compile(ast)
+
+  describe 'compiler', ->
+    describe 'keywords', ->
+      it "should not replace `items.each` with `items.__each`", ->
+        compiled = compile(parser.parse('- items.each ->'))
+
+        assert !compiled.match(/items.__each/)
+
+      it "should replace `on 'click'` with `__on 'click'`", ->
+        compiled = compile(parser.parse('- on "click", ->'))
+
+        assert compiled.match(/__on\("click"/)

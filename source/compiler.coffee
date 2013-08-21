@@ -10,7 +10,7 @@ keywords = [
   "render"
 ]
 
-keywordsRegex = RegExp("\\s*(#{keywords.join('|')})\\s+")
+keywordsRegex = RegExp("^\\s*(#{keywords.join('|')})\\s+")
 
 util =
   indent: indentText
