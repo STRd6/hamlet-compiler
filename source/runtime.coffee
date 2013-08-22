@@ -102,10 +102,8 @@ Runtime = (context) ->
           # We may be able to hack around it by observing when
           # we're inserted into the dom and finding out what parent element
           # we have
-          # TODO: We may have trouble if the list starts out empty so we can't
-          # find the first element to insert into the correct position
           firstElement = oldElements[0]
-          parent = firstElement?.parentElement
+          parent = firstElement?.parentElement || parent
 
           elements = items.map (item, index, array) ->
             element = fn.call(item, item, index, array)
