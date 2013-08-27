@@ -32,7 +32,7 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
 <filter><<EOF>>       return 'EOF';
 <filter>[^\n]*        return 'FILTER_LINE';
 
-\n                    yy.indent = 0; return 'NEWLINE';
+\s*\n                 yy.indent = 0; return 'NEWLINE';
 <<EOF>>               return 'EOF';
 "  "                  yy.indent += 1; if(yy.indent > yy.filterIndent){this.begin('filter'); }; return 'INDENT';
 "("                   this.begin("parentheses_attributes"); return 'LEFT_PARENTHESIS';
