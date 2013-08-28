@@ -39,7 +39,6 @@ grammar =
 
   end: [
     o "NEWLINE",                                     -> newline: true
-    o "EOF"
   ]
 
   tag: [

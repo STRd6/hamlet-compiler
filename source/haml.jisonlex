@@ -28,12 +28,10 @@ Name                        {NameStartChar}{NameChar}*(?!\-)
 <value>\'(\\.|[^\\'])*\'          this.popState(); return 'ATTRIBUTE_VALUE';
 <value>[^ \t\)]*                  this.popState(); return 'ATTRIBUTE_VALUE';
 
-<filter>\n            yy.indent = 0; this.popState(); return 'NEWLINE';
-<filter><<EOF>>       return 'EOF';
+<filter>(\n|<<EOF>>)  yy.indent = 0; this.popState(); return 'NEWLINE';
 <filter>[^\n]*        return 'FILTER_LINE';
 
-\s*\n                 yy.indent = 0; return 'NEWLINE';
-<<EOF>>               return 'EOF';
+\s*(\n|<<EOF>>)       yy.indent = 0; return 'NEWLINE';
 "  "                  yy.indent += 1; if(yy.indent > yy.filterIndent){this.begin('filter'); }; return 'INDENT';
 "("                   this.begin("parentheses_attributes"); return 'LEFT_PARENTHESIS';
 "{"                   this.begin("brace_attributes"); return 'LEFT_BRACE';
