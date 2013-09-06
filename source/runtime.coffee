@@ -45,12 +45,14 @@ Runtime = (context) ->
 
   observeText = (node, value) ->
     # Kind of a hack for handling sub renders
-    # TODO: Expand to all html nodes
-    # TODO: Observables?
-    if value.nodeType is 11
-      push(value)
-      pop()
-      return
+    # or adding explicit html nodes to the output
+    # TODO: May want to make more sure that it's a real dom node
+    #       and not some other object with a nodeType property
+    switch value.nodeType
+      when 1, 3, 11
+        push(value)
+        pop()
+        return
 
     # CLI short-circuits here because it doesn't do observables
     unless Observable?
