@@ -1,6 +1,6 @@
 {
   "name": "haml-jr",
-  "version": "0.2.9",
+  "version": "0.3.0",
   "devDependencies": {
     "jison": "~0.4.6",
     "jison-lex": "~0.2.1",

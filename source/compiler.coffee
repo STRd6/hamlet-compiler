@@ -181,7 +181,7 @@ util =
 
 exports.util = util
 
-exports.compile = (parseTree, {name, compiler}={}) ->
+exports.compile = (parseTree, {name, exports, compiler}={}) ->
   # HAX: Browserify can't put CoffeeScript into the web...
   if compiler
     CoffeeScript = compiler
@@ -209,15 +209,19 @@ exports.compile = (parseTree, {name, compiler}={}) ->
       ).call(data)
   """
 
+  options = bare: true
+
   if name
-    options = {}
     programSource = """
       @HAMLjr ||= {}
       @HAMLjr.templates ||= {}
       @HAMLjr.templates[#{JSON.stringify(name)}] = #{source}
     """
+  else if exports
+    programSource = """
+      module.exports = #{source}
+    """
   else
-    options = bare: true
     programSource = source
 
   try
