@@ -1,4 +1,4 @@
-{compile, util} = require "./compiler"
+{compile} = require "./compiler"
 {lexer} = require "./lexer" # This is only in the build dir right now
 {parser} = require "./parser"
 {Runtime} = require "./runtime"
@@ -65,7 +65,10 @@ extend parser.yy,
     filter.content += "#{content}\n"
 
 extend exports,
-  compile: compile
+  compile: (input, options) ->
+    if typeof input is "string"
+      input = parser.parse(input)
+
+    return compile(input, options)
   parser: parser
   Runtime: Runtime
-  util: util
