@@ -210,11 +210,6 @@ exports.compile = (parseTree, {compiler}={}) ->
   options = bare: true
   programSource = source
 
-  try
-    program = CoffeeScript.compile programSource, options
+  program = CoffeeScript.compile programSource, options
 
-    return program
-  catch error
-    process.stderr.write "COMPILE ERROR:\n  SOURCE:\n #{programSource}\n"
-
-    throw error
+  return program
