@@ -4,6 +4,7 @@
   "devDependencies": {
     "jison": "~0.4.6",
     "jison-lex": "~0.2.1",
+    "jsdom": "~0.8.4",
     "mocha": "~1.12.0",
     "uglify-js": "~2.3.6"
   },

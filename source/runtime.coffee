@@ -48,7 +48,7 @@ Runtime = (context) ->
     # or adding explicit html nodes to the output
     # TODO: May want to make more sure that it's a real dom node
     #       and not some other object with a nodeType property
-    switch value.nodeType
+    switch value?.nodeType
       when 1, 3, 11
         push(value)
         pop()

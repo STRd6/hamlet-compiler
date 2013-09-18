@@ -1,7 +1,10 @@
 assert = require('assert')
 fs = require('fs')
 
-{parser, compile} = require('../dist/haml-jr')
+{jsdom} = require "jsdom"
+document = jsdom()
+
+{parser, compile} = HAMLjr = require('../dist/haml-jr')
 
 describe 'HAMLjr', ->
   describe 'parser', ->
@@ -36,3 +39,8 @@ describe 'HAMLjr', ->
         compiled = compile('- on "click", ->')
 
         assert compiled.match(/__on\("click"/)
+
+  describe "runtime", ->
+    it "should not blow up on undefined text node values", ->
+      compiled = compile('= @notThere')
+      assert eval(compiled)()
