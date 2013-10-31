@@ -44,3 +44,36 @@ describe 'HAMLjr', ->
     it "should not blow up on undefined text node values", ->
       compiled = compile('= @notThere')
       assert eval(compiled)()
+
+  describe "classes", ->
+    it "should render the classes passed in along with the classes prefixed", ->
+      compiled = eval compile(".radical(class=@myClass)")
+      result = compiled
+        myClass: "duder"
+
+      assert.equal result.childNodes[0].className, "radical duder"
+
+    # TODO: Observable class attributes
+
+  describe "ids", ->
+    it "should get them from the prefix", ->
+      compiled = eval compile("#radical")
+      result = compiled()
+
+      assert.equal result.childNodes[0].id, "radical"
+
+    it "should be overridden by the attribute value if present", ->
+      compiled = eval compile("#radical(id=@id)")
+      result = compiled
+        id: "wat"
+
+      assert.equal result.childNodes[0].id, "wat"
+
+    it "should not be overridden by the attribute value if not present", ->
+      compiled = eval compile("#radical(id=@id)")
+      result = compiled()
+
+      # TODO
+      # assert.equal result.childNodes[0].id, "radical"
+
+    # TODO: Observable id attributes
