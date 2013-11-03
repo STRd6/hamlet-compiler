@@ -1,6 +1,11 @@
 
 dataName = "__hamlJR_data"
 
+if window?
+  document = window.document
+else
+  document = global.document
+
 Runtime = (context) ->
   stack = []
 
@@ -108,11 +113,10 @@ Runtime = (context) ->
         render(value)
         return
 
-    # HACK: We don't want to know about the document inside here,
-    # even grabbing the ownerDocument is probably too much.
+    # HACK: We don't really want to know about the document inside here.
     # Creating our text nodes in here cleans up the external call
     # so it may be worth it.
-    element = top().ownerDocument.createTextNode('')
+    element = document.createTextNode('')
 
     update = (newValue) ->
       element.nodeValue = newValue

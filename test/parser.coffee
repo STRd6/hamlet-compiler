@@ -2,7 +2,7 @@ assert = require('assert')
 fs = require('fs')
 
 {jsdom} = require "jsdom"
-document = jsdom()
+global.document = document = jsdom()
 
 {parser, compile} = HAMLjr = require('../dist/haml-jr')
 
