@@ -7,7 +7,6 @@ keywords = [
   "on"
   "each"
   "with"
-  "render"
 ]
 
 keywordsRegex = RegExp("^\\s*(#{keywords.join('|')})\\s+")
@@ -35,16 +34,14 @@ util =
 
   element: (tag, contents=[]) ->
     lines = [
-      "__push document.createElement(#{JSON.stringify(tag)})"
+      "__runtime.push document.createElement(#{JSON.stringify(tag)})"
       contents...
-      "__pop()"
+      "__runtime.pop()"
     ]
 
   buffer: (value) ->
     [
-      "__push document.createTextNode('')"
-      "__text(#{value})"
-      "__pop()"
+      "__runtime.text #{value}"
     ]
 
   attributes: (node) ->
@@ -85,7 +82,7 @@ util =
       name = JSON.stringify(name)
 
       """
-        __attribute #{name}, #{value}
+        __runtime.attribute #{name}, #{value}
       """
 
     return idsAndClasses.concat attributeLines
@@ -101,7 +98,7 @@ util =
       @contents(node)
 
   replaceKeywords: (codeString) ->
-    codeString.replace(keywordsRegex, "__$1 ")
+    codeString.replace(keywordsRegex, "__runtime.$1 ")
 
   filter: (node) ->
     filterName = node.filter
@@ -110,7 +107,7 @@ util =
       [].concat.apply([], @filters[filterName](node.content, this))
     else
       [
-        "__filter(#{JSON.stringify(filterName)}, #{JSON.stringify(node.content)})"
+        "__runtime.filter(#{JSON.stringify(filterName)}, #{JSON.stringify(node.content)})"
       ]
 
   contents: (node) ->
@@ -162,21 +159,11 @@ exports.compile = (parseTree, {compiler}={}) ->
   source = """
     (data) ->
       (->
-        {
-          __push
-          __pop
-          __attribute
-          __filter
-          __text
-          __on
-          __each
-          __with
-          __render
-        } = __runtime = HAMLjr.Runtime(this)
+        __runtime = HAMLjr.Runtime(this)
 
-        __push document.createDocumentFragment()
+        __runtime.push document.createDocumentFragment()
     #{util.indent(items.join("\n"), "    ")}
-        __pop()
+        __runtime.pop()
       ).call(data)
   """
 

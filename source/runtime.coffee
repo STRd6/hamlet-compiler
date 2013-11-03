@@ -26,6 +26,10 @@ Runtime = (context) ->
   pop = ->
     append(stack.pop())
 
+  render = (child) ->
+    push(child)
+    pop()
+
   bindObservable = (element, value, update) ->
     # CLI short-circuits here because it doesn't do observables
     unless Observable?
@@ -94,43 +98,43 @@ Runtime = (context) ->
     bindObservable(element, value, update)
 
   observeText = (value) ->
-    element = top()
-
     # Kind of a hack for handling sub renders
     # or adding explicit html nodes to the output
     # TODO: May want to make more sure that it's a real dom node
     #       and not some other object with a nodeType property
+    # TODO: This shouldn't be inside of the observeText method
     switch value?.nodeType
       when 1, 3, 11
-        push(value)
-        pop()
+        render(value)
         return
+
+    # HACK: We don't want to know about the document inside here,
+    # even grabbing the ownerDocument is probably too much.
+    # Creating our text nodes in here cleans up the external call
+    # so it may be worth it.
+    element = top().ownerDocument.createTextNode('')
 
     update = (newValue) ->
       element.nodeValue = newValue
 
     bindObservable element, value, update
 
-  render = (object) ->
-    {template} = object
-
-    push HAMLjr.templates[template](object)
-    pop()
+    render element
 
   return {
     # Pushing and popping creates the node tree
-    __push: push
-    __pop: pop
+    push: push
+    pop: pop
 
     id: id
     classes: classes
-    __attribute: observeAttribute
-    __text: observeText
+    attribute: observeAttribute
+    text: observeText
 
-    __filter: (name, content) ->
+    filter: (name, content) ->
       ; # TODO self.filters[name](content)
 
-    __each: (items, fn) ->
+    each: (items, fn) ->
       items = Observable(items)
       elements = []
       parent = lastParent()
@@ -167,7 +171,7 @@ Runtime = (context) ->
 
       replace(null, items)
 
-    __with: (item, fn) ->
+    with: (item, fn) ->
       element = null
 
       item = Observable(item)
@@ -191,7 +195,7 @@ Runtime = (context) ->
 
       replace(element, value)
 
-    __on: (eventName, fn) ->
+    on: (eventName, fn) ->
       element = lastParent()
 
       if eventName is "change"

@@ -35,10 +35,10 @@ describe 'HAMLjr', ->
 
         assert !compiled.match(/items.__each/)
 
-      it "should replace `on 'click'` with `__on 'click'`", ->
+      it "should replace `on 'click'` with `__runtime.on 'click'`", ->
         compiled = compile('- on "click", ->')
 
-        assert compiled.match(/__on\("click"/)
+        assert compiled.match(/__runtime.on\("click"/)
 
   describe "runtime", ->
     it "should not blow up on undefined text node values", ->
