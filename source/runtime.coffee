@@ -26,24 +26,54 @@ Runtime = (context) ->
   pop = ->
     append(stack.pop())
 
-  observeAttribute = (element, name, value) ->
-    update = (newValue) ->
-      element.setAttribute name, newValue
-
+  bindObservable = (element, value, update) ->
     # CLI short-circuits here because it doesn't do observables
     unless Observable?
       update(value)
       return
 
     observable = Observable(value)
-
     observable.observe update
-
     update observable()
 
-    # TODO Unsubscribe
+    unobserve = -> # TODO: Unsubscribe
 
-  observeText = (node, value) ->
+    element.addEventListener("DOMNodeRemoved", unobserve, true)
+
+  id = (sources...) ->
+    element = top()
+
+    update = (newValue) ->
+      # HACK: Working around CLI not having observables
+      if typeof newValue is "function"
+        newValue = newValue()
+
+      element.id = newValue
+
+    value = ->
+      possibleValues = sources.map (source) ->
+        if typeof source is "function"
+          source()
+        else
+          source
+      .filter (idValue) ->
+        idValue?
+
+      possibleValues[possibleValues.length-1]
+
+    bindObservable(element, value, update)
+
+  observeAttribute = (name, value) ->
+    element = top()
+
+    update = (newValue) ->
+      element.setAttribute name, newValue
+
+    bindObservable(element, value, update)
+
+  observeText = (value) ->
+    element = top()
+
     # Kind of a hack for handling sub renders
     # or adding explicit html nodes to the output
     # TODO: May want to make more sure that it's a real dom node
@@ -54,23 +84,10 @@ Runtime = (context) ->
         pop()
         return
 
-    # CLI short-circuits here because it doesn't do observables
-    unless Observable?
-      node.nodeValue = value
-      return
-
-    observable = Observable(value)
-
     update = (newValue) ->
-      node.nodeValue = newValue
+      element.nodeValue = newValue
 
-    observable.observe update
-
-    update observable()
-
-    unobserve = -> # TODO: Unsubscribe
-
-    node.addEventListener("DOMNodeRemoved", unobserve, true)
+    bindObservable element, value, update
 
   render = (object) ->
     {template} = object

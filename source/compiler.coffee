@@ -33,37 +33,17 @@ util =
         "`"
       ]
 
-  styleTag: (content) ->
-    @element "style", [], [
-      "__element.innerHTML = #{JSON.stringify("\n" + @indent(content))}"
-    ]
-
-  scriptTag: (content) ->
-    @element "script", [], [
-      "__element.innerHTML = #{JSON.stringify("\n" + @indent(content))}"
-    ]
-
-  element: (tag, attributes, contents=[]) ->
-    attributeLines = attributes.map ({name, value}) ->
-      name = JSON.stringify(name)
-
-      """
-        __attribute __element, #{name}, #{value}
-      """
-
+  element: (tag, contents=[]) ->
     lines = [
-      "__element = document.createElement(#{JSON.stringify(tag)})"
-      "__push(__element)"
-      attributeLines...
+      "__push document.createElement(#{JSON.stringify(tag)})"
       contents...
       "__pop()"
     ]
 
   buffer: (value) ->
     [
-      "__element = document.createTextNode('')"
-      "__text(__element, #{value})"
-      "__push __element"
+      "__push document.createTextNode('')"
+      "__text(#{value})"
       "__pop()"
     ]
 
@@ -112,7 +92,14 @@ util =
     else if id
       attributes.unshift name: "id", value: JSON.stringify(id)
 
-    return attributes
+    attributeLines = attributes.map ({name, value}) ->
+      name = JSON.stringify(name)
+
+      """
+        __attribute #{name}, #{value}
+      """
+
+    return attributeLines
 
   render: (node) ->
     {tag, filter, text} = node
@@ -166,7 +153,7 @@ util =
 
       contents = contents.concat(childContent)
 
-    return contents
+    return @attributes(node).concat contents
 
   renderNodes: (nodes) ->
     [].concat.apply([], nodes.map(@render, this))
@@ -174,10 +161,7 @@ util =
   tag: (node) ->
     {tag} = node
 
-    attributes = @attributes(node)
-    contents = @contents(node)
-
-    @element tag, attributes, contents
+    @element tag, @contents(node)
 
 exports.compile = (parseTree, {compiler}={}) ->
   # HAX: Browserify can't put CoffeeScript into the web...

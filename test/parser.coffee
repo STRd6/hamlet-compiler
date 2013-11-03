@@ -73,7 +73,13 @@ describe 'HAMLjr', ->
       compiled = eval compile("#radical(id=@id)")
       result = compiled()
 
-      # TODO
-      # assert.equal result.childNodes[0].id, "radical"
+      assert.equal result.childNodes[0].id, "radical"
 
     # TODO: Observable id attributes
+
+  describe "text", ->
+    it "should render text in nodes", ->
+      compiled = eval compile("%div heyy")
+      result = compiled()
+
+      assert.equal result.childNodes[0].textContent, "heyy\n"
