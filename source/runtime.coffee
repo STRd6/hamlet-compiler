@@ -36,9 +36,8 @@ Runtime = (context) ->
     observable.observe update
     update observable()
 
-    unobserve = -> # TODO: Unsubscribe
-
-    element.addEventListener("DOMNodeRemoved", unobserve, true)
+    # TODO: Unsubscribe
+    # element.addEventListener("DOMNodeRemoved", unobserve, true)
 
   id = (sources...) ->
     element = top()
@@ -60,6 +59,29 @@ Runtime = (context) ->
         idValue?
 
       possibleValues[possibleValues.length-1]
+
+    bindObservable(element, value, update)
+
+  classes = (sources...) ->
+    element = top()
+
+    update = (newValue) ->
+      # HACK: Working around CLI not having observables
+      if typeof newValue is "function"
+        newValue = newValue()
+
+      element.className = newValue
+
+    value = ->
+      possibleValues = sources.map (source) ->
+        if typeof source is "function"
+          source()
+        else
+          source
+      .filter (sourceValue) ->
+        sourceValue?
+
+      possibleValues.join(" ")
 
     bindObservable(element, value, update)
 
@@ -100,6 +122,8 @@ Runtime = (context) ->
     __push: push
     __pop: pop
 
+    id: id
+    classes: classes
     __attribute: observeAttribute
     __text: observeText
 

@@ -47,26 +47,15 @@ util =
       "__pop()"
     ]
 
-  stringJoin: (values) ->
-    {dynamic} = this
-
-    values = values.map (value) ->
-      if value.indexOf("\"") is 0
-        JSON.parse(value)
-      else
-        dynamic(value)
-
-    JSON.stringify(values.join(" "))
-
-  dynamic: (value) ->
-    "\#{#{value}}"
-
   attributes: (node) ->
-    {dynamic} = this
     {id, classes, attributes} = node
 
+    if id
+      ids = [JSON.stringify(id)]
+    else
+      ids = []
+
     classes = (classes || []).map JSON.stringify
-    attributeId = undefined
 
     if attributes
       attributes = attributes.filter ({name, value}) ->
@@ -75,7 +64,7 @@ util =
 
           false
         else if name is "id"
-          attributeId = value
+          ids.push value
 
           false
         else
@@ -84,13 +73,13 @@ util =
     else
       attributes = []
 
-    if classes.length
-      attributes.unshift name: "class", value: @stringJoin(classes)
+    idsAndClasses = []
 
-    if attributeId
-      attributes.unshift name: "id", value: attributeId
-    else if id
-      attributes.unshift name: "id", value: JSON.stringify(id)
+    if ids.length
+      idsAndClasses.push "__runtime.id #{ids.join(', ')}"
+
+    if classes.length
+      idsAndClasses.push "__runtime.classes #{classes.join(', ')}"
 
     attributeLines = attributes.map ({name, value}) ->
       name = JSON.stringify(name)
@@ -99,7 +88,7 @@ util =
         __attribute #{name}, #{value}
       """
 
-    return attributeLines
+    return idsAndClasses.concat attributeLines
 
   render: (node) ->
     {tag, filter, text} = node
@@ -183,7 +172,7 @@ exports.compile = (parseTree, {compiler}={}) ->
           __each
           __with
           __render
-        } = HAMLjr.Runtime(this)
+        } = __runtime = HAMLjr.Runtime(this)
 
         __push document.createDocumentFragment()
     #{util.indent(items.join("\n"), "    ")}
