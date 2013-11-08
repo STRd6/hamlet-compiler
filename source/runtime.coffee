@@ -45,8 +45,13 @@ Runtime = (context) ->
     observable.observe update
     update observable()
 
-    # TODO: Unsubscribe
-    # element.addEventListener("DOMNodeRemoved", unobserve, true)
+    unobserve = ->
+      observable.stopObserving update
+
+    # Unsubscribe
+    element.addEventListener("DOMNodeRemoved", unobserve, true)
+
+    return element
 
   id = (sources...) ->
     element = top()
