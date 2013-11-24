@@ -229,7 +229,7 @@ Runtime = (context) ->
                 element.value = newValue
 
       else
-        element["on#{eventName}"] = ->
+        element["on#{eventName}"] = (event) ->
           # TODO: Make sure this context is correct for nested
           # things like `with` and `each`
           fn.call(context, event)
