@@ -1,4 +1,3 @@
-
 dataName = "__hamlJR_data"
 
 if window?
@@ -42,13 +41,15 @@ Runtime = (context) ->
       return
 
     observable = Observable(value)
-    observable.observe update
-    update observable()
+
+    observe = ->
+      observable.observe update
+      update observable()
 
     unobserve = ->
       observable.stopObserving update
 
-    # Unsubscribe
+    element.addEventListener("DOMNodeInserted", observe, true)
     element.addEventListener("DOMNodeRemoved", unobserve, true)
 
     return element
@@ -102,10 +103,22 @@ Runtime = (context) ->
   observeAttribute = (name, value) ->
     element = top()
 
-    update = (newValue) ->
-      element.setAttribute name, newValue
+    if (name is "value") and (typeof value is "function")
+      element.value = value()
 
-    bindObservable(element, value, update)
+      element.onchange = ->
+        value(element.value)
+
+      if value.observe
+        value.observe (newValue) ->
+          element.value = newValue
+    else
+      update = (newValue) ->
+        element.setAttribute name, newValue
+
+      bindObservable(element, value, update)
+
+    return element
 
   observeText = (value) ->
     # Kind of a hack for handling sub renders
@@ -130,7 +143,7 @@ Runtime = (context) ->
 
     render element
 
-  return {
+  self =
     # Pushing and popping creates the node tree
     push: push
     pop: pop
@@ -169,7 +182,7 @@ Runtime = (context) ->
 
             return element
 
-          oldElements.each (element) ->
+          oldElements.forEach (element) ->
             element.remove()
         else
           elements = items.map (item, index, array) ->
@@ -233,6 +246,7 @@ Runtime = (context) ->
           # TODO: Make sure this context is correct for nested
           # things like `with` and `each`
           fn.call(context, event)
-  }
 
-exports.Runtime = Runtime
+  return self
+
+module.exports = Runtime

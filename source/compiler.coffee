@@ -150,16 +150,14 @@ util =
     @element tag, @contents(node)
 
 exports.compile = (parseTree, {compiler}={}) ->
-  # HAX: Browserify can't put CoffeeScript into the web...
-  if compiler
-    CoffeeScript = compiler
+  compiler ?= CoffeeScript
 
   items = util.renderNodes(parseTree)
 
   source = """
     (data) ->
       (->
-        __runtime = HAMLjr.Runtime(this)
+        __runtime = Runtime(this)
 
         __runtime.push document.createDocumentFragment()
     #{util.indent(items.join("\n"), "    ")}
@@ -170,6 +168,6 @@ exports.compile = (parseTree, {compiler}={}) ->
   options = bare: true
   programSource = source
 
-  program = CoffeeScript.compile programSource, options
+  program = compiler.compile programSource, options
 
   return program
