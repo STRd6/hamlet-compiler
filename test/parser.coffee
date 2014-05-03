@@ -51,6 +51,8 @@ describe 'HAMLjr', ->
       result = compiled
         myClass: "duder"
 
+      debugger
+
       assert.equal result.childNodes[0].className, "radical duder"
 
     # TODO: Observable class attributes

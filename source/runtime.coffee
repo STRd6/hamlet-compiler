@@ -1,4 +1,4 @@
-Observable = require "./observable"
+Observable = require "observable"
 
 dataName = "__hamlJR_data"
 
