@@ -4,7 +4,18 @@ fs = require('fs')
 {jsdom} = require "jsdom"
 global.document = document = jsdom()
 
+Runtime = require "../dist/runtime"
 {parser, compile} = HAMLjr = require('../dist/haml-jr')
+
+schwaza = (template, data) ->
+  code = "return " + compile(template)
+
+  fragment = Function("Runtime", code)(Runtime)(data)
+
+  div = document.createElement("div")
+  div.appendChild fragment
+
+  return div
 
 describe 'HAMLjr', ->
   describe 'parser', ->
@@ -51,29 +62,24 @@ describe 'HAMLjr', ->
       result = compiled
         myClass: "duder"
 
-      debugger
-
       assert.equal result.childNodes[0].className, "radical duder"
 
     # TODO: Observable class attributes
 
   describe "ids", ->
     it "should get them from the prefix", ->
-      compiled = eval compile("#radical")
-      result = compiled()
+      result = schwaza("#radical")
 
       assert.equal result.childNodes[0].id, "radical"
 
     it "should be overridden by the attribute value if present", ->
-      compiled = eval compile("#radical(id=@id)")
-      result = compiled
+      result = schwaza "#radical(id=@id)",
         id: "wat"
 
       assert.equal result.childNodes[0].id, "wat"
 
     it "should not be overridden by the attribute value if not present", ->
-      compiled = eval compile("#radical(id=@id)")
-      result = compiled()
+      result = schwaza "#radical(id=@id)"
 
       assert.equal result.childNodes[0].id, "radical"
 
@@ -81,7 +87,6 @@ describe 'HAMLjr', ->
 
   describe "text", ->
     it "should render text in nodes", ->
-      compiled = eval compile("%div heyy")
-      result = compiled()
+      result = schwaza("%div heyy")
 
       assert.equal result.childNodes[0].textContent, "heyy\n"
