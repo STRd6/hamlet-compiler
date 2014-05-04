@@ -2,6 +2,7 @@
   "name": "haml-jr",
   "version": "0.5.5",
   "devDependencies": {
+    "browserify": "^3.46.0",
     "jison": "~0.4.6",
     "jison-lex": "~0.2.1",
     "jsdom": "~0.10",
