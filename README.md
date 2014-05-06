@@ -1,9 +1,8 @@
-[![Build Status](https://travis-ci.org/STRd6/haml-jr.png?branch=master)](https://travis-ci.org/STRd6/haml-jr)
+[![Build Status](https://travis-ci.org/dr-coffee-labs/haml-jr.png?branch=master)](https://travis-ci.org/dr-coffee-labs/haml-jr)
 
 HAMLjr
 ======
 
-A formal parser for Haml.
+A formal parser for Haml that provides advanced automagical data binding between HTML elements and data.
 
-HAMLjr separates creating the AST from rendering the output to allow for
-advanced automagical data binding between HTML elements and data.
+Demo: http://distri.github.io/haml-jr/docs/demo
