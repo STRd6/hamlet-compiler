@@ -1,4 +1,4 @@
-Observable = require "./observable"
+Observable = require "observable"
 
 dataName = "__hamlJR_data"
 
@@ -72,12 +72,8 @@ Runtime = (context) ->
     pop()
 
   bindObservable = (element, value, update) ->
-    # CLI short-circuits here because it doesn't do observables
-    unless Observable?
-      update(value)
-      return
-
     observable = Observable(value)
+    update observable()
 
     observe = ->
       observable.observe update

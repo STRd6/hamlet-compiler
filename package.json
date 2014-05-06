@@ -2,22 +2,21 @@
   "name": "haml-jr",
   "version": "0.5.5",
   "devDependencies": {
+    "browserify": "^3.46.0",
     "jison": "~0.4.6",
     "jison-lex": "~0.2.1",
-    "jsdom": "~0.8.4",
+    "jsdom": "~0.10",
     "mocha": "~1.12.0",
     "uglify-js": "~2.3.6"
   },
   "dependencies": {
-    "coffee-script": "~1.6.3"
+    "coffee-script": "~1.6.3",
+    "observable": "git://github.com/distri/observable.git#npm-v0.1.2"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/STRd6/haml-jr.git"
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "prepublish": "script/prepublish",
     "test": "script/test"
