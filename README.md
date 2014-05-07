@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/dr-coffee-labs/haml-jr.png?branch=master)](https://travis-ci.org/dr-coffee-labs/haml-jr)
+[![Build Status](https://travis-ci.org/dr-coffee-labs/hamlet-compiler.png?branch=master)](https://travis-ci.org/dr-coffee-labs/haml-jr)
 
-HAMLjr
+Hamlet
 ======
 
 A formal parser for Haml that provides advanced automagical data binding between HTML elements and data.

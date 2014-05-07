@@ -4,9 +4,7 @@ indentText = (text, indent="  ") ->
   indent + text.replace(/\n/g, "\n#{indent}")
 
 keywords = [
-  "on"
   "each"
-  "with"
 ]
 
 keywordsRegex = RegExp("^\\s*(#{keywords.join('|')})\\s+")

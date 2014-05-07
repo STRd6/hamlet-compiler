@@ -1,13 +1,11 @@
 Choose a ticket class:
-%select
-  - on "change", @chosenTicket
+%select(value=@chosenTicket)
   - each @tickets, ->
     %option= @name
 
-%button Clear
-  - on "click", @resetTicket
+%button(click=@resetTicket) Clear
 
-- with @chosenTicket, ->
+- each @chosenTicket, ->
   %p
     - if @price
       You have chosen
