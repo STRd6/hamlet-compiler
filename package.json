@@ -1,13 +1,13 @@
 {
   "name": "hamlet-compiler",
-  "version": "0.6.0",
+  "version": "0.6.0-pre.0",
   "devDependencies": {
     "mocha": "~1.12.0",
     "uglify-js": "~2.3.6"
   },
   "dependencies": {
     "coffee-script": "~1.6.3",
-    "hamlet-parser": "0.6.0"
+    "hamlet-parser": "0.6.0-pre.1"
   },
   "repository": {
     "type": "git",
@@ -17,5 +17,6 @@
     "prepublish": "script/prepublish",
     "test": "script/test"
   },
+  "files": ["dist/"],
   "main": "dist/main.js"
 }
