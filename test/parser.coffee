@@ -1,7 +1,7 @@
 assert = require('assert')
 fs = require('fs')
 
-{parser, compile} = HAMLjr = require('../dist/main')
+{parser, compile} = HAMLjr = require('../source/main')
 
 schwaza = (template, data) ->
   code = "return " + compile(template)

@@ -14,8 +14,7 @@ util =
 
   filters:
     verbatim: (content, compiler) ->
-      # TODO: Allow """ in content to stand
-      compiler.buffer '"""' + content.replace(/(#)/, "\\$1") + '"""'
+      compiler.buffer '"""' + content.replace(/(#|")/g, "\\$1") + '"""'
 
     plain: (content, compiler) ->
       compiler.buffer JSON.stringify(content)
