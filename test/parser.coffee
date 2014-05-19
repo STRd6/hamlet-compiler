@@ -1,7 +1,7 @@
 assert = require('assert')
 fs = require('fs')
 
-{parser, compile} = HAMLjr = require('../source/main')
+{parser, compile} = require('../source/main')
 
 schwaza = (template, data) ->
   code = "return " + compile(template)
@@ -13,7 +13,7 @@ schwaza = (template, data) ->
 
   return div
 
-describe 'HAMLjr', ->
+describe 'Compiler', ->
   describe 'parser', ->
     it 'should exist', ->
       assert(parser)

@@ -1,4 +1,8 @@
 #!/bin/bash
 set -e
 
-node_modules/.bin/mocha --compilers coffee:coffee-script --reporter spec
+node_modules/.bin/mocha \
+  -r 'coffee-script/register' \
+  --compilers coffee:coffee-script \
+  --reporter spec \
+  "$@"
