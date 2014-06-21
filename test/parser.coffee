@@ -4,9 +4,10 @@ CoffeeScript = require "coffee-script"
 
 {parser} = HamletCompiler = require('../source/main')
 
-compile = (source) ->
-  HamletCompiler.compile source,
-    compiler: CoffeeScript
+compile = (source, opts={}) ->
+  opts.compiler ?= CoffeeScript
+
+  HamletCompiler.compile source, opts
 
 schwaza = (template, data) ->
   code = "return " + compile(template)
@@ -46,3 +47,14 @@ describe 'Compiler', ->
         compiled = compile('- items.each ->')
 
         assert !compiled.match(/items.__each/)
+
+  describe "exports", ->
+    it "should default to module.exports", ->
+      compiled = compile "%h1"
+
+      assert compiled.match(/^module\.exports/)
+
+    it "should be removable by passing false", ->
+      compiled = compile "%h1", exports: false
+
+      assert compiled.match(/^\(function\(data\) \{/)

@@ -150,8 +150,13 @@ exports.compile = (parseTree, {compiler, runtime, exports}={}) ->
 
   items = util.renderNodes(parseTree)
 
+  if exports
+    exports = "#{exports} = "
+  else
+    exports = ""
+
   source = """
-    #{exports} = (data) ->
+    #{exports}(data) ->
       (->
         __runtime = #{runtime}(this)
 
