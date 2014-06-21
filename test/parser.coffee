@@ -1,7 +1,12 @@
 assert = require('assert')
 fs = require('fs')
+CoffeeScript = require "coffee-script"
 
-{parser, compile} = require('../source/main')
+{parser} = HamletCompiler = require('../source/main')
+
+compile = (source) ->
+  HamletCompiler.compile source,
+    compiler: CoffeeScript
 
 schwaza = (template, data) ->
   code = "return " + compile(template)
