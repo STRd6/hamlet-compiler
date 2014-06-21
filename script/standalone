@@ -1,3 +1,0 @@
-#!/bin/bash
-
-./node_modules/.bin/browserify dist/standalone.js -o hamlet-compiler.js

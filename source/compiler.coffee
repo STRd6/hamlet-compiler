@@ -1,5 +1,3 @@
-CoffeeScript = require "coffee-script"
-
 indentText = (text, indent="  ") ->
   indent + text.replace(/\n/g, "\n#{indent}")
 
@@ -146,14 +144,14 @@ util =
 
     @element tag, @contents(node)
 
-exports.compile = (parseTree, {compiler, runtime}={}) ->
-  compiler ?= CoffeeScript
-  runtime ?= "require(\"hamlet-runtime\")"
+exports.compile = (parseTree, {compiler, runtime, exports}={}) ->
+  runtime ?=  "require" + "(\"hamlet-runtime\")"
+  exports ?= "module.exports"
 
   items = util.renderNodes(parseTree)
 
   source = """
-    (data) ->
+    #{exports} = (data) ->
       (->
         __runtime = #{runtime}(this)
 
