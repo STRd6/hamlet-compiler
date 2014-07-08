@@ -7,7 +7,9 @@ CoffeeScript = require "coffee-script"
 compile = (source, opts={}) ->
   opts.compiler ?= CoffeeScript
 
-  HamletCompiler.compile source, opts
+  result = HamletCompiler.compile source, opts
+
+  return result
 
 schwaza = (template, data) ->
   code = "return " + compile(template)
@@ -47,6 +49,13 @@ describe 'Compiler', ->
         compiled = compile('- items.each ->')
 
         assert !compiled.match(/items.__each/)
+
+    describe "indentation", ->
+      compile """
+        %ul
+            - each @todos, ->
+                %li= @description
+      """
 
   describe "exports", ->
     it "should default to module.exports", ->

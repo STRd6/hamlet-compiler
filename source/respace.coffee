@@ -11,6 +11,8 @@ respace = (string) ->
     # TODO: This will replace throughout the string and not just the
     # beginnings of lines
     string.replace RegExp(first, "g"), indent
+  else
+    string
 
 detectSpacing = (line) ->
   line.match(leadingWhitespace)?[0]
