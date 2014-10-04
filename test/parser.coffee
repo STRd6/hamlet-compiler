@@ -39,14 +39,8 @@ describe 'Compiler', ->
         assert ast
 
       it "should compile #{file}", ->
-        assert compile(ast)
-
-  describe 'compiler', ->
-    describe 'keywords', ->
-      it "should not replace `items.each` with `items.__each`", ->
-        compiled = compile('- items.each ->')
-
-        assert !compiled.match(/items.__each/)
+        data = compile(ast)
+        assert data
 
   describe "exports", ->
     it "should default to module.exports", ->
