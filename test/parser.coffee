@@ -22,14 +22,10 @@ schwaza = (template, data) ->
 compileDirectory = (directory, mode) ->
   fs.readdirSync(directory).forEach (file) ->
     data = fs.readFileSync "#{directory}/#{file}", "UTF-8"
-    ast = null
-
-    it "parses #{file}", ->
-      ast = parser.parse(data, mode)
-      assert ast
 
     it "compiles #{file}", ->
-      data = compile(ast)
+      data = compile data,
+        mode: mode
 
       assert data
 
