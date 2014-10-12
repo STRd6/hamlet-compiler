@@ -19,36 +19,35 @@ schwaza = (template, data) ->
 
   return div
 
+compileDirectory = (directory, mode) ->
+  fs.readdirSync(directory).forEach (file) ->
+    data = fs.readFileSync "#{directory}/#{file}", "UTF-8"
+    ast = null
+
+    it "parses #{file}", ->
+      ast = parser.parse(data, mode)
+      assert ast
+
+    it "compiles #{file}", ->
+      data = compile(ast)
+
+      assert data
+
 describe 'Compiler', ->
-  describe 'parser', ->
-    it 'should exist', ->
-      assert(parser)
-
-    it 'should parse some stuff', ->
-      assert parser.parse("%yolo")
-
   describe 'samples', ->
-    sampleDir = "test/samples/haml"
+    describe 'haml', ->
+      compileDirectory "test/samples/haml", "haml"
 
-    fs.readdirSync(sampleDir).forEach (file) ->
-      data = fs.readFileSync "#{sampleDir}/#{file}", "UTF-8"
-      ast = null
-
-      it "should parse #{file}", ->
-        ast = parser.parse(data)
-        assert ast
-
-      it "should compile #{file}", ->
-        data = compile(ast)
-        assert data
+    describe 'jade', ->
+      compileDirectory "test/samples/jade", "jade"
 
   describe "exports", ->
-    it "should default to module.exports", ->
+    it "defaults to module.exports", ->
       compiled = compile "%h1"
 
       assert compiled.match(/^module\.exports/)
 
-    it "should be removable by passing false", ->
+    it "is removable by passing false", ->
       compiled = compile "%h1", exports: false
 
       assert compiled.match(/^\(function\(data\) \{/)
