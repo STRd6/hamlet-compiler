@@ -1,11 +1,7 @@
 indentText = (text, indent="  ") ->
   indent + text.replace(/\n/g, "\n#{indent}")
 
-keywords = [
-  "each"
-]
-
-keywordsRegex = RegExp("^\\s*(#{keywords.join('|')})\\s+")
+ROOT_NAME = "__root"
 
 util =
   indent: indentText
@@ -27,16 +23,16 @@ util =
         "`"
       ]
 
-  element: (tag, contents=[]) ->
+  element: (tag, attributes=[], contents=[]) ->
     lines = [
-      "__runtime.push document.createElement(#{JSON.stringify(tag)})"
-      contents...
-      "__runtime.pop()"
+      "#{ROOT_NAME}.buffer #{ROOT_NAME}.element #{JSON.stringify(tag)}, this, {#{attributes.join('\n')}}, (#{ROOT_NAME}) ->"
+      indentText contents.join("\n")
+      "  return"
     ]
 
   buffer: (value) ->
     [
-      "__runtime.text #{value}"
+      "#{ROOT_NAME}.buffer #{value}"
     ]
 
   attributes: (node) ->
@@ -68,16 +64,16 @@ util =
     idsAndClasses = []
 
     if ids.length
-      idsAndClasses.push "__runtime.id #{ids.join(', ')}"
+      idsAndClasses.push "id: [#{ids.join(', ')}]"
 
     if classes.length
-      idsAndClasses.push "__runtime.classes #{classes.join(', ')}"
+      idsAndClasses.push "class: [#{classes.join(', ')}]"
 
     attributeLines = attributes.map ({name, value}) ->
       name = JSON.stringify(name)
 
       """
-        __runtime.attribute #{name}, #{value}
+        #{name}: #{value}
       """
 
     return idsAndClasses.concat attributeLines
@@ -92,9 +88,6 @@ util =
     else
       @contents(node)
 
-  replaceKeywords: (codeString) ->
-    codeString.replace(keywordsRegex, "__runtime.$1 ")
-
   filter: (node) ->
     filterName = node.filter
 
@@ -102,7 +95,7 @@ util =
       [].concat.apply([], @filters[filterName](node.content, this))
     else
       [
-        "__runtime.filter(#{JSON.stringify(filterName)}, #{JSON.stringify(node.content)})"
+        "#{ROOT_NAME}.filter(#{JSON.stringify(filterName)}, #{JSON.stringify(node.content)})"
       ]
 
   contents: (node) ->
@@ -110,9 +103,8 @@ util =
 
     if unbufferedCode
       indent = true
-      code = @replaceKeywords(unbufferedCode)
 
-      contents = [code]
+      contents = [unbufferedCode]
     else if bufferedCode
       contents = @buffer(bufferedCode)
     else if text
@@ -134,7 +126,7 @@ util =
 
       contents = contents.concat(childContent)
 
-    return @attributes(node).concat contents
+    return contents
 
   renderNodes: (nodes) ->
     [].concat.apply([], nodes.map(@render, this))
@@ -142,7 +134,7 @@ util =
   tag: (node) ->
     {tag} = node
 
-    @element tag, @contents(node)
+    @element tag, @attributes(node), @contents(node)
 
 exports.compile = (parseTree, {compiler, runtime, exports}={}) ->
   runtime ?=  "require" + "(\"hamlet-runtime\")"
@@ -157,12 +149,12 @@ exports.compile = (parseTree, {compiler, runtime, exports}={}) ->
 
   source = """
     #{exports}(data) ->
+      "use strict"
       (->
-        __runtime = #{runtime}(this)
+        #{ROOT_NAME} = #{runtime}(this)
 
-        __runtime.push document.createDocumentFragment()
     #{util.indent(items.join("\n"), "    ")}
-        __runtime.pop()
+        return #{ROOT_NAME}.root
       ).call(data)
   """
 
