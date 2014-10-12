@@ -2,7 +2,7 @@ assert = require('assert')
 fs = require('fs')
 CoffeeScript = require "coffee-script"
 
-{parser} = HamletCompiler = require('../source/main')
+HamletCompiler = require('../source/main')
 
 compile = (source, opts={}) ->
   opts.compiler ?= CoffeeScript
