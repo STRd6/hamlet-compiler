@@ -1,0 +1,16 @@
+Choose a ticket class:
+select(value=@chosenTicket)
+  - each @tickets, ->
+    option= @name
+
+button(click=@resetTicket) Clear
+
+- each @chosenTicket, ->
+  p
+    - if @price
+      You have chosen
+      b= @name
+      span
+        $#{@price}
+    - else
+      No ticket chosen

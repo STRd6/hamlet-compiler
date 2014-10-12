@@ -2,53 +2,38 @@ assert = require('assert')
 fs = require('fs')
 CoffeeScript = require "coffee-script"
 
-{parser} = HamletCompiler = require('../source/main')
+HamletCompiler = require('../source/main')
 
 compile = (source, opts={}) ->
   opts.compiler ?= CoffeeScript
 
   HamletCompiler.compile source, opts
 
-schwaza = (template, data) ->
-  code = "return " + compile(template)
+compileDirectory = (directory, mode) ->
+  fs.readdirSync(directory).forEach (file) ->
+    data = fs.readFileSync "#{directory}/#{file}", "UTF-8"
 
-  fragment = Function("Runtime", code)(Runtime)(data)
+    it "compiles #{file}", ->
+      data = compile data,
+        mode: mode
 
-  div = document.createElement("div")
-  div.appendChild fragment
-
-  return div
+      assert data
 
 describe 'Compiler', ->
-  describe 'parser', ->
-    it 'should exist', ->
-      assert(parser)
-
-    it 'should parse some stuff', ->
-      assert parser.parse("%yolo")
-
   describe 'samples', ->
-    sampleDir = "test/samples/haml"
+    describe 'haml', ->
+      compileDirectory "test/samples/haml", "haml"
 
-    fs.readdirSync(sampleDir).forEach (file) ->
-      data = fs.readFileSync "#{sampleDir}/#{file}", "UTF-8"
-      ast = null
-
-      it "should parse #{file}", ->
-        ast = parser.parse(data)
-        assert ast
-
-      it "should compile #{file}", ->
-        data = compile(ast)
-        assert data
+    describe 'jade', ->
+      compileDirectory "test/samples/jade", "jade"
 
   describe "exports", ->
-    it "should default to module.exports", ->
+    it "defaults to module.exports", ->
       compiled = compile "%h1"
 
       assert compiled.match(/^module\.exports/)
 
-    it "should be removable by passing false", ->
+    it "is removable by passing false", ->
       compiled = compile "%h1", exports: false
 
       assert compiled.match(/^\(function\(data\) \{/)
