@@ -9,16 +9,6 @@ compile = (source, opts={}) ->
 
   HamletCompiler.compile source, opts
 
-schwaza = (template, data) ->
-  code = "return " + compile(template)
-
-  fragment = Function("Runtime", code)(Runtime)(data)
-
-  div = document.createElement("div")
-  div.appendChild fragment
-
-  return div
-
 compileDirectory = (directory, mode) ->
   fs.readdirSync(directory).forEach (file) ->
     data = fs.readFileSync "#{directory}/#{file}", "UTF-8"
