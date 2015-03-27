@@ -1,13 +1,13 @@
 {
   "name": "hamlet-compiler",
-  "version": "0.7.0-pre.1",
+  "version": "0.7.0",
   "devDependencies": {
     "browserify": "^4.1.11",
     "coffee-script": "~1.7.1",
     "mocha": "~1.12.0"
   },
   "dependencies": {
-    "hamlet-parser": "0.7.0-pre.0"
+    "hamlet-parser": "0.7.0"
   },
   "repository": {
     "type": "git",
